@@ -7408,6 +7408,66 @@ Object.assign(TH.greece,{terrain:{h:grRaw,col:grCol},keep:(x,z)=>grAcD(x,z)<19,
   scatter(60,(x,z,i)=>i%6===5?tree(x,z,1.2,"cypress"):tree(x,z,rr(1.1,1.5),"olive"),{clear:3.4});
   herd("goat",5,-20,30,8,1.2);herd("sheep",5,24,28,6,1);flowers(40,["#ffffff","#ffd040","#a987ff"]);flock(5,30,10,30,16,"#ffffff");clouds(4,46)}});
 
+/* ================= CINA 3.0 e GRECIA 3.0 — più vita, più paesaggio, i monumenti delle parole del mondo ================= */
+/* ---------- CINA: montagne carsiche nella foschia, porte pailou sul sentiero, villaggio, risaie, aquiloni ---------- */
+function chKarst(){const g=new Geo(),gr=["#86a882","#7d9f78","#92b28a","#8aa07e"];
+ for(let i=0;i<34;i++){const a=i/34*TAU+rr(-.06,.06),r=rr(86,126),x=Math.cos(a)*r,z=Math.sin(a)*r-6;const R0=rr(10,16),H=rr(26,42),y=-4;
+  /* pan di zucchero: 5 "gocce" sovrapposte, sempre più strette e un po' storte, verde sopra e roccia sotto */
+  let ox=0,oz=0;for(let j=0;j<5;j++){const f=j/5,rj=R0*(1-f*.72),yj=y+H*f;ox+=rr(-.07,.07)*R0;oz+=rr(-.07,.07)*R0;g.add(PR.sphere(1,16,12),T([x+ox,yj+H*.12,z+oz],0,[rj,H*.22,rj]),j<1?"#98a294":gr[(i+j)%4],{smooth:true})}}
+ C.items.push({m:R.mesh(g),M:M4.id(),noShadow:1});
+ /* fasce di nebbia tra le montagne */for(let i=0;i<10;i++){const a=i/10*TAU,r=96;C.sprites.push({t:tx("puff"),c:[Math.cos(a)*r,10,Math.sin(a)*r-6],w:60,h:14,a:.35,tint:[1,1,1]})}}
+function chGate(x,z,rot){const y=Y(x,z)-.1,m=T([x,y,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),gn=GN(),RED="#c4283a";
+ for(const s of [-3.2,-1.15,1.15,3.2]){g.add(PR.cyl(.24,.26,s*s>4?4.2:5,10),P([s,0,0]),RED);g.add(PR.box(.7,.5,.7,true),P([s,0,0]),"#d8d2c4")}
+ g.add(PR.box(7.6,.42,.5,true),P([0,3.9,0]),RED);g.add(PR.box(2.6,.42,.5,true),P([0,4.7,0]),RED);gn.add(PR.box(7.8,.2,.56,true),P([0,4.32,0]),"#2a6a5a");
+ gn.add(PR.box(1.6,.8,.12,true),P([0,4.85,.3]),"#1a3a6a");gn.add(PR.box(1.2,.5,.13,true),P([0,5,.31]),"#e8c040");
+ const w=M4.pt(m,[0,0,0]);hipRoof(g,w[0],y+5.15,w[2],1.9,.75,.7,.4,"#f2c230",rot);for(const s of [-1,1]){const q=M4.pt(m,[s*2.2,0,0]);hipRoof(g,q[0],y+4.35,q[2],1.3,.65,.55,.32,"#2a8a5a",rot)}
+ occ(x,z,1)}
+function chHouse(x,z,rot){const y=Y(x,z)-.15,m=T([x,y,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),gn=GN();const W=rr(2,2.6),D=rr(1.5,1.9);
+ g.add(PR.box(W*2+.3,.45,D*2+.3,true),m,"#a8a294");g.add(PR.box(W*2,2.5,D*2,true),P([0,.45,0]),"#f2eee4");for(const s of [-1,1])g.add(PR.cyl(.13,.13,2.5,8),P([s*(W-.1),.45,D+.08]),"#8a2420");
+ gn.add(PR.box(.9,1.6,.06,true),P([0,.45,D+.03]),"#a82a28");gn.add(PR.cyl(.42,.42,.06,16),P([W*.55,1.7,D+.03],[TAU/4,0,0]),"#5a3a2a");gn.add(PR.cyl(.42,.42,.06,16),P([-W*.55,1.7,D+.03],[TAU/4,0,0]),"#5a3a2a");
+ const w=M4.pt(m,[0,0,0]);hipRoof(g,w[0],y+2.95,w[2],W+.7,D+.7,1.3,.45,"#4a505a",rot);
+ /* lanterna rossa sulla porta */const L=new Geo();L.add(PR.sphere(.22,10,8),P([0,2.35,D+.45],0,[1,1.2,1]),"#ff3a2a");C.items.push({m:R.mesh(L),M:M4.id(),emis:1.1,noShadow:1});occ(x,z,Math.max(W,D)+1.2)}
+function chPaddies(x,z){const y0=Y(x,z),g=GN();for(let i=0;i<4;i++){const w=9-i*1.6,d=7-i*1.2,yy=y0-.3+i*.55;g.add(PR.box(w*2,.55,d*2,true),T([x,yy,z]),i%2?"#6a8a4a":"#7a9a52");
+  g.add(PR.box(w*2-.5,.06,d*2-.5,true),T([x,yy+.56,z]),"#8fc8c0");for(let k=0;k<Math.floor(w*1.6);k++)for(let j=0;j<3;j++)g.add(PR.cyl(0,.09,.45,3),T([x-w+.6+k*(2*w-1.2)/(Math.floor(w*1.6)-1||1),yy+.6,z-d+.6+j*(2*d-1.2)/2]),"#5ab04a")}
+ /* contadina col cappello di paglia */const n=npc({top:"#3a6aa8",hat:"straw",hatC:"#e8c878",skin:"#f2d0a8"});npcAt(n,x+2,z,0,"idle",1);occ(x,z,10)}
+function chExtra(){chKarst();
+ /* porte pailou sopra il sentiero */const P=C.pts;if(P&&P.length>40){[.18,.5,.8].forEach(f=>{const i=Math.floor(P.length*f),[x,z]=P[i];if(C.nodes.some(n=>Math.hypot(n[0]-x,n[1]-z)<5))return;const a=P[Math.min(P.length-1,i+2)],b=P[Math.max(0,i-2)];chGate(x,z,Math.atan2(a[0]-b[0],a[1]-b[1])+TAU/4)})}
+ /* villaggio */let n=0;for(let t=0;t<200&&n<9;t++){const x=rr(-55,55),z=rr(-30,52);if(!free(x,z,5))continue;chHouse(x,z,pick([0,TAU/4,-TAU/4,Math.PI])+rr(-.15,.15));n++}
+ /* risaie */{const s=flatSpot([[44,30],[-46,34],[46,10],[-46,-10]],10,2.4);if(s)chPaddies(s[0],s[1])}
+ /* bambini con gli aquiloni */[["#e8302a",0],["#ffd040",1.7],["#2a8ae8",3.1]].forEach(([c,ph],i)=>{const s=flatSpot([[C.nodes[2+i*3][0]+4,C.nodes[2+i*3][1]+3]],1.2,1);if(!s)return;const k=npc({s:.7,top:c,hair:"#1a1a20",skin:"#f2d0a8"});npcAt(k,s[0],s[1],ph,"wave",i);kite(s[0],s[1],c,ph)});
+ scatter(14,(x,z)=>{bamboo(x,z,rr(.8,1.1));occ(x,z,2)},{clear:3.4});scatter(26,(x,z,i)=>i%4?tree(x,z,rr(1.2,1.5),"cherry"):tree(x,z,rr(1.1,1.4),"pine"),{clear:3.2});
+ flowers&&flowers(50,["#ff8ab0","#ffffff","#ffd040"])}
+{const b0=TH.china.build;TH.china.build=function(){b0.apply(this,arguments);try{chExtra()}catch(e){console.error("china+",e)}}}
+
+/* ---------- GRECIA: stadio di Olimpia con gli atleti, cavallo di Troia al porto, labirinto del Minotauro, civetta di Atena ---------- */
+function grStadium(x,z){const y=Y(x,z)-.05,g=GN(),gg=GG(),L=13,R0=5.2;const pts=[];
+ for(let i=0;i<=40;i++){const u=i/40;let px,pz;if(u<.25){const f=u/.25;px=-L+f*2*L;pz=R0}else if(u<.5){const a=(u-.25)/.25*Math.PI;px=L+Math.sin(a)*R0;pz=Math.cos(a)*R0}else if(u<.75){const f=(u-.5)/.25;px=L-f*2*L;pz=-R0}else{const a=(u-.75)/.25*Math.PI;px=-L-Math.sin(a)*R0;pz=-Math.cos(a)*R0}pts.push([x+px,z+pz])}
+ for(let i=0;i<pts.length-1;i++){const [ax,az]=pts[i],[bx,bz]=pts[i+1];slab(g,[ax,y+.02,az],[bx,y+.02,bz],2.4,.06,"#d8a070")}
+ g.add(PR.box(2*L,.05,2*R0-2.4,true),T([x,y,z]),"#9ab860");for(const s of [-1,1])for(let k=0;k<3;k++)gg.add(PR.box(2*L+4,.6,1.1,true),T([x,y+k*.6,z+s*(R0+2+k*1.1)]),"#e4d8bc");
+ /* la fiaccola olimpica */gg.add(PR.cyl(.5,.35,2.2,10),T([x-L-R0-2.5,y,z]),"#e4d8bc");gg.add(PR.cyl(.8,.5,.5,12),T([x-L-R0-2.5,y+2.2,z]),"#c8a040");const fl={t:tx("glow"),c:[x-L-R0-2.5,y+3.2,z],w:1.6,h:2.2,a:.95,tint:[1,.6,.2]};C.sprites.push(fl);C.upd.push(t=>{fl.h=2+Math.sin(t*11)*.3;fl.a=.85+Math.sin(t*7)*.1});
+ const cols=["#c4283a","#2a5ab8","#f4e0a8","#2a8a5a"];for(let i=0;i<4;i++){const n=npc({top:cols[i],dress:false,legs:"#f4ecd8",hair:NPC_HAIR[i%7],skin:NPC_SKIN[i%6]});const sp=4.2+i*.4;
+  C.upd.push(t=>{const tot=pts.length-1,d=((((t*sp/((4*L+2*Math.PI*R0)/tot))+i*3)%tot)+tot)%tot||0,k=Math.min(tot-1,Math.floor(d)),f=d-k,a=pts[k],b=pts[k+1];const px=a[0]+(b[0]-a[0])*f,pz=a[1]+(b[1]-a[1])*f;n.p=[px,Y(px,pz),pz];n.r=[0,Math.atan2(b[0]-a[0],b[1]-a[1]),0];npcPose(n,"walk",t*1.8,i)})}
+ occ(x,z,L+R0+3)}
+function trojanHorse(x,z,rot){const y=Y(x,z)-.1,m=T([x,y,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),W1="#a8743e",W2="#8a5a2c";
+ g.add(PR.box(4.6,.5,2.6,true),P([0,.55,0]),W2);for(const s of [-1,1])for(const t of [-1.7,1.7])g.add(PR.cyl(.55,.55,.3,14),P([t,.55,s*1.4],[TAU/4,0,0]),"#5a3a1a");
+ for(const s of [-1,1])for(const t of [-1.3,1.3])g.add(PR.box(.55,2.4,.55,true),P([t,1.05,s*.7]),W1);g.add(PR.box(4,2,1.9,true),P([0,3.3,0]),W1);
+ for(let i=0;i<6;i++)GN().add(PR.box(.06,2,1.95,true),P([-1.8+i*.72,3.3,0]),W2);g.add(PR.box(.9,2.6,1.1,true),P([1.9,4.6,0],[0,0,-.45]),W1);g.add(PR.box(1.8,.9,1,true),P([2.9,6.2,0],[0,0,-.15]),W1);
+ for(const s of [-1,1]){g.add(PR.cyl(0,.18,.6,4),P([2.3,7,s*.3]),W2);GN().add(PR.sphere(.12,8,6),P([3.3,6.75,s*.5]),"#1a1a20")}g.add(PR.box(1.3,.25,.3,true),P([1.6,6,0],[0,0,-.9]),"#5a3a1a");
+ g.add(PR.box(.3,1.6,.2,true),P([-2.1,3.7,0],[0,0,.5]),"#5a3a1a");GN().add(PR.box(.8,.7,.06,true),P([0,3.3,.98]),"#3a2414");occ(x,z,4)}
+function labyrinth(x,z){const y=Y(x,z)-.1,g=GG(),HG="#3f7a3a",S=1.6;
+ const M=["#########","#.......#","#.#####.#","#.#...#.#","#.#.#.#.#","#...#.#.#","###.#.#.#","#...#...#","####.####"];
+ M.forEach((row,j)=>[...row].forEach((c,i)=>{if(c==="#")g.add(PR.box(S,1.5,S,true),T([x+(i-4)*S,y,z+(j-4)*S]),(i+j)%2?HG:"#468a40")}));
+ /* il Minotauro (simpatico) al centro */const mn=npc({top:"#8a5a3a",skin:"#8a5a3a",hair:"#3a2a1a",s:.9});npcAt(mn,x,z-1.6,0,"wave",2);GG().add(PR.cyl(0,.12,.5,6),T([x-.3,y+2.1,z-1.6],[0,0,.7]),"#f4ecd8");GG().add(PR.cyl(0,.12,.5,6),T([x+.3,y+2.1,z-1.6],[0,0,-.7]),"#f4ecd8");occ(x,z,8.5)}
+function owlStatue(x,z){const y=Y(x,z)-.1,g=GG(),M="#e8e0cc";g.add(PR.box(1.2,.4,1.2,true),T([x,y,z]),M);g.add(PR.cyl(.4,.45,3,14),T([x,y+.4,z]),M);g.add(PR.box(1.1,.3,1.1,true),T([x,y+3.4,z]),M);
+ g.add(PR.sphere(.55,14,10),T([x,y+4.2,z],0,[1,1.2,.9]),"#b8a888",{smooth:true});g.add(PR.sphere(.4,12,8),T([x,y+5,z],0,[1.1,.9,.9]),"#b8a888",{smooth:true});
+ for(const s of [-1,1]){GN().add(PR.sphere(.15,10,8),T([x+s*.17,y+5.05,z+.33]),"#ffd040");GN().add(PR.sphere(.07,8,6),T([x+s*.17,y+5.05,z+.45]),"#1a1a20");GG().add(PR.cyl(0,.1,.25,4),T([x+s*.25,y+5.35,z]),"#b8a888")}
+ GN().add(PR.cyl(0,.07,.18,4),T([x,y+4.92,z+.4],[TAU/4,0,0]),"#e8a030");occ(x,z,1.5)}
+function grFirst(){{const s=flatSpot([[-36,34],[-20,44],[0,46],[-44,20],[16,44]],13,1.6);if(s)grStadium(s[0],s[1])}
+ {const s=flatSpot([[-48,-30],[-46,-6],[18,-36],[-50,10],[20,48]],8.5,1.6);if(s)labyrinth(s[0],s[1])}}
+function grExtra(){{const s=flatSpot([[30,14],[28,26],[30,-4],[26,36]],4,1.2);if(s)trojanHorse(s[0],s[1],-TAU/4)}
+ {const s=flatSpot([[GR_AG[0]+9,GR_AG[1]+9],[GR_AG[0]-10,GR_AG[1]+10]],1.5,.8);if(s)owlStatue(s[0],s[1])}}
+{const b0=TH.greece.build;TH.greece.build=function(){try{grFirst()}catch(e){console.error("greece0",e)}b0.apply(this,arguments);try{grExtra()}catch(e){console.error("greece+",e)}}}
+
 /* ================= LE PIRAMIDI 3.0 — l'Egitto dei faraoni =================
    Il Nilo blu con le feluche a vela bianca, le rive verdi di papiri e palme da dattero, i campi coltivati; sull'altopiano di Giza
    le tre piramidi con la punta d'oro e la Sfinge; una quarta piramide in costruzione con la rampa, gli operai che trascinano
