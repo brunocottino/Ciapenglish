@@ -7605,7 +7605,7 @@ TH.cambodia.build=function(){_khBuild();
 const _seaH=TH.sea.terrain.h,_seaB=TH.sea.build;
 TH.sea.terrain.h=(x,z)=>_seaH(x,z)+bump(x,z,C.nodes,13,1.6)+bump(x,z,[[-46,8]],16,6);
 function pirate(o){return npc(Object.assign({skin:pick(NPC_SKIN),hair:pick(NPC_HAIR),top:pick(["#ffffff","#e5484d","#2a2a34"]),legs:pick(["#2a3a6a","#5a3a22"]),hat:"cap",hatC:pick(["#e5484d","#2a2a34","#ffd040"]),beard:rnd()<.5,belt:true},o||{}))}
-function cannon(x,z,rot,tx2,tz2){const y=C.H(x,z),g=GG(),m=T([x,y,z],[0,rot,0]),P=(p,r,s)=>M4.mul(m,T(p,r,s));g.add(PR.box(1.2,.5,1.6,true),P([0,.3,0]),"#6a3e1c");for(const s of [-1,1])for(const b of [-.5,.5])g.add(PR.cyl(.32,.32,.15,10),P([s*.65,.3,b],[0,0,TAU/4]),"#4a2a12");g.add(PR.cyl(.32,.4,2.2,12),P([0,.9,.2],[-1.35,0,0]),"#2a2a30");
+function cannon(x,z,rot,tx2,tz2,y0){const y=y0??C.H(x,z),g=GG(),m=T([x,y,z],[0,rot,0]),P=(p,r,s)=>M4.mul(m,T(p,r,s));g.add(PR.box(1.2,.5,1.6,true),P([0,.3,0]),"#6a3e1c");for(const s of [-1,1])for(const b of [-.5,.5])g.add(PR.cyl(.32,.32,.15,10),P([s*.65,.3,b],[0,0,TAU/4]),"#4a2a12");g.add(PR.cyl(.32,.4,2.2,12),P([0,.9,.2],[-1.35,0,0]),"#2a2a30");
  const mz=M4.pt(m,[0,1.1,1.4]);const sm=[];for(let i=0;i<6;i++){const s={t:tx("puff"),c:mz,w:1,h:1,a:0};C.sprites.push(s);sm.push(s)}const fl={t:tx("glow"),c:mz,w:2,h:2,a:0,tint:[1,.6,.2]};C.sprites.push(fl);
  const ball=new N3(part(PR.sphere(.25,8,6),"#1a1a1a"),{toon:1});C.dyn.push(ball);const sp=[];for(let i=0;i<8;i++){const s={t:tx("snow"),c:[tx2,0,tz2],w:.5,h:.5,a:0};C.sprites.push(s);sp.push(s)}
  C.upd.push(t=>{const c=t%7;fl.a=c<.15?1-c/.15:0;sm.forEach((s,i)=>{const k=c/2.2;s.c=[mz[0]+Math.sin(i)*k,mz[1]+k*2+i*.1,mz[2]+Math.cos(i)*k];s.w=s.h=1+k*3;s.a=c<2.2?(1-k)*.6:0});
@@ -7693,16 +7693,45 @@ function prPier(x0,z0,x1,z1,y){y=y??.55;const dx=x1-x0,dz=z1-z0,L=Math.hypot(dx,
  const nn=Math.round(L/3);for(let i=0;i<=nn;i++){const f=i/nn;for(const s of [-1.25,1.25]){const px=x0+dx*f+Math.sin(-a)*s*0,pz=z0+dz*f;const ox=Math.cos(a+TAU/4)*s,oz=-Math.sin(a+TAU/4)*s;g.add(PR.cyl(.16,.16,y+3.2,6),T([px+ox,-3,pz+oz]),"#6a3e1c")}}}
 function prCrates(x,z,n){const y=C.H(x,z)-.05;for(let i=0;i<n;i++){const s=.7+rnd()*.4;GG().add(PR.box(s,s,s,true),T([x+rr(-1.3,1.3),y+(i>3?.8:0),z+rr(-1.3,1.3)],[0,rnd(),0]),pick(["#b8864e","#a87840","#c89a5e"]))}
  barrels(x+1.8,z+1.2)}
-function prFort(x,z){const y=C.H(x,z)-.4,g=GG(),gn=GN(),R=8,ST="#a8a092",ST2="#8e877a";const N=14;
- for(let i=0;i<N;i++){const a=i/N*TAU,a2=(i+1)/N*TAU;if(i===9||i===10)continue;const px=x+Math.cos((a+a2)/2)*R,pz=z+Math.sin((a+a2)/2)*R,L=2*R*Math.sin(Math.PI/N)+.3;
-  g.add(PR.box(L,3.2,1.2,true),T([px,y,pz],[0,-(a+a2)/2+TAU/4,0]),i%2?ST:ST2);for(const k of [-1,1])gn.add(PR.box(.7,.7,1.25,true),T([px+Math.cos((a+a2)/2+TAU/4)*k*L*.3,y+3.2,pz+Math.sin((a+a2)/2+TAU/4)*k*L*.3],[0,-(a+a2)/2+TAU/4,0]),ST)}
- for(const a of [0,TAU/3,TAU*2/3]){const px=x+Math.cos(a+.3)*R,pz=z+Math.sin(a+.3)*R;g.add(PR.cyl(1.7,1.9,5,10),T([px,y,pz]),ST2);g.add(PR.cyl(2,2,.5,10),T([px,y+5,pz]),ST);g.add(PR.cyl(0,2.1,2,10),T([px,y+5.5,pz]),"#a8443a")}
- flagPole(x,z,"#15151c",7);occ(x,z,R+2)}
-function prSkullCave(x,z,rot){const y=C.H(x,z)-.6,m=T([x,y,z],[0,rot,0]),P=(p,r,s)=>M4.mul(m,T(p,r,s)),g=GG(),gn=GN(),RK="#c4bfb2",RK2="#a8a396";
- g.add(PR.sphere(1,20,14),P([0,3,0],0,[7,7.6,5.6]),RK);g.add(PR.sphere(1,16,10),P([0,1.2,2.6],0,[5.2,3,3.6]),RK2);
- for(const k of [-1,1]){gn.add(PR.sphere(1,12,8),P([k*2.3,5,4.7],0,[1.5,1.7,.7]),"#15131a");C.sprites.push({t:tx("glow"),c:M4.pt(m,[k*2.3,5,5.6]),w:1.6,h:1.6,a:.9,tint:[1,.4,.2]})}
- gn.add(PR.cyl(0,.8,1.4,3),P([0,3.3,5.2],[TAU/2,0,0]),"#15131a");gn.add(PR.sphere(1,14,8).filter(t=>t.some(q=>q[1]>-.1)),P([0,-.4,4.9],0,[2.4,2.6,1.2]),"#100e14");
- for(let i=-2;i<=2;i++)gn.add(PR.box(.6,.9,.4,true),P([i*.9,2,5.4]),"#f4f0e6");
+/* il forte: una vera fortezza coloniale dei Caraibi (tipo El Morro) — mura basse e spesse color arenaria, 4 bastioni a punta di diamante
+   con le garitte, cannoni sulle mura che guardano il mare, la caserma bianca sulla piazza d'armi e la bandiera nera */
+function prFort(x,z){const y=C.H(x,z)-.5,g=GG(),gn=GN(),SA="#dcc38c",SB="#c6a871",SC="#efdcae",H=3.2,hw=5.2,rot=.35;
+ const m=T([x,y,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc));
+ g.add(PR.box(hw*2,H,hw*2,true),m,SB);g.add(PR.box(hw*2+1.4,1.3,hw*2+1.4,true),P([0,-.3,0]),SB);
+ gn.add(PR.box(hw*2+.35,.28,hw*2+.35,true),P([0,H-.15,0]),SC);gn.add(PR.box(hw*2-.4,.08,hw*2-.4,true),P([0,H,0]),"#e9d7a6");
+ /* merli sulle cortine */
+ for(let f=0;f<4;f++){const a=f*TAU/4;for(let u=-hw+2.6;u<=hw-2.5;u+=1.25){const lx=Math.cos(a)*hw-Math.sin(a)*u,lz=Math.sin(a)*hw+Math.cos(a)*u;gn.add(PR.box(.75,.75,.55,true),P([lx,H,lz],[0,-a+TAU/4,0]),SA)}}
+ /* bastioni a diamante con garitta sulla punta */
+ for(const [sx,sz] of [[1,1],[1,-1],[-1,1],[-1,-1]]){const c=[sx*hw,0,sz*hw];g.add(PR.cyl(3.5,4.1,H,4),P(c,[0,TAU/8,0]),SA);gn.add(PR.cyl(3.62,3.62,.26,4),P([c[0],H-.13,c[2]],[0,TAU/8,0]),SC);
+  const V=[...Array(4)].map((_,k)=>{const an=TAU/8+k*TAU/4;return [c[0]+Math.cos(an)*3.4,c[2]+Math.sin(an)*3.4]});
+  for(let k=0;k<4;k++){const A=V[k],B=V[(k+1)%4],ang=Math.atan2(B[1]-A[1],B[0]-A[0]);for(const f of [.22,.5,.78]){const px=A[0]+(B[0]-A[0])*f,pz=A[1]+(B[1]-A[1])*f;if(Math.hypot(px,pz)<hw*1.05)continue;gn.add(PR.box(.85,.75,.5,true),P([px,H,pz],[0,-ang,0]),SA)}}
+  const tip=[c[0]+sx*2.15,c[2]+sz*2.15];g.add(PR.cyl(.48,.52,1.35,10),P([tip[0],H,tip[1]]),SC);gn.add(PR.sphere(.58,12,8).filter(t=>t.some(q=>q[1]>0)),P([tip[0],H+1.35,tip[1]],0,[1,.8,1]),SA);
+  gn.add(PR.cyl(0,.12,.35,6),P([tip[0],H+1.8,tip[1]]),SB);gn.add(PR.box(.36,.55,.08,true),P([tip[0]+sx*.36,H+.45,tip[1]+sz*.36],[0,Math.atan2(sx,sz),0]),"#2a2018")}
+ /* portone ad arco sul lato verso l'isola */
+ gn.add(PR.box(2.2,2.5,.3,true),P([0,.5,hw+.62]),"#5a3418");gn.add(PR.cyl(1.1,1.1,.32,14,true),P([0,3,hw+.62],[TAU/4,0,0]),"#5a3418");gn.add(PR.box(3,.4,.5,true),P([0,3.25,hw+.68]),SC);
+ /* piazza d'armi: caserma bianca con tetto in coppi, polveriera, palle di cannone */
+ g.add(PR.box(4.2,2,2.6,true),P([-.6,H,-1.6]),"#f4ecd8");g.add(PR.prism(4.6,.9,3),P([-.6,H+2,-1.6],[0,TAU/4,0]),"#c0583a");
+ for(let i=0;i<3;i++)gn.add(PR.box(.5,.9,.06,true),P([-2+i*1.4,H+.4,-.28]),i===1?"#5a3418":"#3a5a8a");
+ g.add(PR.box(1.6,1.4,1.6,true),P([2.4,H,1.8]),"#e2d2aa");g.add(PR.pyr(1.9,.8,1.9),P([2.4,H+1.4,1.8]),"#b0503a");
+ for(let i=0;i<6;i++)gn.add(PR.sphere(.22,8,6),P([1+(i%3)*.45,H+.22+(i>2?.36:0),3.2+(i>2?.2:0)]),"#1e1e24");
+ flagPole(...M4.pt(m,[.6,0,1]).filter((_,i)=>i!==1),"#15151c",6,y+H);occ(x,z,hw+5);
+ return {m,top:y+H}}
+function prSkullCave(x,z,rot){const y=C.H(x,z)-.6,m=T([x,y,z],[0,rot,0]),P=(p,r,s)=>M4.mul(m,T(p,r,s)),g=GG(),gn=GN(),BO="#e8dfc8",BO2="#d6caae",DK="#17141c",SM={smooth:true};
+ /* teschio di roccia levigata (superfici morbide, niente "pallone sfaccettato"): calotta, zigomi, mascella, la bocca è l'ingresso della grotta */
+ g.add(PR.sphere(1,26,18),P([0,5.4,-.4],0,[6,6.1,5.4]),BO,SM);
+ g.add(PR.sphere(1,22,14),P([0,3,1.8],0,[4.5,3.3,4]),BO2,SM);
+ for(const k of [-1,1]){g.add(PR.sphere(1,14,10),P([k*3.3,3.5,3.2],0,[1.5,1.15,1.6]),BO,SM);
+  /* orbite profonde: bordo in rilievo + fondo scuro */gn.add(PR.torus(1.4,.36,18,8),P([k*2.15,4.95,4.9],[TAU/4-.15,0,k*.12],[1,1,1.15]),BO);
+  gn.add(PR.sphere(1,16,10),P([k*2.15,4.95,4.75],0,[1.3,1.45,.5]),DK,SM);C.sprites.push({t:tx("glow"),c:M4.pt(m,[k*2.15,4.95,5.5]),w:1.5,h:1.5,a:.9,tint:[1,.4,.2]})}
+ /* naso a cuore rovesciato */for(const k of [-1,1])gn.add(PR.sphere(1,10,8),P([k*.32,3.55,5.62],[0,0,k*.35],[.36,.75,.3]),DK,SM);
+ /* denti superiori sopra l'ingresso e mandibola con i denti inferiori */
+ for(let i=-3;i<=3;i++){const a=i*.17;gn.add(PR.box(.7,1,.45,true),P([Math.sin(a)*4.3,1.55,1.8+Math.cos(a)*3.95]),i%2?"#f6f1e4":"#efe8d6")}
+ gn.add(PR.sphere(1,20,12).filter(t=>t.some(q=>q[1]>-.2)),P([0,-.5,5],0,[2.9,2.3,1.5]),"#0e0c12",SM);
+ g.add(PR.torus(3.9,.7,22,8).filter(t=>t.some(q=>q[2]>.2)),P([0,.15,1.8],0,[1,1,1]),BO2);
+ for(let i=-3;i<=3;i++){if(!i)continue;const a=i*.2;gn.add(PR.box(.55,.7,.4,true),P([Math.sin(a)*3.95,.55,1.8+Math.cos(a)*3.75]),"#f6f1e4")}
+ /* crepe, muschio e liane che scendono dalla calotta */
+ for(const [cx,cy,cz,r] of [[1.6,9.4,2.6,.3],[-2.4,8.6,3.4,-.5],[3.6,7.4,3.6,.9]])gn.add(PR.box(.12,1.6,.12,true),P([cx,cy,cz],[.5,0,r]),"#8a8068");
+ for(let i=0;i<9;i++){const a=i/9*TAU,rr2=2.2+(i%3)*1.1;g.add(PR.sphere(1,10,6).filter(t=>t.some(q=>q[1]>-.3)),P([Math.cos(a)*rr2,10.6-rr2*.42,-.4+Math.sin(a)*rr2],0,[1.5,.45,1.3]),i%2?"#4f9a3c":"#62b04a",SM)}
  const gold=new Geo();for(let i=0;i<16;i++)gold.add(PR.cyl(.16,.16,.05,8),P([rr(-1.4,1.4),.02+rr(0,.3),5+rr(0,1.2)],[rr(-.4,.4),0,rr(-.4,.4)]),"#ffd23f");C.items.push({m:R.mesh(gold),M:M4.id(),emis:.4});
  C.sprites.push({t:tx("glow"),c:M4.pt(m,[0,.6,5.2]),w:4,h:3,a:.55,tint:[1,.8,.3]});for(const k of [-1,1])prTorch(...M4.pt(m,[k*3.2,0,5.4]).filter((_,i)=>i!==1));occ(x,z,8)}
 function prTorch(x,z){const y=C.H(x,z);GG().add(PR.cyl(.08,.1,2,5),T([x,y,z]),"#5a3a22");const f={t:tx("glow"),c:[x,y+2.2,z],w:1.2,h:1.6,a:.9,tint:[1,.55,.15]};C.sprites.push(f);C.upd.push(t=>{f.w=1.1+Math.sin(t*13+x)*.15;f.a=.8+Math.sin(t*9+z)*.15})}
@@ -7756,8 +7785,9 @@ Object.assign(TH.sea,{env:sky("#3a98f0","#e0f4ff","#2a7ab8",{L:[.55,.72,.42],sun
   /* la Grotta del Teschio sull'altopiano */{const s=spot([[-16,-50],[-14,-53],[-19,-47],[4,-50]],8.5);prSkullCave(s[0],s[1],.55)}
   prXmark(PR_N[7][0]+3,PR_N[7][1]+4.5);
   /* il forte con i cannoni che sparano verso il mare, il faro sul capo */
-  {const s=spot([[-40,-44],[-41,-48],[-38,-40],[-36,-38]],10.5);prFort(s[0],s[1]);cannon(s[0]-6,s[1]+2,-TAU/4+.3,s[0]-40,s[1]+16);cannon(s[0]-3,s[1]+6,-TAU/4-.4,s[0]-34,s[1]+34);
-   const sol=pirate({top:"#2a2a34",hat:"cap",hatC:"#2a2a34"});npcWalk(sol,[[s[0]-4,s[1]-3],[s[0]+4,s[1]-3],[s[0]+4,s[1]+3],[s[0]-4,s[1]+3],[s[0]-4,s[1]-3]],1,1)}
+  {const s=spot([[-40,-44],[-41,-48],[-38,-40],[-36,-38]],10.5);const F=prFort(s[0],s[1]);const W=(lx,lz)=>{const q=M4.pt(F.m,[lx,0,lz]);return [q[0],q[2]]};
+   {const a=W(-6.2,-6.2),b=W(-6.2,6.2),c=W(-3.6,0);cannon(a[0],a[1],-TAU/4+.1,s[0]-40,s[1]+16,F.top);cannon(b[0],b[1],-TAU/4-.5,s[0]-34,s[1]+34,F.top);cannon(c[0],c[1],-TAU/4-.2,s[0]-42,s[1]+26,F.top)}
+   const sol=pirate({top:"#2a2a34",hat:"cap",hatC:"#2a2a34"});npcWalk(sol,[W(-3.6,-3.6),W(3.6,-3.6),W(3.6,3.6),W(-3.6,3.6),W(-3.6,-3.6)],1,1);C.upd.push(()=>{sol.p=[sol.p[0],F.top,sol.p[2]]})}
   lighthouse(-46,-57);
   /* molo nord con il galeone nero di Capitan Polpo */
   {const n=PR_N[9];prPier(n[0]+2,n[1]-3,n[0]+2,n[1]-14);const big=pirateShip({s:1.4,sail:"#2a2a34",band:"#e8303a"});big.p=[n[0]+9,0,n[1]-12];big.r=[0,0,0];C.dyn.push(big);occ(n[0]+9,n[1]-12,9);
