@@ -6127,12 +6127,41 @@ TH.brazil.build=function(){_brazilBuild();
 TH.brazilOld=TH.brazil;TH.peruOld=TH.peru;
 /* ---------- RIO ---------- */
 const SHORE=z=>50+Math.sin(z*.045+.6)*3.5;
-function cristo(x,y,z,rot){const m=T([x,y,z],[0,rot,0]);const P=(p,r,s)=>M4.mul(m,T(p,r,s));const g=GG(),W="#f2eee4",W2="#e2ddd0";
- /* piedistallo art déco a gradoni */g.add(PR.box(5,1,5,true),P([0,0,0]),"#d8d2c4");g.add(PR.box(3.8,1,3.8,true),P([0,1,0]),W2);g.add(PR.box(2.8,1.6,2.8,true),P([0,2,0]),W);for(let k=0;k<4;k++)GN().add(PR.box(2.9,.12,2.9,true),P([0,2.3+k*.35,0]),W2);
- /* veste che si allarga verso il basso, con le pieghe */g.add(PR.cyl(.85,1.15,5.2,18),P([0,3.6,0]),W);for(let k=0;k<6;k++){const a=k/6*TAU+.3;GN().add(PR.box(.1,4.8,.12,true),P([Math.cos(a)*1.02,3.7,Math.sin(a)*1.02],[0,-a,0]),W2)}
- g.add(PR.cyl(.95,.85,1.6,18),P([0,8.8,0]),W);g.add(PR.box(2.1,.5,1.3,true),P([0,9.9,0]),W);
- /* braccia aperte orizzontali con le maniche che scendono */for(const s of [-1,1]){g.add(PR.cyl(.32,.42,3.8,12),P([s*.9,10.1,0],[0,0,-s*TAU/4]),W);g.add(PR.box(3,1.1,.18,true),P([s*2.5,9.1,.05]),W2);g.add(PR.sphere(.28,10,8),P([s*4.85,10.12,0],0,[1,.8,.7]),W)}
- g.add(PR.cyl(.22,.25,.45,10),P([0,10.4,0]),W);g.add(PR.sphere(.55,16,12),P([0,11.25,0],0,[.9,1.1,.95]),W);g.add(PR.sphere(.58,14,10).filter(t=>t.some(q=>q[2]<.1&&q[1]>-.2)),P([0,11.35,-.08],0,[.95,1.05,.9]),W2)}
+/* bordo della mappa: la terra scende nel mare con una costa naturale (0 = entroterra, 1 = mare aperto) */
+function BR_EDGE(x,z){const nz=(fbm(x*.05+9,z*.05-4)-.5)*14;return Math.max(ss(54,72,-x+nz),ss(48,64,z-nz),ss(-72,-88,z+nz))}
+/* il Cristo Redentore 2.0: terrazza panoramica con la balaustra (il blocco scende sotto la roccia, niente vuoti sotto),
+   la cappella-piedistallo art déco, la tunica con le pieghe e la cintura, le braccia tese con le maniche che ricadono,
+   il cuore sul petto e la testa appena chinata */
+function cristo(x,y,z,rot){const m=T([x,y,z],[0,rot,0]);const P=(p,r,s)=>M4.mul(m,T(p,r,s));const g=GG(),gn=GN(),W="#f3efe4",W2="#e0dacb",ST="#c9c0aa",SM={smooth:true};
+ /* terrazza ottagonale e balaustra */
+ g.add(PR.cyl(6.3,7.2,6,8),P([0,-5,0],[0,TAU/16,0]),"#a89e88");gn.add(PR.cyl(6.15,6.15,.1,8),P([0,1,0],[0,TAU/16,0]),"#e9e2cf");
+ for(let k=0;k<8;k++){const a0=k/8*TAU,a1=(k+1)/8*TAU,R0=5.95,A=[Math.cos(a0)*R0,Math.sin(a0)*R0],B=[Math.cos(a1)*R0,Math.sin(a1)*R0],L=Math.hypot(B[0]-A[0],B[1]-A[1]),ang=-Math.atan2(B[1]-A[1],B[0]-A[0]);
+  if(k===1)continue;/* il varco della scala */
+  gn.add(PR.box(L,.14,.32,true),P([(A[0]+B[0])/2,1.75,(A[1]+B[1])/2],[0,ang,0]),W2);gn.add(PR.box(L,.12,.3,true),P([(A[0]+B[0])/2,1.08,(A[1]+B[1])/2],[0,ang,0]),W2);
+  for(let i=0;i<5;i++){const f=(i+.5)/5;gn.add(PR.cyl(.07,.1,.62,6),P([A[0]+(B[0]-A[0])*f,1.12,A[1]+(B[1]-A[1])*f]),W2)}}
+ /* cappella-piedistallo a gradoni */
+ g.add(PR.box(4,.6,4,true),P([0,1,0]),ST);g.add(PR.box(3.4,3.2,3.4,true),P([0,1.6,0]),W2);
+ for(const yy of [2.4,4.1])gn.add(PR.box(3.5,.14,3.5,true),P([0,yy,0]),"#f4f0e6");gn.add(PR.box(3.7,.35,3.7,true),P([0,4.8,0]),W);
+ gn.add(PR.box(1,1.5,.06,true),P([0,1.6,1.72]),"#6a5a48");gn.add(PR.cyl(.5,.5,.06,12,true),P([0,3.1,1.72],[TAU/4,0,0]),"#6a5a48");
+ g.add(PR.box(2.6,.7,2.6,true),P([0,5.15,0]),W2);
+ /* tunica: si allarga verso i piedi, pieghe verticali e cintura */
+ const y0=5.85;g.add(PR.cyl(1.02,1.3,5.6,26),P([0,y0,0]),W,SM);
+ for(let k=0;k<8;k++){const a=k/8*TAU+.2,r=1.1;gn.add(PR.cyl(.06,.12,4.6,6),P([Math.cos(a)*r,y0+.05,Math.sin(a)*r],[Math.sin(a)*.05,0,-Math.cos(a)*.05]),W2)}
+ gn.add(PR.cyl(1.08,1.08,.3,24),P([0,y0+4.4,0]),W2);
+ g.add(PR.cyl(1.05,1.02,2.2,24),P([0,y0+5.6,0]),W,SM);
+ g.add(PR.sphere(1,20,14),P([0,y0+7.75,0],0,[1.45,.5,.85]),W,SM);
+ /* braccia tese con le maniche che ricadono, mani aperte */
+ for(const s2 of [-1,1]){g.add(PR.cyl(.34,.5,4.6,16),P([s2*1,y0+7.75,0],[0,0,-s2*TAU/4]),W,SM);
+  const sl=[[s2*1.1,y0+7.6,0],[s2*4.5,y0+7.55,0],[s2*4.1,y0+6.85,0],[s2*1.25,y0+5.7,0]],sz=.08;const tri=[];const F=q=>[q[0],q[1],q[2]+sz],Bk=q=>[q[0],q[1],q[2]-sz];
+  tri.push([F(sl[0]),F(sl[1]),F(sl[2])],[F(sl[0]),F(sl[2]),F(sl[3])],[Bk(sl[0]),Bk(sl[2]),Bk(sl[1])],[Bk(sl[0]),Bk(sl[3]),Bk(sl[2])]);
+  for(let i=0;i<4;i++){const A=sl[i],B=sl[(i+1)%4];tri.push([F(A),Bk(A),Bk(B)],[F(A),Bk(B),F(B)])}g.add(tri,m,W,{fix:true});
+  g.add(PR.sphere(.36,12,10),P([s2*5.75,y0+7.75,0],0,[1.15,.75,.55]),W,SM);for(let k=0;k<4;k++)gn.add(PR.cyl(.06,.06,.42,5),P([s2*6.05,y0+7.6+k*.1-.1,(k-1.5)*.1],[0,0,-s2*TAU/4]),W)}
+ /* cuore sul petto, collo, testa con i capelli lunghi, leggermente chinata in avanti */
+ gn.add(PR.sphere(.22,10,8),P([0,y0+6.9,1.0],0,[1,1,.5]),"#e8d8b8");
+ g.add(PR.cyl(.3,.34,.6,12),P([0,y0+8.1,0]),W);
+ g.add(PR.sphere(.62,18,14),P([0,y0+9.15,.06],[.12,0,0],[.88,1.08,.95]),W,SM);g.add(PR.sphere(.66,16,12).filter(t=>t.some(q=>q[2]<.15)),P([0,y0+9.05,-.08],[.12,0,0],[.92,1.12,.9]),W2,SM);
+ gn.add(PR.sphere(1,12,8),P([0,y0+8.6,-.42],0,[.5,.55,.22]),W2,SM);
+ return {top:y+1.05}}
 function sugarDome(x,z,rx,h,rz){const g=new Geo();g.add(PR.sphere(1,26,18).filter(t=>t.some(q=>q[1]>-.05)),T([x,-3,z],0,[rx,h,rz]),t=>{const yy=(t[0][1]+t[1][1]+t[2][1])/3;const sideness=Math.abs(t[0][1]-t[2][1])+Math.abs(t[1][1]-t[0][1]);return yy>h*.86-3?"#4f9a46":(yy<1.5?"#5a7a4a":((Math.floor(yy*.7)+Math.floor((t[0][0]+t[0][2])*.4))%3===0?"#8a8a86":"#9c9a92"))},{smooth:true});
  for(let i=0;i<14;i++){const a=rnd()*TAU,r=rr(.3,.9);GS().add(PR.ico(rr(1,1.8),1),T([x+Math.cos(a)*rx*r*.5,-3+h*(.95-r*.25),z+Math.sin(a)*rz*r*.5]),"#3f8a3e")}
  C.items.push({m:R.mesh(g),M:M4.id(),toon:1,out:.05});return [x,-3+h,z]}
@@ -6160,12 +6189,20 @@ function hotel(x,z,h,c){const g=GG(),y=C.H(x,z)-.2;g.add(PR.box(6,h,5,true),T([x
 function postoSalvavidas(x,z,n){const y=C.H(x,z),g=GG();for(const a of [-1,1])for(const b of [-1,1])g.add(PR.box(.12,2.6,.12,true),T([x+a*.6,y,z+b*.6]),"#f4f0e6");g.add(PR.box(1.7,1.2,1.7,true),T([x,y+2.6,z]),"#ffffff");g.add(PR.box(1.72,.4,1.72,true),T([x,y+3.1,z]),"#e8303a");g.add(PR.pyr(2.2,.7,2.2),T([x,y+3.8,z]),"#ffd040");GN().add(PR.box(.9,.6,.04,true),T([x,y+3,z+.87]),"#2a7de1")}
 function niceUmbrella(x,z,cA,cB){const y=C.H(x,z);GG().add(PR.cyl(.05,.05,2.4,6),T([x,y,z],[.12,0,.06]),"#f4f0e6");const tris=[];for(let k=0;k<10;k++){const a0=k/10*TAU,a1=(k+1)/10*TAU;tris.push([[0,.55,0],[Math.cos(a0)*1.7,0,Math.sin(a0)*1.7],[Math.cos(a1)*1.7,0,Math.sin(a1)*1.7]])}
  const tr2=tris.map(t=>[t[0],t[2],t[1]]);let i=0;GG().add(tr2,T([x+.28,y+2.35,z+.15]),()=>i++%2?cA:cB,{fix:false});GN().add(PR.box(.9,.03,1.9,true),T([x+1.5,y+.04,z+.4],[0,.3,0]),cA);GN().add(PR.box(.9,.04,.25,true),T([x+1.3,y+.05,z+1.2],[0,.3,0]),"#ffffff")}
-TH.brazil={farSea:1,farIsl:1,env:sky("#2aa0f4","#d8f0ff","#f8e4a8",{L:[.45,.82,.35],fogN:140,fogF:420}),water:0,deep:"#0e6ab8",shallow:"#2ad0d8",road:["#fbf6ea","#2a2a34"],leaf:["#2f8a3e","#3f9a4a","#5ab85a"],
- terrain:{h:(x,z)=>{const sh=SHORE(z);let h=.45+hills(x,z,.6,.05)*ss(sh-14,sh-30,x);if(x>sh-10)h=.45-ss(sh-1,sh+12,x)*4;h+=cone(x,z,-50,-54,30,42,1.12)+cone(x,z,-62,20,26,18,1.2)+cone(x,z,-60,-14,20,12,1.2);return h},
-  col:(x,z,h,sl)=>{const sh=SHORE(z);if(x>sh-10)return h<-.2?"#e8d49a":"#f8e4b0";if(x>sh-13&&x<=sh-10)return "#efe6d6";if(x>sh-18&&x<=sh-13)return "#4e525c";if(sl>1.7)return "#8a8a80";return h>6?GRASS(x,z,h,0,["#3f8a3e","#4a9a44","#357a34"]):GRASS(x,z,h,0,["#7cc25a","#8ccc62","#a8d878"])}},
+TH.brazil={farSea:1,farIsl:0,env:sky("#2aa0f4","#d8f0ff","#f8e4a8",{L:[.45,.82,.35],fogN:140,fogF:420}),water:0,deep:"#0e6ab8",shallow:"#2ad0d8",road:["#fbf6ea","#2a2a34"],leaf:["#2f8a3e","#3f9a4a","#5ab85a"],
+ terrain:{h:(x,z)=>{const sh=SHORE(z);
+  /* la città sta ben sopra il mare (prima era a 0.45 e le onde la allagavano); la spiaggia scende dolce fino all'acqua */
+  let h=1.25+hills(x,z,.6,.05)*ss(sh-14,sh-30,x);if(x>sh-10)h=1.25-ss(sh-10,sh+1,x)*1.05-ss(sh-1,sh+12,x)*4;
+  /* ai bordi della mappa la pianura scende dolce nel mare (prima finiva con un gradino netto, come una lastra tagliata) */
+  h-=BR_EDGE(x,z)*(h+7)
+  /* Corcovado: la vetta è un pianoro di roccia per la terrazza del Cristo */
+  {const d=Math.hypot(x+50,z+54);let c=cone(x,z,-50,-54,30,42,1.12);const CT=Math.pow(.8,1.12)*42;if(d<9)c+=(CT-c)*ss(9,6,d);h+=c}
+  h+=cone(x,z,-62,20,26,18,1.2)+cone(x,z,-60,-14,20,12,1.2);return h},
+  col:(x,z,h,sl)=>{const sh=SHORE(z);if(h<-1.6)return h<-4?"#1a64b0":"#3a9ac8";if(h<1.15&&x<=sh-10&&BR_EDGE(x,z)>.04)return h<.2?"#d8c08a":"#efdca8";if(x>sh-10)return h<-.2?"#e8d49a":"#f8e4b0";if(x>sh-13&&x<=sh-10)return "#efe6d6";if(x>sh-18&&x<=sh-13)return "#4e525c";if(sl>1.7||(h>28&&sl>.9))return h>20?"#8f8b84":"#8a8a80";if(Math.hypot(x+50,z+54)<6.5&&h>30)return "#9a948a";return h>6?GRASS(x,z,h,0,["#3f8a3e","#4a9a44","#357a34"]):GRASS(x,z,h,0,["#7cc25a","#8ccc62","#a8d878"])}},
  build(){const n=C.nodes;
   /* Corcovado con il Cristo Redentore e il trenino a cremagliera che sale */
-  const ct=[-50,-54];const cy=C.H(ct[0],ct[1]);cristo(ct[0],cy-.3,ct[1],.55);occ(ct[0],ct[1],8);
+  const ct=[-50,-54];const cy=C.H(ct[0],ct[1]);const CR=cristo(ct[0],cy-.05,ct[1],.55);occ(ct[0],ct[1],8);
+  /* turisti sulla terrazza */for(let i=0;i<3;i++){const a=.55+1.2+i*.9,k=townsfolk(i+2);k.s=[.6,.6,.6];npcAt(k,ct[0]+Math.sin(a)*4,ct[1]+Math.cos(a)*4,a+Math.PI,i===1?"wave":"idle",0);k.p[1]=CR.top}
   {const pts=[];for(let i=0;i<=28;i++){const t=i/28,a=1.2+t*3.2,r=24-t*17;const x=ct[0]+Math.cos(a)*r,z=ct[1]+Math.sin(a)*r;pts.push([x,C.H(x,z)+.15,z])}rackTrain(pts)}
   for(let i=0;i<160;i++){const a=rnd()*TAU,r=rr(6,28),x=ct[0]+Math.cos(a)*r,z=ct[1]+Math.sin(a)*r;if(C.H(x,z)>3&&C.occ.every(o=>Math.hypot(x-o[0],z-o[1])>o[2])&&Math.abs(x)<64&&z>-80)tree(x,z,rr(1.1,1.6),i%4?"round":"palm")}
   /* Pan di Zucchero e Urca nel mare, con la funivia a bolle */
@@ -7620,7 +7657,7 @@ TH.france.build=function(){_franceBuildV57();
  set("rome",[[2,24,46]]);
  set("sicily",[[0,-2,37]]);
  /* Grecia: niente pozzanghere sul sentiero (solo il mare) */const gh=TH.greece.terrain.h;TH.greece.terrain.h=(x,z)=>{const h=gh(x,z);const sea=ss(30,50,x+Math.sin(z*.08)*5);return sea>.02?h:Math.max(h,.25)};
- /* Brasile: niente pozzanghere nell'entroterra (restano il mare e la laguna) */const bh=TH.brazil.terrain.h;TH.brazil.terrain.h=(x,z)=>{const h=bh(x,z);return x<SHORE(z)-12?Math.max(h,.3):h};
+ /* Brasile: niente pozzanghere nell'entroterra (restano il mare e la laguna) */const bh=TH.brazil.terrain.h;TH.brazil.terrain.h=(x,z)=>{const h=bh(x,z);return x<SHORE(z)-12&&BR_EDGE(x,z)<.02?Math.max(h,.3):h};
 })();
 
 /* ================= CAMBOGIA 2.0 — Angkor viva =================
