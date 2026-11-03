@@ -7473,26 +7473,84 @@ Object.assign(TH.greece,{terrain:{h:grRaw,col:grCol},keep:(x,z)=>grAcD(x,z)<19,
 /* ---------- CINA: montagne carsiche nella foschia, porte pailou sul sentiero, villaggio, risaie, aquiloni ---------- */
 /* montagne carsiche (come a Guilin): torri di roccia alte e strette, pareti verticali con le striature,
    cima tondeggiante coperta di bosco e ciuffi verdi sulle cenge; fasce di nebbia tra le torri */
-function chKarstTower(g,x,z,R,H,seed){const NU=26,NV=22,V=[];const y0=-6;
- /* profilo: base larga che sale ripida, una "vita" più stretta, spalla e cupola; ogni torre ha cenge e sporgenze sue */
- const prof=t=>{const neck=1-.16*Math.exp(-(((t-.5-Math.sin(seed)*.12)/.16)**2));let r=t<.08?1.25-t*3:t<.74?(1.01-t*.28)*neck:.8*Math.sqrt(Math.max(0,1-((t-.74)/.26)**2));
-  return r*(1+.08*Math.sin(t*19+seed*3))};
- for(let j=0;j<=NV;j++){const t=j/NV;V[j]=[];for(let i=0;i<=NU;i++){const a=i/NU*TAU;
-  let r=R*prof(t)*(1+(fbm(Math.cos(a)*1.3+seed,Math.sin(a)*1.3+t*2.2)-.5)*.5);if(j===NV)r=0;
-  const lean=t*t*R*.25;V[j][i]=[x+Math.cos(a)*r+Math.cos(seed)*lean,y0+H*t,z+Math.sin(a)*r+Math.sin(seed)*lean]}}
- const tris=[];for(let j=0;j<NV;j++)for(let i=0;i<NU;i++){const a=V[j][i],b=V[j][i+1],c=V[j+1][i+1],d=V[j+1][i];tris.push([a,c,b],[a,d,c])}
- const col=t=>{const c=[(t[0][0]+t[1][0]+t[2][0])/3,(t[0][1]+t[1][1]+t[2][1])/3,(t[0][2]+t[1][2]+t[2][2])/3],h=(c[1]-y0)/H,ang=Math.atan2(c[2]-z,c[0]-x);
-  const n=V3.norm(V3.cross(V3.sub(t[1],t[0]),V3.sub(t[2],t[0]))),flat=Math.abs(n[1]);
-  const veg=h>.72-fbm(ang*2+seed,1)*.12||flat>.6||h<.06||fbm(ang*1.6+seed,h*2.2)>.72;
-  if(veg)return fbm(c[0]*.12,c[2]*.12+c[1]*.08)>.5?"#4a8a48":"#3f7a40";
-  const st=fbm(ang*1.2+seed,h*2.4)+Math.sin(h*26+fbm(ang,seed)*3)*.06;return st>.62?"#8e8a7c":st>.5?"#a29d8f":st>.38?"#b1ab9b":"#9a9588"};
- g.add(tris,null,col,{smooth:true})}
+/* ---- montagne di arenaria (Zhangjiajie, Hunan): pilastri altissimi e sottili a pareti verticali, strati orizzontali,
+   pini aggrappati in cima e sulle cenge, nebbia fitta alla base: sembrano sospesi tra le nuvole ---- */
+function chPine(g,x,y,z,s){g.add(PR.cyl(.12*s,.16*s,1.2*s,5),T([x,y,z]),"#5a4030");
+ for(let k=0;k<3;k++)g.add(PR.cyl(0,(1.05-k*.25)*s,1.1*s,7),T([x,y+(.8+k*.62)*s,z],[0,k,0]),k%2?"#2f6a3a":"#3a7a42")}
+function chPillar(g,x,z,R,H,seed){
+ /* sezione squadrata e irregolare (arenaria quarzitica che si spacca a blocchi), pareti piatte e verticali;
+   ogni 3-5 metri un "gradino" dove il blocco rientra o sporge: lì crescono i pini e il muschio */
+ const NS=6+((seed*3)|0)%3,base=[...Array(NS)].map((_,i)=>{const a=i/NS*TAU+seed+(fbm(i,seed)-.5)*.5;return [Math.cos(a),Math.sin(a),.75+fbm(i*1.3+seed,2)*.5]});
+ const y0=-10,BL=[];let y=y0,sc=1.25,k=0,ox=0,oz=0;while(y<y0+H){const hh=3+fbm(seed+k,5)*5;BL.push([y,Math.min(y0+H,y+hh),sc,ox,oz]);y+=hh;sc=k<1?1:sc*(.84+fbm(seed,k*.7)*.24);sc=Math.max(.55,Math.min(1.05,sc));ox+=(fbm(k,seed)-.5)*.25*R;oz+=(fbm(seed,k+9)-.5)*.25*R;k++}
+ const ROCK=["#b9a98c","#a99a7c","#c6b79a","#9d8e72"];const tris=[],cols=[];
+ const ring=(yy,s2,ox,oz)=>base.map(([c,sn,r])=>[x+(ox||0)+c*r*R*s2,yy,z+(oz||0)+sn*r*R*s2]);
+ BL.forEach(([ya,yb,s2,ox,oz],bi)=>{const lo=ring(ya,s2,ox,oz),hi=ring(yb,s2,ox,oz);
+  for(let i=0;i<NS;i++){const A=lo[i],B=lo[(i+1)%NS],C2=hi[(i+1)%NS],D=hi[i];const tone=ROCK[(i+bi*2+((seed*5)|0))%4];
+   /* colatura scura sotto la cengia, muschio sul primo blocco */const c=bi===0?"#5f8a50":fbm(i*2+seed,bi*.8)>.64?"#7f735f":tone;tris.push([A,C2,B],[A,D,C2]);cols.push(c,c)}
+  /* il tetto del blocco (la cengia) se il blocco sopra è più stretto */const nx=BL[bi+1];if(nx){const up=ring(yb,s2,ox,oz),inn=ring(yb,Math.min(nx[2],s2)*.98,nx[3],nx[4]);for(let i=0;i<NS;i++){const A=up[i],B=up[(i+1)%NS],C2=inn[(i+1)%NS],D=inn[i];tris.push([A,B,C2],[A,C2,D]);cols.push("#4f7f46","#4f7f46")}
+   for(let q=0;q<3;q++){const i=((seed*7+bi*3+q*2)|0)%NS,p=up[i],px=(p[0]*3+x+ox)/4,pz=(p[2]*3+z+oz)/4;if(q<2)chPine(g,px,yb,pz,.9+q*.35);else g.add(PR.sphere(.9,8,6),T([px,yb+.2,pz],0,[1.3,.6,1.3]),"#4a7a42")}}});
+ g.add(tris,null,(()=>{let j=0;return()=>cols[j++]})(),{fix:true});
+ /* cima: cupola di bosco fitto */const top=BL[BL.length-1],tr=ring(top[1],top[2],top[3],top[4]),ct=[x+top[3],top[1]+R*.25,z+top[4]];const cap=[];for(let i=0;i<NS;i++)cap.push([ct,tr[(i+1)%NS],tr[i]]);g.add(cap,null,"#3f7440");
+ const n=Math.max(4,Math.round(R*1.6));for(let q=0;q<n;q++){const a=q/n*TAU+seed,r=R*top[2]*(q%3?.6:.25);chPine(g,x+top[3]+Math.cos(a)*r,top[1]+R*.18*(1-r/R),z+top[4]+Math.sin(a)*r,1.4+((q*7+seed*3)%3)*.45)}}
 function chKarst(){const g=new Geo();
- for(let i=0;i<30;i++){const a=i/30*TAU+rr(-.07,.07);/* dietro la Grande Muraglia restano le montagne lontane: le torri stanno ai lati e davanti */
-  if(Math.sin(a)<-.55)continue;const r=rr(80,124),x=Math.cos(a)*r,z=Math.sin(a)*r-6;chKarstTower(g,x,z,rr(8,13),rr(30,54),i*1.7)}
- for(let i=0;i<12;i++){const a=i/12*TAU+.2,r=rr(132,160);if(Math.sin(a)<-.45)continue;chKarstTower(g,Math.cos(a)*r,Math.sin(a)*r-6,rr(10,15),rr(40,62),i*2.3+9)}
- C.items.push({m:R.mesh(g),M:M4.id(),out:.04,noShadow:1});
- /* fasce di nebbia tra le montagne */for(let i=0;i<12;i++){const a=i/12*TAU,r=100;C.sprites.push({t:tx("puff"),c:[Math.cos(a)*r,8,Math.sin(a)*r-6],w:64,h:12,a:.32,tint:[1,1,1]})}}
+ /* gruppi di pilastri: vicini e alti ai lati, una foresta di pilastri dietro la Grande Muraglia, sempre fuori dall'area di gioco */
+ const groups=[[-100,-30,8],[-104,26,7],[100,-34,8],[106,22,7],[-60,-122,11],[10,-132,11],[70,-116,10],[-122,-80,7],[128,-76,7],[-74,100,6],[78,102,6]];
+ let sd=1;for(const [gx,gz,n] of groups){for(let k=0;k<n;k++){sd+=1.37;const a=sd*2.4,r=4+(k/n)*16;const x=gx+Math.cos(a)*r,z=gz+Math.sin(a)*r*.8;
+  if(Math.abs(x)<72&&z>-88&&z<66)continue;const R=2.6+fbm(sd,1)*3,H=44+fbm(sd,3)*46*(Math.hypot(x,z)>110?1.15:1);chPillar(g,x,z,R,H,sd)}}
+ C.items.push({m:R.mesh(g),M:M4.id(),out:.035,noShadow:1});
+ /* nebbia alla base, a più quote: i pilastri escono dalle nuvole */
+ for(const [gx,gz] of groups)for(let k=0;k<3;k++)C.sprites.push({t:tx("puff"),c:[gx+(k-1)*12,4+k*7,gz+(k%2)*6],w:56,h:14,a:.42-k*.08,tint:[1,1,1]});
+ for(let i=0;i<14;i++){const a=i/14*TAU,r=108;C.sprites.push({t:tx("puff"),c:[Math.cos(a)*r,9,Math.sin(a)*r-6],w:70,h:12,a:.3,tint:[1,1,1]})}}
+/* ---- l'esercito di terracotta (Xi'an): la fossa con le file di guerrieri e i cavalli ---- */
+function chTerracotta(x,z,rot){const y=Y(x,z)-.05,m=T([x,y,z],[0,rot,0],[1.7,1.7,1.7]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),gn=GN(),E="#9a7a58",E2="#b08a64",TC="#a8805e",TC2="#8e6a4c";
+ const W=8,D=5.5,dp=0;
+ /* fossa: pavimento ribassato, pareti di terra, i muretti divisori tra le file */
+ g.add(PR.box(W*2,.3,D*2,true),P([0,-dp,0]),"#8a6e50");for(const sd of [-1,1]){g.add(PR.box(W*2+1.6,1.6,.8,true),P([0,-.4,sd*(D+.4)]),E);g.add(PR.box(.8,1.6,D*2,true),P([sd*(W+.4),-.4,0]),E)}
+ for(let r=0;r<3;r++)gn.add(PR.box(W*2-.4,.7,.5,true),P([0,-dp+.3,-D+2.75+r*2.75]),E2);
+ /* ringhiera dei visitatori */for(const sd of [-1,1]){gn.add(PR.box(W*2+1.6,.1,.1,true),P([0,2,sd*(D+.75)]),"#5a5a62");for(let i=0;i<=8;i++)gn.add(PR.box(.08,.9,.08,true),P([-W-.8+i*(W*2+1.6)/8,1.15,sd*(D+.75)]),"#5a5a62")}
+ /* guerrieri in fila */for(let r=0;r<4;r++)for(let c=0;c<9;c++){const lx=-W+1.1+c*1.75,lz=-D+1.3+r*2.75,b=-dp+.15,h=(r*9+c)%5;
+  if(r===0&&c>5){/* cavalli e carro */g.add(PR.box(.5,.55,1.3,true),P([lx,b+.65,lz]),TC2);g.add(PR.box(.22,.6,.38,true),P([lx,b+1.1,lz+.65],[-.4,0,0]),TC2);for(const sx of [-.18,.18])for(const sz of [-.45,.45])g.add(PR.box(.12,.65,.12,true),P([lx+sx,b,lz+sz]),TC2);continue}
+  g.add(PR.cyl(.2,.26,.55,8),P([lx,b,lz]),TC2);g.add(PR.cyl(.25,.22,.6,8),P([lx,b+.55,lz]),h%2?TC:"#9c785a");gn.add(PR.box(.52,.42,.32,true),P([lx,b+.62,lz]),"#8a6448");
+  g.add(PR.sphere(.17,8,6),P([lx,b+1.32,lz]),TC);gn.add(PR.sphere(.08,6,4),P([lx+.06,b+1.5,lz-.02]),TC2);
+  for(const sd of [-1,1])gn.add(PR.cyl(.06,.07,.5,6),P([lx+sd*.29,b+.65,lz+.06],[.3,0,0]),TC);if(h===1)gn.add(PR.cyl(.025,.025,1.8,4),P([lx+.3,b+.3,lz+.15]),"#6a4a2a")}
+ /* tettoia e cartello */for(const sd of [-1,1])g.add(PR.box(.3,3.4,.3,true),P([sd*(W+1.6),0,-D-1]),"#7a7a82");g.add(PR.box(W*2+3.6,.25,1.2,true),P([0,3.4,-D-1]),"#9a9aa2");
+ prSignCh(...M4.pt(m,[W+1.6,0,D+1.6]).filter((_,i)=>i!==1),rot,"兵马俑");occ(x,z,Math.hypot(W,D)*1.7+1.5)}
+function prSignCh(x,z,rot,t){const y=Y(x,z);GG().add(PR.cyl(.07,.07,1.8,6),T([x,y,z]),"#5a3a22");GG().add(PR.box(1.4,.7,.1,true),T([x,y+1.4,z],[0,rot,0]),"#c4283a");GN().add(PR.box(1.1,.45,.11,true),T([x,y+1.52,z],[0,rot,0]),"#e8c040")}
+/* ---- la piantagione di tè sulle colline: file di cespugli lungo le curve di livello, raccoglitrici col cappello di paglia ---- */
+function chTea(x,z){const g=GS();let n=0;for(let r=0;r<7;r++){for(let i=-7;i<=7;i++){const px=x+i*1.15+Math.sin(r*.9)*.8,pz=z+r*1.9+Math.sin(i*.35+r)*.5;if(nearPath(px,pz)[0]<2.6)continue;const y=Y(px,pz);
+   g.add(PR.sphere(.62,10,7).filter(t=>t.some(q=>q[1]>-.05)),T([px,y-.05,pz],0,[1.15,.75,.95]),(i+r)%3?"#4a9a42":"#58aa4c",{smooth:true});n++}}
+ for(let k=0;k<3;k++){const px=x-4+k*4,pz=z+1+k*3.8;const w=npc({top:["#c4283a","#2a6aa8","#e8a030"][k],hat:"straw",hatC:"#e8cc80",skin:"#f2d0a8",hair:"#1a1a20",dress:true});npcAt(w,px,pz+.95,Math.PI*.9,"hands",k);
+  const bk=new Geo();bk.add(PR.cyl(.26,.2,.42,10),T([0,0,0]),"#c8a060");const bn=new N3(R.mesh(bk),{toon:1,out:.02,p:[0,.75,-.32]});w.body.add(bn)}
+ occ(x,z+6,9)}
+/* ---- la danza del drago: un lungo drago portato sui bastoni che serpeggia in piazza ---- */
+function chDragonDance(cx,cz){const N=11,segs=[],men=[];
+ for(let i=0;i<N;i++){const g=new Geo();if(i===0){g.add(PR.box(1,.8,1.3,true),T([0,-.4,0]),"#e8302a");g.add(PR.box(1.05,.25,.6,true),T([0,.25,.5]),"#ffd040");for(const sd of [-1,1]){g.add(PR.sphere(.16,8,6),T([sd*.35,.2,.55]),"#ffffff");g.add(PR.cyl(0,.12,.6,5),T([sd*.3,.4,-.1],[-.6,0,sd*.3]),"#ffd040")}g.add(PR.box(.7,.12,.5,true),T([0,-.5,.7]),"#ffffff")}
+  else{g.add(PR.sphere(.5,12,8),T([0,0,0],0,[1,1,1.4]),i%2?"#e8302a":"#ffd040",{smooth:true});g.add(PR.cyl(0,.18,.4,4),T([0,.45,0]),"#ffd040")}
+  const sg=new N3(R.mesh(g),{toon:1,out:.03});C.dyn.push(sg);segs.push(sg);
+  if(i%2===0||i===0){const p=npc({top:i%4?"#ffd040":"#e8302a",legs:"#c4283a",skin:"#f2d0a8",hair:"#1a1a20",s:.8});C.dyn.push(p);men.push([p,i])}}
+ const path=t=>[cx+Math.sin(t)*6.5,cz+Math.sin(t*2)*3.2];
+ C.upd.push(t=>{const T0=t*.45;segs.forEach((sg,i)=>{const u=T0-i*.16,[x,z]=path(u),[x2,z2]=path(u+.02),y=Y(x,z)+2.1+Math.sin(t*5-i*.7)*.35;sg.p=[x,y,z];sg.r=[0,Math.atan2(x2-x,z2-z),0]});
+  men.forEach(([p,i])=>{const u=T0-i*.16,[x,z]=path(u),[x2,z2]=path(u+.02);p.p=[x,Y(x,z),z];p.r=[0,Math.atan2(x2-x,z2-z),0];npcPose(p,"wave",t*1.6,i)})});
+ occ(cx,cz,8)}
+/* ---- il giardino della luna: muro bianco con la porta rotonda, tetto di tegole, salici, rocce e carpe koi nello stagno ---- */
+function chMoonGarden(px,pz){const r=7.2,a0=.5,wx=px+Math.cos(a0)*(r+2.5),wz=pz+Math.sin(a0)*(r+2.5),rot=a0+Math.PI/2,m=T([wx,Y(wx,wz)-.1,wz],[0,-rot,0]),P=(p,rr2,sc)=>M4.mul(m,T(p,rr2,sc)),g=GG(),gn=GN();
+ const R0=1.4,HS=1.7,TK=.25,cy=1.75;g.add(PR.box(6-HS,3.5,TK*2,true),P([-(6+HS)/2,0,0]),"#f6f2ea");g.add(PR.box(6-HS,3.5,TK*2,true),P([(6+HS)/2,0,0]),"#f6f2ea");
+ {const NQ=48,tri=[],inner=[];for(let i=0;i<NQ;i++){const a0=i/NQ*TAU+TAU/8,a1=(i+1)/NQ*TAU+TAU/8;const ray=a=>{const c=Math.cos(a),s2=Math.sin(a),k=HS/Math.max(Math.abs(c),Math.abs(s2));return [c*k,cy+s2*k]};
+   const c0=[Math.cos(a0)*R0,cy+Math.sin(a0)*R0],c1=[Math.cos(a1)*R0,cy+Math.sin(a1)*R0],r0=ray(a0),r1=ray(a1);
+   for(const zz of [TK,-TK]){const q=p=>[p[0],p[1],zz];tri.push(zz>0?[q(c0),q(r0),q(r1)]:[q(c0),q(r1),q(r0)],zz>0?[q(c0),q(r1),q(c1)]:[q(c0),q(c1),q(r1)])}
+   inner.push([[c0[0],c0[1],TK],[c1[0],c1[1],TK],[c1[0],c1[1],-TK]],[[c0[0],c0[1],TK],[c1[0],c1[1],-TK],[c0[0],c0[1],-TK]])}
+  g.add(tri,m,"#f6f2ea",{fix:false});g.add(inner,m,"#e6e0d2",{fix:false})}
+ gn.add(PR.torus(R0+.05,.12,36,6),P([0,cy,0],[TAU/4,0,0]),"#6a6a72");g.add(PR.prism(1.3,.8,12.6),P([0,3.4,0],[0,TAU/4,0]),"#3a4450");gn.add(PR.box(12.4,.14,.62,true),P([0,3.3,0]),"#e8e4da");
+ /* koi */for(let i=0;i<5;i++){const fg=new Geo();fg.add(PR.sphere(.22,8,6),T([0,0,0],0,[.6,.4,1.4]),i%2?"#ff7a2a":"#ffffff");fg.add(PR.cyl(0,.18,.3,4),T([0,0,-.35],[TAU/4,0,0]),i%2?"#ff7a2a":"#e8302a");const f=new N3(R.mesh(fg),{toon:1});C.dyn.push(f);
+  C.upd.push(t=>{const a=t*(.3+i*.05)+i*1.3,rr2=2.5+i*.6;f.p=[px+Math.cos(a)*rr2,(C.th.water??0)-.25,pz+Math.sin(a)*rr2];f.r=[0,-a,0]})}
+ /* zattera di bambù col pescatore e i cormorani (come sul fiume Li) */{const rg=new Geo();for(let k=0;k<6;k++)rg.add(PR.cyl(.12,.12,3.4,6),T([-.65+k*.26,0,-1.7],[TAU/4,0,0]),"#c8b060");rg.add(PR.cyl(.03,.03,2,4),T([.5,0,.9]),"#6a4a2a");
+  const raft=new N3(R.mesh(rg),{toon:1,out:.02});C.dyn.push(raft);const fm=npc({top:"#3a5a7a",hat:"straw",hatC:"#e8cc80",skin:"#e8c098",hair:"#1a1a20",s:.8,beard:true});raft.add(fm);
+  for(const sd of [-1,1]){const cg=new Geo();cg.add(PR.sphere(.18,8,6),T([0,0,0],0,[1,1,1.5]),"#1a1a24");cg.add(PR.sphere(.1,6,4),T([0,.2,.2]),"#1a1a24");cg.add(PR.cyl(0,.04,.18,4),T([0,.2,.3],[TAU/4,0,0]),"#e8b030");raft.add(new N3(R.mesh(cg),{toon:1,p:[sd*.5,.25,-1.2]}))}
+  const rp=M4.pt(T([px,0,pz],[0,.4,0]),[1.2,0,3.6]);C.upd.push(t=>{raft.p=[rp[0]+Math.sin(t*.2)*.8,(C.th.water??0)+.05+Math.sin(t*1.4)*.04,rp[2]];raft.r=[0,.4+Math.PI/2+Math.sin(t*.15)*.2,Math.sin(t*1.1)*.03]})}
+ occ(wx,wz,5)}
+/* ---- lanterne volanti che salgono al tramonto ---- */
+function chSkyLanterns(){for(let i=0;i<22;i++){const x0=rr(-50,50),z0=rr(-40,50),sp=rr(.5,.9),ph=rr(0,30);const s={t:tx("glow"),c:[x0,0,z0],w:1.3,h:1.6,a:.85,tint:[1,.6,.25]};C.sprites.push(s);
+  C.upd.push(t=>{const k=((t*sp+ph)%40);s.c=[x0+Math.sin(t*.3+i)*2,6+k*1.2,z0+Math.cos(t*.25+i)*2];s.a=k>32?.85*(40-k)/8:.85})}}
 /* porta pailou che scavalca il sentiero: l'arco centrale è più largo della strada (i pilastri stanno sui bordi, mai sul passaggio) */
 function chGate(x,z,rot){const m=T([x,0,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),gn=GN(),RED="#c4283a",GO="#e8c040",GRN="#2a6a5a";
  const IN=2.75,OUT=4.75,base=Math.max(...[-OUT,-IN,IN,OUT].map(s=>{const q=M4.pt(m,[s,0,0]);return Y(q[0],q[2])}))-.15;
@@ -7521,6 +7579,9 @@ function chPaddies(x,z){const y0=Y(x,z),g=GN();for(let i=0;i<4;i++){const w=9-i*
   g.add(PR.box(w*2-.5,.06,d*2-.5,true),T([x,yy+.56,z]),"#8fc8c0");for(let k=0;k<Math.floor(w*1.6);k++)for(let j=0;j<3;j++)g.add(PR.cyl(0,.09,.45,3),T([x-w+.6+k*(2*w-1.2)/(Math.floor(w*1.6)-1||1),yy+.6,z-d+.6+j*(2*d-1.2)/2]),"#5ab04a")}
  /* contadina col cappello di paglia */const n=npc({top:"#3a6aa8",hat:"straw",hatC:"#e8c878",skin:"#f2d0a8"});npcAt(n,x+2,z,0,"idle",1);occ(x,z,10)}
 function chExtra(){chKarst();
+ /* la Cina non è solo l'impero Ming: l'esercito di terracotta, il tè, la danza del drago, il giardino con la porta della luna, le lanterne */
+ {const S2=C.chSpots||{};if(S2.tc)chTerracotta(S2.tc[0],S2.tc[1],0);if(S2.tea)chTea(S2.tea[0],S2.tea[1]);if(S2.dd)chDragonDance(S2.dd[0],S2.dd[1])}
+ chMoonGarden(-40,2);chSkyLanterns();
  /* porte pailou sopra il sentiero: solo dove la strada è dritta, lontano dalle tappe e dalle altre anse del sentiero */
  {const P=C.pts,placed=[];if(P&&P.length>40)for(const f0 of [.2,.5,.78])for(let dk=0;dk<60;dk++){const i=Math.floor(P.length*f0)+(dk%2?1:-1)*Math.ceil(dk/2)*2;if(i<8||i>P.length-9)continue;
   const [x,z]=P[i],a=P[i+6],b=P[i-6],c=P[i+3],d=P[i-3];const t1=Math.atan2(a[1]-c[1],a[0]-c[0]),t2=Math.atan2(d[1]-b[1],d[0]-b[0]);if(Math.abs(Math.atan2(Math.sin(t1-t2),Math.cos(t1-t2)))>.12)continue;
@@ -7533,7 +7594,12 @@ function chExtra(){chKarst();
  /* bambini con gli aquiloni */[["#e8302a",0],["#ffd040",1.7],["#2a8ae8",3.1]].forEach(([c,ph],i)=>{const s=flatSpot([[C.nodes[2+i*3][0]+4,C.nodes[2+i*3][1]+3]],1.2,1);if(!s)return;const k=npc({s:.7,top:c,hair:"#1a1a20",skin:"#f2d0a8"});npcAt(k,s[0],s[1],ph,"wave",i);kite(s[0],s[1],c,ph)});
  scatter(14,(x,z)=>{bamboo(x,z,rr(.8,1.1));occ(x,z,2)},{clear:3.4});scatter(26,(x,z,i)=>i%4?tree(x,z,rr(1.2,1.5),"cherry"):tree(x,z,rr(1.1,1.4),"pine"),{clear:3.2});
  flowers&&flowers(50,["#ff8ab0","#ffffff","#ffd040"])}
-{const b0=TH.china.build;TH.china.build=function(){b0.apply(this,arguments);try{chExtra()}catch(e){console.error("china+",e)}}}
+{const b0=TH.china.build;TH.china.build=function(){
+  /* prima di tutto si riservano gli spazi delle scene nuove, così bambù e alberi non ci crescono dentro */
+  const SP=C.chSpots={};try{SP.tc=flatSpot([[40,30],[-44,30],[42,-20],[-46,-26]],14,1.6);if(SP.tc)occ(SP.tc[0],SP.tc[1],17);
+   SP.tea=flatSpot([[-44,-24],[44,-24],[-48,40],[46,40]],8,3);if(SP.tea)occ(SP.tea[0],SP.tea[1]+6,10);
+   SP.dd=flatSpot([[-2,52],[10,52],[-14,50],[36,46]],8,1.4);if(SP.dd)occ(SP.dd[0],SP.dd[1],8)}catch(e){console.error(e)}
+  b0.apply(this,arguments);try{chExtra()}catch(e){console.error("china+",e)}}}
 
 /* ---------- GRECIA: stadio di Olimpia con gli atleti, cavallo di Troia al porto, labirinto del Minotauro, civetta di Atena ---------- */
 function grStadium(x,z){const y=Y(x,z)-.05,g=GN(),gg=GG(),L=13,R0=5.2;const pts=[];
