@@ -4235,7 +4235,7 @@ function pushGeo(g,props,tile){if(!g.size)return;const parts=g.size<2400?[g]:g.s
 /* ---------- paesaggio lontano: nessun bordo visibile, il mondo sfuma nell'orizzonte ---------- */
 function makeFar(){const th=C.th,tr=th.terrain;if(!tr)return;const NA=96,NR=34,r0=50,r1=900;const wl=th.water;const farH=th.farH??1;
  const rad=j=>r0*Math.pow(r1/r0,j/NR);const cx=0,cz=-10;
- const hAt=(x,z,r)=>{let h=C.rawH(x,z);const inSq=x>-65&&x<65&&z>-81&&z<61;if(inSq)return Math.min(h,C.H(x,z))-1.6;
+ const hAt=(x,z,r)=>{let h=C.rawH(x,z);const inSq=x>-65&&x<65&&z>-81&&z<61;if(inSq){const ed=Math.min(x+65,65-x,z+81,61-z);return Math.min(h,C.H(x,z))-(th.farBlend?.3+1.3*ss(0,10,ed):1.6)}
   h=Math.max(th.farRaw?h:Math.min(h,14),wl!=null?wl-6:-6);const a=Math.atan2(z-cz,x-cx);
   const m=ss(95,240,r)*farH*(10+fbm(a*2.2+3,1.3)*55+fbm(a*7,4)*12);const isl=wl!=null&&th.farIsl?ss(.55,.75,fbm(x*.008,z*.008))*16:0;
   return th.farSea?Math.max(h-ss(70,140,r)*8,-8)+isl:h+m};
@@ -5084,6 +5084,30 @@ function greatWall(){const g=GG(),W1="#b8a890",W2="#a89880";let prev=null,k=0;fo
    if(++k%7===0){g.add(PR.box(5,6.5,5,true),T([x,y-2.5,z]),W1);for(let i=0;i<4;i++)for(const s of [-1,1]){GG().add(PR.box(.7,.8,.5,true),T([x-2.1+i*1.4,y+4,z+s*2.4]),W2);GG().add(PR.box(.5,.8,.7,true),T([x+s*2.4,y+4,z-2.1+i*1.4]),W2)}
     for(let f=0;f<2;f++)for(const s of [-1,1])arcWin(x,y+.4+f*1.6,z+s*2.52,.6,.9,s>0?0:Math.PI,"#3a2a2a");if(k%14===0){hipRoof(GG(),x,y+4.2,z,2.2,2.2,1.4,.4,"#7a3a2a");GG().add(PR.box(3.4,1.6,3.4,true),T([x,y+4,z]),"#b8a890")}}}
   prev=p}}
+/* Grande Muraglia 2.0: un muro pieno che poggia sul crinale (scende sotto terra, mai sospeso), camminamento con i merli
+   su entrambi i lati, torri di guardia dritte con la base interrata, tetti a padiglione su alcune torri */
+function greatWall2(){const g=GG(),gn=GN(),W1="#b8a890",W2="#a69a84",W3="#c8bca4",TH2=2.6,HW=1.55;
+ /* prisma a 8 vertici tra due punti, con la base a quota diversa dalla cima (segue il terreno) */
+ const seg=(a,b,ya0,ya1,yb0,yb1,hw,col,G)=>{const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz),nx=-dz/L*hw,nz=dx/L*hw;
+  const A0=[a[0]+nx,ya0,a[1]+nz],A1=[a[0]-nx,ya0,a[1]-nz],B0=[b[0]+nx,yb0,b[1]+nz],B1=[b[0]-nx,yb0,b[1]-nz],
+   A2=[a[0]+nx,ya1,a[1]+nz],A3=[a[0]-nx,ya1,a[1]-nz],B2=[b[0]+nx,yb1,b[1]+nz],B3=[b[0]-nx,yb1,b[1]-nz];
+  (G||g).add([[A2,B2,B3],[A2,B3,A3],[A0,B0,B2],[A0,B2,A2],[A1,A3,B3],[A1,B3,B1],[A0,A2,A3],[A0,A3,A1],[B0,B1,B3],[B0,B3,B2]],null,col)};
+ const pts=[];for(let x=-74;x<=74;x+=2)pts.push([x,ridgeZ(x)]);pts.forEach(([x,z],i)=>{if(i%2===0)occ(x,z,3.2)});
+ /* quota del camminamento: segue il terreno ma smussata, e mai sotto il suolo */
+ const gy=pts.map(p=>Math.min(C.rawH(p[0],p[1]),C.rawH(p[0],p[1]-1.4),C.rawH(p[0],p[1]+1.4)));let wy=pts.map(p=>C.rawH(p[0],p[1])+TH2);
+ for(let k=0;k<4;k++)wy=wy.map((v,i)=>i&&i<wy.length-1?(wy[i-1]+v*2+wy[i+1])/4:v);wy=wy.map((v,i)=>Math.max(v,gy[i]+TH2*.8));
+ for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];
+  seg(a,b,gy[i]-3,wy[i],gy[i+1]-3,wy[i+1],HW,i%2?W1:"#b2a28a");
+  seg(a,b,wy[i]-.02,wy[i]+.12,wy[i+1]-.02,wy[i+1]+.12,HW+.12,W3,gn);
+  /* parapetti con i merli */const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz),nx=-dz/L,nz=dx/L,rot=-Math.atan2(dz,dx);
+  for(const sd of [-1,1]){const o=sd*(HW-.18);seg([a[0]+nx*o,a[1]+nz*o],[b[0]+nx*o,b[1]+nz*o],wy[i],wy[i]+.55,wy[i+1],wy[i+1]+.55,.18,W2,gn);
+   for(let t=0;t<2;t++){const f=(t+.25)/2;gn.add(PR.box(.55,.5,.36,true),T([a[0]+dx*f+nx*o,wy[i]+(wy[i+1]-wy[i])*f+.5,a[1]+dz*f+nz*o],[0,rot,0]),W2)}}}
+ /* torri di guardia */
+ for(let i=3;i<pts.length-1;i+=7){const [x,z]=pts[i],top=wy[i]+2.9,base=gy[i]-4,rot=-Math.atan2(pts[i+1][1]-pts[i-1][1],pts[i+1][0]-pts[i-1][0]);const m=T([x,0,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc));
+  g.add(PR.box(4.6,top-base,4.6,true),P([0,base,0]),W1);gn.add(PR.box(4.9,.25,4.9,true),P([0,top-.05,0]),W3);
+  for(let k=0;k<4;k++)for(const sd of [-1,1]){gn.add(PR.box(.7,.7,.45,true),P([-1.7+k*1.13,top+.15,sd*2.25]),W2);gn.add(PR.box(.45,.7,.7,true),P([sd*2.25,top+.15,-1.7+k*1.13]),W2)}
+  for(const sd of [-1,1])for(const f of [0,1]){gn.add(PR.box(.6,1,.08,true),P([-.9+f*1.8,wy[i]-.2,sd*2.32]),"#3a2a2a");gn.add(PR.cyl(.3,.3,.08,10,true),P([-.9+f*1.8,wy[i]+.8,sd*2.32],[TAU/4,0,0]),"#3a2a2a")}
+  if(((i-3)/7)%2===0){g.add(PR.box(3,1.6,3,true),P([0,top,0]),"#c4283a");const w=M4.pt(m,[0,0,0]);hipRoof(g,w[0],top+1.6,w[2],2,2,1.2,.4,"#4a505a",rot)}}}
 function chHall(cx,cz,y0,W,D,H,roofC,rot,doubleRoof){const m=T([cx,y0,cz],[0,rot||0,0]);const P=(p,r,s)=>M4.mul(m,T(p,r,s));const g=GG(),RED="#c4283a";
  g.add(PR.box(W*2,H,D*2,true),m,RED);const nc=Math.max(3,Math.round(W/1.3));for(let i=0;i<=nc;i++){GN().add(PR.cyl(.22,.22,H,8),P([-W+i*(2*W)/nc,0,D+.25]),"#a81a2a")}
  for(let i=0;i<nc;i++)GN().add(PR.box((2*W)/nc*.7,H*.62,.08,true),P([-W+(i+.5)*(2*W)/nc,0,D+.04]),i%2?"#8a1020":"#e8b040");
@@ -5166,11 +5190,11 @@ cambodia:{farH:.4,env:sky("#ff8a6a","#ffe0b0","#bfe0b0",{sun:"#ffd8a0",L:[.55,.4
   herd("elephant",3,-24,20,8,.7);herd("monkey",5,24,-2,8,1.4);herd("duck",4,20,-38,6,1);flock(6,0,-10,26,18,"#e8303a");flock(4,0,-50,30,26,"#ffffff");
   particles("petal",30,{size:.3,fall:.8,area:30,drift:1});clouds(5,40,"#ffe8d8")}},
 /* 24 — CINA IMPERIALE (dinastia Ming) */
-china:{farH:1.2,env:sky("#5a9ae8","#ffe8d8","#d8e8c8",{sun:"#fff0d8",L:[.6,.6,.4]}),water:-.5,deep:"#2a6a8a",shallow:"#5ab0b8",road:["#e8d8b0","#b8202a"],roadW:1.25,leaf:["#2f7a3e","#3f9a4a","#63b85a"],dust:"#e8dcc0",rock:"#9a9a8a",
- terrain:{h:(x,z)=>{const rz=ridgeZ(x),d=z-rz;let h=.4+hills(x,z,1,.05)+16*Math.exp(-(d*d)/110)+(z<rz?ss(0,-20,d)*8:0);const pd=Math.hypot(x+40,z-2);if(pd<7)h=-1.6+ss(4.5,7,pd)*(h+1.6);return h},
-  col:(x,z,h,sl)=>h<0?"#6a8a6a":sl>.8?"#7a8a7a":h>9?(fbm(x*.1,z*.1)>.5?"#6a8a5a":"#5a7a4a"):Math.hypot(x,z+47)<18?"#e8dcc0":GRASS(x,z,h,0,["#8ac06a","#7ab05a","#9ad07a"])},
+china:{farH:1.2,farBlend:1,env:sky("#5a9ae8","#ffe8d8","#d8e8c8",{sun:"#fff0d8",L:[.6,.6,.4]}),water:-.5,deep:"#2a6a8a",shallow:"#5ab0b8",road:["#e8d8b0","#b8202a"],roadW:1.25,leaf:["#2f7a3e","#3f9a4a","#63b85a"],dust:"#e8dcc0",rock:"#9a9a8a",
+ terrain:{h:(x,z)=>{const rz=ridgeZ(x),d=z-rz;let h=1.2+hills(x,z,1,.05)+16*Math.exp(-(d*d)/110)+(z<rz?ss(0,-20,d)*8:0);const pd=Math.hypot(x+40,z-2);if(pd<7)h=-1.6+ss(4.5,7,pd)*(h+1.6);return h},
+  col:(x,z,h,sl)=>h<0?"#6a8a6a":sl>.8?"#7a8a7a":h>9?(fbm(x*.1,z*.1)>.5?"#6a8a5a":"#5a7a4a"):Math.abs(x)<17.5&&Math.abs(z+46)<12.5?((Math.floor(x/2.2)+Math.floor(z/2.2))&1?"#e6dcc4":"#ddd0b4"):GRASS(x,z,h,0,["#8ac06a","#7ab05a","#9ad07a"])},
  keep:(x,z)=>Math.hypot(x,z+47)<19||Math.hypot(x+40,z-2)<9,
- build(){greatWall();forbiddenHall(0,-47);jadeBridge(-40,2,.4);
+ build(){greatWall2();forbiddenHall(0,-47);jadeBridge(-40,2,.4);
   {const [x,z]=spot([[-34,-30],[-38,-16],[36,-30],[-36,-4]],10);templeOfHeaven(x,z)}
   {const [x,z]=spot([[36,-22],[40,-10],[-40,8],[38,0]],6);pagoda(x,z);occ(x,z,6)}
   redLanterns();dragonKite();fireworks();
@@ -7447,18 +7471,47 @@ Object.assign(TH.greece,{terrain:{h:grRaw,col:grCol},keep:(x,z)=>grAcD(x,z)<19,
 
 /* ================= CINA 3.0 e GRECIA 3.0 — più vita, più paesaggio, i monumenti delle parole del mondo ================= */
 /* ---------- CINA: montagne carsiche nella foschia, porte pailou sul sentiero, villaggio, risaie, aquiloni ---------- */
-function chKarst(){const g=new Geo(),gr=["#86a882","#7d9f78","#92b28a","#8aa07e"];
- for(let i=0;i<34;i++){const a=i/34*TAU+rr(-.06,.06),r=rr(86,126),x=Math.cos(a)*r,z=Math.sin(a)*r-6;const R0=rr(10,16),H=rr(26,42),y=-4;
-  /* pan di zucchero: 5 "gocce" sovrapposte, sempre più strette e un po' storte, verde sopra e roccia sotto */
-  let ox=0,oz=0;for(let j=0;j<5;j++){const f=j/5,rj=R0*(1-f*.72),yj=y+H*f;ox+=rr(-.07,.07)*R0;oz+=rr(-.07,.07)*R0;g.add(PR.sphere(1,16,12),T([x+ox,yj+H*.12,z+oz],0,[rj,H*.22,rj]),j<1?"#98a294":gr[(i+j)%4],{smooth:true})}}
- C.items.push({m:R.mesh(g),M:M4.id(),noShadow:1});
- /* fasce di nebbia tra le montagne */for(let i=0;i<10;i++){const a=i/10*TAU,r=96;C.sprites.push({t:tx("puff"),c:[Math.cos(a)*r,10,Math.sin(a)*r-6],w:60,h:14,a:.35,tint:[1,1,1]})}}
-function chGate(x,z,rot){const y=Y(x,z)-.1,m=T([x,y,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),gn=GN(),RED="#c4283a";
- for(const s of [-3.2,-1.15,1.15,3.2]){g.add(PR.cyl(.24,.26,s*s>4?4.2:5,10),P([s,0,0]),RED);g.add(PR.box(.7,.5,.7,true),P([s,0,0]),"#d8d2c4")}
- g.add(PR.box(7.6,.42,.5,true),P([0,3.9,0]),RED);g.add(PR.box(2.6,.42,.5,true),P([0,4.7,0]),RED);gn.add(PR.box(7.8,.2,.56,true),P([0,4.32,0]),"#2a6a5a");
- gn.add(PR.box(1.6,.8,.12,true),P([0,4.85,.3]),"#1a3a6a");gn.add(PR.box(1.2,.5,.13,true),P([0,5,.31]),"#e8c040");
- const w=M4.pt(m,[0,0,0]);hipRoof(g,w[0],y+5.15,w[2],1.9,.75,.7,.4,"#f2c230",rot);for(const s of [-1,1]){const q=M4.pt(m,[s*2.2,0,0]);hipRoof(g,q[0],y+4.35,q[2],1.3,.65,.55,.32,"#2a8a5a",rot)}
- occ(x,z,1)}
+/* montagne carsiche (come a Guilin): torri di roccia alte e strette, pareti verticali con le striature,
+   cima tondeggiante coperta di bosco e ciuffi verdi sulle cenge; fasce di nebbia tra le torri */
+function chKarstTower(g,x,z,R,H,seed){const NU=26,NV=22,V=[];const y0=-6;
+ /* profilo: base larga che sale ripida, una "vita" più stretta, spalla e cupola; ogni torre ha cenge e sporgenze sue */
+ const prof=t=>{const neck=1-.16*Math.exp(-(((t-.5-Math.sin(seed)*.12)/.16)**2));let r=t<.08?1.25-t*3:t<.74?(1.01-t*.28)*neck:.8*Math.sqrt(Math.max(0,1-((t-.74)/.26)**2));
+  return r*(1+.08*Math.sin(t*19+seed*3))};
+ for(let j=0;j<=NV;j++){const t=j/NV;V[j]=[];for(let i=0;i<=NU;i++){const a=i/NU*TAU;
+  let r=R*prof(t)*(1+(fbm(Math.cos(a)*1.3+seed,Math.sin(a)*1.3+t*2.2)-.5)*.5);if(j===NV)r=0;
+  const lean=t*t*R*.25;V[j][i]=[x+Math.cos(a)*r+Math.cos(seed)*lean,y0+H*t,z+Math.sin(a)*r+Math.sin(seed)*lean]}}
+ const tris=[];for(let j=0;j<NV;j++)for(let i=0;i<NU;i++){const a=V[j][i],b=V[j][i+1],c=V[j+1][i+1],d=V[j+1][i];tris.push([a,c,b],[a,d,c])}
+ const col=t=>{const c=[(t[0][0]+t[1][0]+t[2][0])/3,(t[0][1]+t[1][1]+t[2][1])/3,(t[0][2]+t[1][2]+t[2][2])/3],h=(c[1]-y0)/H,ang=Math.atan2(c[2]-z,c[0]-x);
+  const n=V3.norm(V3.cross(V3.sub(t[1],t[0]),V3.sub(t[2],t[0]))),flat=Math.abs(n[1]);
+  const veg=h>.72-fbm(ang*2+seed,1)*.12||flat>.6||h<.06||fbm(ang*1.6+seed,h*2.2)>.72;
+  if(veg)return fbm(c[0]*.12,c[2]*.12+c[1]*.08)>.5?"#4a8a48":"#3f7a40";
+  const st=fbm(ang*1.2+seed,h*2.4)+Math.sin(h*26+fbm(ang,seed)*3)*.06;return st>.62?"#8e8a7c":st>.5?"#a29d8f":st>.38?"#b1ab9b":"#9a9588"};
+ g.add(tris,null,col,{smooth:true})}
+function chKarst(){const g=new Geo();
+ for(let i=0;i<30;i++){const a=i/30*TAU+rr(-.07,.07);/* dietro la Grande Muraglia restano le montagne lontane: le torri stanno ai lati e davanti */
+  if(Math.sin(a)<-.55)continue;const r=rr(80,124),x=Math.cos(a)*r,z=Math.sin(a)*r-6;chKarstTower(g,x,z,rr(8,13),rr(30,54),i*1.7)}
+ for(let i=0;i<12;i++){const a=i/12*TAU+.2,r=rr(132,160);if(Math.sin(a)<-.45)continue;chKarstTower(g,Math.cos(a)*r,Math.sin(a)*r-6,rr(10,15),rr(40,62),i*2.3+9)}
+ C.items.push({m:R.mesh(g),M:M4.id(),out:.04,noShadow:1});
+ /* fasce di nebbia tra le montagne */for(let i=0;i<12;i++){const a=i/12*TAU,r=100;C.sprites.push({t:tx("puff"),c:[Math.cos(a)*r,8,Math.sin(a)*r-6],w:64,h:12,a:.32,tint:[1,1,1]})}}
+/* porta pailou che scavalca il sentiero: l'arco centrale è più largo della strada (i pilastri stanno sui bordi, mai sul passaggio) */
+function chGate(x,z,rot){const m=T([x,0,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),gn=GN(),RED="#c4283a",GO="#e8c040",GRN="#2a6a5a";
+ const IN=2.75,OUT=4.75,base=Math.max(...[-OUT,-IN,IN,OUT].map(s=>{const q=M4.pt(m,[s,0,0]);return Y(q[0],q[2])}))-.15;
+ const Pp=(p,r,sc)=>M4.mul(T([0,base,0]),P(p,r,sc));
+ for(const s of [-OUT,-IN,IN,OUT]){const q=M4.pt(m,[s,0,0]),gy=Y(q[0],q[2])-.3,hh=Math.abs(s)===IN?5.6:4.5;
+  g.add(PR.cyl(.27,.29,hh+base-gy,12),T([q[0],gy,q[2]]),RED);g.add(PR.box(.8,.55+base-gy,.8,true),T([q[0],gy,q[2]]),"#d8d2c4");
+  for(const k of [-1,1])gn.add(PR.box(.18,.9,.5,true),Pp([s,.2,k*.42]),"#d8d2c4")}
+ /* travi, fregi verde-azzurri, targa con i caratteri dorati */
+ g.add(PR.box(OUT*2+.6,.45,.55,true),Pp([0,4.15,0]),RED);g.add(PR.box(IN*2+.6,.45,.55,true),Pp([0,5.15,0]),RED);
+ gn.add(PR.box(OUT*2+.7,.22,.6,true),Pp([0,4.6,0]),GRN);gn.add(PR.box(IN*2+.7,.22,.6,true),Pp([0,5.6,0]),GRN);
+ for(let i=0;i<7;i++)gn.add(PR.box(.5,.16,.62,true),Pp([-IN+.45+i*(IN*2-.9)/6,4.88,0]),i%2?"#3a8aca":GO);
+ gn.add(PR.box(1.9,.9,.12,true),Pp([0,4.9,.33]),"#1a3a6a");gn.add(PR.box(1.5,.6,.13,true),Pp([0,4.92,.34]),GO);gn.add(PR.box(1.9,.9,.12,true),Pp([0,4.9,-.33]),"#1a3a6a");
+ /* tetti a padiglione con le gronde all'insù */
+ const w=M4.pt(m,[0,0,0]);hipRoof(g,w[0],base+5.75,w[2],IN+.9,.85,.95,.45,"#f2c230",rot);
+ for(const s of [-1,1]){const q=M4.pt(m,[s*(IN+OUT)/2,0,0]);hipRoof(g,q[0],base+4.75,q[2],(OUT-IN)/2+.75,.75,.7,.35,"#2a8a5a",rot)}
+ /* due leoni di pietra ai lati dell'ingresso */for(const s of [-1,1]){const q=M4.pt(m,[s*(OUT+1.2),0,.9]);const yy=Y(q[0],q[2]);gn.add(PR.box(.9,.6,1.1,true),T([q[0],yy-.1,q[2]],[0,rot,0]),"#cfc8b8");gn.add(PR.sphere(.42,10,8),T([q[0],yy+.85,q[2]],0,[1,1.1,1]),"#d8d2c4");gn.add(PR.sphere(.32,10,8),T([q[0],yy+.55,q[2]],0,[1.2,.8,1.4]),"#d8d2c4")}
+ for(const s of [-OUT,-IN,IN,OUT]){const q=M4.pt(m,[s,0,0]);occ(q[0],q[2],1.4)}occ(x,z,2.5)}
+/* rotazione che allinea l'asse x locale (la larghezza della porta) alla direzione (ux,uz) */
+function chAlign(ux,uz){for(const r of [0,1,2,3].map(k=>Math.atan2(uz,ux)*(k<2?1:-1)+(k%2?Math.PI:0))){const q=M4.pt(T([0,0,0],[0,r,0]),[1,0,0]);if(q[0]*ux+q[2]*uz>.99*Math.hypot(ux,uz))return r}return 0}
 function chHouse(x,z,rot){const y=Y(x,z)-.15,m=T([x,y,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),g=GG(),gn=GN();const W=rr(2,2.6),D=rr(1.5,1.9);
  g.add(PR.box(W*2+.3,.45,D*2+.3,true),m,"#a8a294");g.add(PR.box(W*2,2.5,D*2,true),P([0,.45,0]),"#f2eee4");for(const s of [-1,1])g.add(PR.cyl(.13,.13,2.5,8),P([s*(W-.1),.45,D+.08]),"#8a2420");
  gn.add(PR.box(.9,1.6,.06,true),P([0,.45,D+.03]),"#a82a28");gn.add(PR.cyl(.42,.42,.06,16),P([W*.55,1.7,D+.03],[TAU/4,0,0]),"#5a3a2a");gn.add(PR.cyl(.42,.42,.06,16),P([-W*.55,1.7,D+.03],[TAU/4,0,0]),"#5a3a2a");
@@ -7468,7 +7521,13 @@ function chPaddies(x,z){const y0=Y(x,z),g=GN();for(let i=0;i<4;i++){const w=9-i*
   g.add(PR.box(w*2-.5,.06,d*2-.5,true),T([x,yy+.56,z]),"#8fc8c0");for(let k=0;k<Math.floor(w*1.6);k++)for(let j=0;j<3;j++)g.add(PR.cyl(0,.09,.45,3),T([x-w+.6+k*(2*w-1.2)/(Math.floor(w*1.6)-1||1),yy+.6,z-d+.6+j*(2*d-1.2)/2]),"#5ab04a")}
  /* contadina col cappello di paglia */const n=npc({top:"#3a6aa8",hat:"straw",hatC:"#e8c878",skin:"#f2d0a8"});npcAt(n,x+2,z,0,"idle",1);occ(x,z,10)}
 function chExtra(){chKarst();
- /* porte pailou sopra il sentiero */const P=C.pts;if(P&&P.length>40){[.18,.5,.8].forEach(f=>{const i=Math.floor(P.length*f),[x,z]=P[i];if(C.nodes.some(n=>Math.hypot(n[0]-x,n[1]-z)<5))return;const a=P[Math.min(P.length-1,i+2)],b=P[Math.max(0,i-2)];chGate(x,z,Math.atan2(a[0]-b[0],a[1]-b[1])+TAU/4)})}
+ /* porte pailou sopra il sentiero: solo dove la strada è dritta, lontano dalle tappe e dalle altre anse del sentiero */
+ {const P=C.pts,placed=[];if(P&&P.length>40)for(const f0 of [.2,.5,.78])for(let dk=0;dk<60;dk++){const i=Math.floor(P.length*f0)+(dk%2?1:-1)*Math.ceil(dk/2)*2;if(i<8||i>P.length-9)continue;
+  const [x,z]=P[i],a=P[i+6],b=P[i-6],c=P[i+3],d=P[i-3];const t1=Math.atan2(a[1]-c[1],a[0]-c[0]),t2=Math.atan2(d[1]-b[1],d[0]-b[0]);if(Math.abs(Math.atan2(Math.sin(t1-t2),Math.cos(t1-t2)))>.12)continue;
+  if(C.nodes.some(n=>Math.hypot(n[0]-x,n[1]-z)<8)||placed.some(q=>Math.hypot(q[0]-x,q[1]-z)<20))continue;
+  const tx_=a[0]-b[0],tz_=a[1]-b[1],L=Math.hypot(tx_,tz_),nx=-tz_/L,nz=tx_/L;
+  /* nessun'altra parte del sentiero vicino ai pilastri */let bad=false;for(const s of [-6.5,-4.75,-2.75,2.75,4.75,6.5]){const px=x+nx*s,pz=z+nz*s;for(let k=0;k<P.length;k+=2){if(Math.abs(k-i)<14)continue;if(Math.hypot(P[k][0]-px,P[k][1]-pz)<3.2){bad=true;break}}if(bad)break}if(bad)continue;
+  chGate(x,z,chAlign(nx,nz));placed.push([x,z]);break}}
  /* villaggio */let n=0;for(let t=0;t<200&&n<9;t++){const x=rr(-55,55),z=rr(-30,52);if(!free(x,z,5))continue;chHouse(x,z,pick([0,TAU/4,-TAU/4,Math.PI])+rr(-.15,.15));n++}
  /* risaie */{const s=flatSpot([[44,30],[-46,34],[46,10],[-46,-10]],10,2.4);if(s)chPaddies(s[0],s[1])}
  /* bambini con gli aquiloni */[["#e8302a",0],["#ffd040",1.7],["#2a8ae8",3.1]].forEach(([c,ph],i)=>{const s=flatSpot([[C.nodes[2+i*3][0]+4,C.nodes[2+i*3][1]+3]],1.2,1);if(!s)return;const k=npc({s:.7,top:c,hair:"#1a1a20",skin:"#f2d0a8"});npcAt(k,s[0],s[1],ph,"wave",i);kite(s[0],s[1],c,ph)});
