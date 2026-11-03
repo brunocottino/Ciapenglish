@@ -5203,7 +5203,7 @@ china:{farH:1.2,farBlend:1,farMask:(x,z)=>1-ss(64,80,x)*(1-ss(190,260,x)),env:sk
    if(MOD>0)h-=MOD*ss(9,6,Math.abs(x-CH_RIVER))*4.6;
    const LW=ss(-66,-74,x);if(LW>0){const dw=CH_WALLD(x,z);h+=LW*11*Math.exp(-dw*dw/70)}
    const pd=Math.hypot(x+40,z-2);if(pd<7)h=-1.6+ss(4.5,7,pd)*(h+1.6);return h},
-  col:(x,z,h,sl)=>x>70&&h>-.3?(x>CH_RIVER+7?(fbm(x*.05,z*.05)>.5?"#a2a4aa":"#94979e"):"#b8b2a4"):h<0?"#6a8a6a":sl>.8?"#7a8a7a":h>9?(fbm(x*.1,z*.1)>.5?"#6a8a5a":"#5a7a4a"):Math.abs(x)<17.5&&Math.abs(z+46)<12.5?((Math.floor(x/2.2)+Math.floor(z/2.2))&1?"#e6dcc4":"#ddd0b4"):GRASS(x,z,h,0,["#8ac06a","#7ab05a","#9ad07a"])},
+  col:(x,z,h,sl)=>x>70&&h>-.3?(x>CH_RIVER+7?(x>CH_RIVER+9&&x<CH_RIVER+71&&z>-118&&z<34?(fbm(x*.08,z*.08)>.5?"#c4b698":"#b8aa8c"):(fbm(x*.05,z*.05)>.5?"#8ab05a":"#9ac06a")):"#b8b2a4"):h<0?"#6a8a6a":sl>.8?"#7a8a7a":h>9?(fbm(x*.1,z*.1)>.5?"#6a8a5a":"#5a7a4a"):Math.abs(x)<17.5&&Math.abs(z+46)<12.5?((Math.floor(x/2.2)+Math.floor(z/2.2))&1?"#e6dcc4":"#ddd0b4"):GRASS(x,z,h,0,["#8ac06a","#7ab05a","#9ad07a"])},
  keep:(x,z)=>Math.hypot(x,z+47)<19||Math.hypot(x+40,z-2)<9,
  build(){greatWall2();forbiddenHall(0,-47);jadeBridge(-40,2,.4);
   {const [x,z]=spot([[-34,-30],[-38,-16],[36,-30],[-36,-4]],10);templeOfHeaven(x,z)}
@@ -7559,59 +7559,75 @@ function chMoonGarden(px,pz){const r=7.2,a0=.5,wx=px+Math.cos(a0)*(r+2.5),wz=pz+
   for(const sd of [-1,1]){const cg=new Geo();cg.add(PR.sphere(.18,8,6),T([0,0,0],0,[1,1,1.5]),"#1a1a24");cg.add(PR.sphere(.1,6,4),T([0,.2,.2]),"#1a1a24");cg.add(PR.cyl(0,.04,.18,4),T([0,.2,.3],[TAU/4,0,0]),"#e8b030");raft.add(new N3(R.mesh(cg),{toon:1,p:[sd*.5,.25,-1.2]}))}
   const rp=M4.pt(T([px,0,pz],[0,.4,0]),[1.2,0,3.6]);C.upd.push(t=>{raft.p=[rp[0]+Math.sin(t*.2)*.8,(C.th.water??0)+.05+Math.sin(t*1.4)*.04,rp[2]];raft.r=[0,.4+Math.PI/2+Math.sin(t*.15)*.2,Math.sin(t*1.1)*.03]})}
  occ(wx,wz,5)}
-/* ================= SHANGHAI: l'altra anima della Cina =================
-   Oltre il bordo destro della mappa: il Bund con i palazzi storici sul lungofiume, il fiume Huangpu con i battelli,
-   e sull'altra riva Pudong con la Oriental Pearl Tower, la Shanghai Tower che si avvita, il "cavatappi" (SWFC),
-   la Jin Mao a pagoda e tanti grattacieli di vetro; il treno a levitazione magnetica che sfreccia sui piloni. */
-function shLoft(g,x,y0,z,H,NV,NS,secR,col){const V=[];for(let j=0;j<=NV;j++){const t=j/NV;V.push([...Array(NS)].map((_,i)=>{const [r,a]=secR(i/NS*TAU,t);return [x+Math.cos(a)*r,y0+H*t,z+Math.sin(a)*r]}))}
- const tris=[],cols=[];for(let j=0;j<NV;j++)for(let i=0;i<NS;i++){const A=V[j][i],B=V[j][(i+1)%NS],C2=V[j+1][(i+1)%NS],D=V[j+1][i];const c=col(j,i);tris.push([A,C2,B],[A,D,C2]);cols.push(c,c)}
- const top=V[NV],ct=[x,y0+H,z];for(let i=0;i<NS;i++){tris.push([ct,top[(i+1)%NS],top[i]]);cols.push(col(NV,i))}let k=0;g.add(tris,null,()=>cols[k++],{smooth:true})}
-function shBands(gn,x,y0,z,w,d,H,step,col){for(let y=y0+step;y<y0+H-.5;y+=step)gn.add(PR.box(w+.12,.28,d+.12,true),T([x,y,z]),col)}
-function shPearl(x,z){const g=GG(),gn=GN(),y0=C.rawH(x,z)-2,PK="#d0457e",SV="#c8ccd4",S=1.15,Y0=y=>y0+y*S;
- for(let i=0;i<3;i++){const a=i/3*TAU;const bx=x+Math.cos(a)*9*S,bz=z+Math.sin(a)*9*S,tx2=x+Math.cos(a)*1.8*S,tz=z+Math.sin(a)*1.8*S;beam(g,[bx,y0,bz],[tx2,Y0(16),tz],.9*S,SV)}
- for(let i=0;i<3;i++){const a=i/3*TAU+TAU/6;g.add(PR.cyl(.85*S,.85*S,46*S,10),T([x+Math.cos(a)*1.7*S,y0,z+Math.sin(a)*1.7*S]),"#e8e8ee")}
- const ball=(yy,r)=>{g.add(PR.sphere(r*S,20,14),T([x,Y0(yy),z]),PK,{smooth:true});for(const k of [-.45,0,.45])gn.add(PR.torus(r*S*Math.cos(Math.asin(k))+.05,.1,24,4),T([x,Y0(yy)+k*r*S,z]),SV)};
- ball(18,6.2);[27.5,30.5,33.5,36.5].forEach(yy=>g.add(PR.sphere(1.3*S,12,10),T([x,Y0(yy),z]),PK,{smooth:true}));ball(47,3.8);
- g.add(PR.cyl(1.1*S,1.1*S,9*S,12),T([x,Y0(49),z]),"#e8e8ee");g.add(PR.sphere(1.5*S,14,10),T([x,Y0(59),z]),PK,{smooth:true});g.add(PR.cyl(.15*S,.5*S,12*S,8),T([x,Y0(60),z]),SV);
- gn.add(PR.cyl(4,4,.4,20),T([x,Y0(24),z]),SV);occ(x,z,10)}
-function shTower(x,z){const g=GG(),y0=C.rawH(x,z)-2,H=104;
- shLoft(g,x,y0,z,H,34,30,(a,t)=>{const tw=t*2.2,R=8.2*(1-t*.48);const aa=a+tw;const r=R*(1+.1*Math.cos(3*(a)))*(t>.96?Math.max(.4,1-(t-.96)*12*Math.max(0,Math.cos(a))):1);return [r,aa]},(j,i)=>j%3===0?"#7d9db4":(i+j)%7===0?"#b8d2e0":"#9cbcd0");
- g.add(PR.cyl(.18,.4,7,6),T([x,y0+H,z]),"#c8ccd4");occ(x,z,10)}
-function shSWFC(x,z,rot){const g=GG(),gn=GN(),y0=C.rawH(x,z)-2,H=96,m=T([x,y0,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc)),GL="#9fb8cc",GL2="#86a2ba";
- const W=6.2,D=(t)=>6.2*(1-t)+.7*t;const NV=20,tris=[];const v=(sx,sz,t)=>M4.pt(m,[sx*W*(t>.8?1-(t-.8)*.6:1),H*t,sz*D(t)]);
- for(let j=0;j<NV;j++){const t0=j/NV,t1=(j+1)/NV;if(t0>=.86)break;for(const [a1,a2] of [[[1,1],[-1,1]],[[-1,1],[-1,-1]],[[-1,-1],[1,-1]],[[1,-1],[1,1]]]){const A=v(a1[0],a1[1],t0),B=v(a2[0],a2[1],t0),C2=v(a2[0],a2[1],t1),Dd=v(a1[0],a1[1],t1);tris.push([A,C2,B],[A,Dd,C2])}}
- g.add(tris,null,GL);for(let j=1;j<NV;j+=2){const t=j/NV;if(t>.86)break;gn.add(PR.box(W*2*(t>.8?1-(t-.8)*.6:1)+.15,.25,D(t)*2+.15,true),P([0,H*t,0]),GL2)}
- /* l'apertura trapezoidale in cima: due montanti e la trave */const tA=.86,wA=W*(1-(tA-.8)*.6);for(const sd of [-1,1])g.add(PR.box(1.6,H*(1-tA),D(.93)*2,true),P([sd*(wA-.8),H*tA,0]),GL);g.add(PR.box(wA*2,H*.035,D(.98)*2,true),P([0,H*.965,0]),GL);occ(x,z,9)}
-function shJinMao(x,z){const g=GG(),gn=GN(),y0=C.rawH(x,z)-2;let y=y0,w=6.4;const tiers=[[30,6.4],[6,5.8],[5,5.2],[4.4,4.6],[3.8,4.1],[3.4,3.6],[3,3.1],[2.6,2.6],[2.2,2.1],[1.8,1.6]];
- for(const [h,ww] of tiers){g.add(PR.cyl(ww*1.08,ww*1.08,h,8),T([x,y,z],[0,TAU/16,0]),"#a9adb5");for(let k=1.6;k<h;k+=1.6)gn.add(PR.cyl(ww*1.1,ww*1.1,.22,8),T([x,y+k,z],[0,TAU/16,0]),"#7c828e");gn.add(PR.cyl(ww*1.22,ww*1.08,.5,8),T([x,y+h,z],[0,TAU/16,0]),"#c8ccd4");y+=h+.5}
- g.add(PR.cyl(.12,1.2,12,8),T([x,y,z]),"#c8ccd4");occ(x,z,8)}
-function shGeneric(x,z,H,kind,col){const g=GG(),gn=GN(),y0=C.rawH(x,z)-2;const w=rr(2.6,4.2),d=rr(2.6,4.2),dark=mixc(col,"#2a3440",.35);
- if(kind===0){g.add(PR.box(w*2,H,d*2,true),T([x,y0,z]),col);shBands(gn,x,y0,z,w*2,d*2,H,1.8,dark);if(rnd()<.5)g.add(PR.cyl(.08,.12,5,5),T([x+w*.5,y0+H,z]),"#c8ccd4")}
- else if(kind===1){g.add(PR.cyl(w,w,H,16),T([x,y0,z]),col);for(let y=y0+1.8;y<y0+H-.5;y+=1.8)gn.add(PR.cyl(w+.06,w+.06,.26,16),T([x,y,z]),dark);g.add(PR.cyl(w*.6,w,2.2,16),T([x,y0+H,z]),col)}
- else{g.add(PR.box(w*2,H*.6,d*2,true),T([x,y0,z]),col);g.add(PR.box(w*1.4,H*.3,d*1.4,true),T([x,y0+H*.6,z]),col);g.add(PR.box(w*.8,H*.1,d*.8,true),T([x,y0+H*.9,z]),col);shBands(gn,x,y0,z,w*2,d*2,H*.6,1.8,dark);g.add(PR.cyl(.1,.14,4,5),T([x,y0+H,z]),"#c8ccd4")}
- occ(x,z,Math.max(w,d)+1)}
-function shBund(){/* lungofiume: banchina di pietra, il Bund con i palazzi storici rivolti verso il fiume, la torre dell'orologio della Dogana */
- const g=GG(),gn=GN(),qx=CH_RIVER-7.6;g.add(PR.box(2.4,6,240,true),T([qx,-4.6,-20]),"#a49c8c");gn.add(PR.box(2.6,.2,240,true),T([qx,1.4,-20]),"#cfc6b2");
- for(let z=-120;z<100;z+=2.4)gn.add(PR.box(.12,.7,.12,true),T([qx+1.05,1.5,z]),"#6a6a72");gn.add(PR.box(.1,.08,240,true),T([qx+1.05,2.15,-20]),"#6a6a72");
- const ST=["#e2d6bc","#d6c8aa","#ece2cc","#cbbd9e"];let i=0;for(let z=-96;z<56;z+=7.4,i++){const x=CH_RIVER-13,y0=C.rawH(x,z)-1.5,h=8+((i*37)%5)*1.3,c=ST[i%4];
-  g.add(PR.box(5.4,h,6.6,true),T([x,y0,z]),c);for(let k=0;k<5;k++)gn.add(PR.cyl(.22,.22,h*.55,8),T([x+2.75,y0+h*.2,z-2.6+k*1.3]),"#f2ead8");gn.add(PR.box(5.7,.5,6.9,true),T([x,y0+h,z]),"#f2ead8");
-  for(let f=1;f<4;f++)for(let k=0;k<4;k++)for(const sd of [1,-1])gn.add(PR.box(.06,.9,.6,true),T([x+sd*2.72,y0+f*h/4.2,z-2.1+k*1.4]),"#4a5868");for(const sd of [1,-1])gn.add(PR.box(.2,.3,6.7,true),T([x+sd*2.75,y0+h*.2,z]),"#f2ead8");
-  if(i%5===2){g.add(PR.box(2.4,5,2.4,true),T([x,y0+h,z]),c);gn.add(PR.cyl(.8,.8,.1,16,true),T([x+1.22,y0+h+3.4,z],[0,0,TAU/4]),"#f8f4ea");g.add(PR.pyr(2.8,2.2,2.8),T([x,y0+h+5,z]),"#6a7a6a")}
-  else if(i%4===1){g.add(PR.cyl(1.6,1.6,1.2,14),T([x,y0+h+.5,z]),c);g.add(PR.sphere(1.6,14,10).filter(t=>t.some(q=>q[1]>0)),T([x,y0+h+1.7,z]),"#5a7a6a",{smooth:true})}}
- /* l'Huangpu: battelli che vanno su e giù */for(let k=0;k<3;k++){const bg=new Geo();bg.add(PR.box(2.6,1.1,9,true),T([0,0,0]),"#f4f4f2");bg.add(PR.box(2.2,1.3,6,true),T([0,1.1,.4]),k%2?"#e8302a":"#2a5ab8");bg.add(PR.box(2.3,.25,6.2,true),T([0,2.4,.4]),"#ffffff");bg.add(PR.box(1.8,.9,2.4,true),T([0,2.65,1]),"#f4f4f2");
-  const b=new N3(R.mesh(bg),{toon:1,out:.03});C.dyn.push(b);const ph=k*90,sp=2+k*.7,lane=CH_RIVER-2.5+k*2.5;C.upd.push(t=>{const u=((t*sp+ph)%280),dir=Math.floor((t*sp+ph)/280)%2?-1:1,zz=dir>0?-150+u:130-u;b.p=[lane,-.75+Math.sin(t*1.3+k)*.05,zz];b.r=[0,dir>0?0:Math.PI,Math.sin(t+k)*.02]})}}
-function shMaglev(){const g=GG(),x=CH_RIVER+12,HY=9,z0=-150,z1=110;for(let z=z0;z<=z1;z+=10){const y=C.rawH(x,z);g.add(PR.box(.9,HY-y+3,.9,true),T([x,y-3,z]),"#c8ccd4");g.add(PR.box(2.6,.5,.9,true),T([x,HY-.5,z]),"#c8ccd4")}
- g.add(PR.box(1.6,.6,z1-z0,true),T([x,HY,(z0+z1)/2]),"#e2e4ea");
- const tg=new Geo();for(let c=0;c<3;c++){const zc=c*7.4;tg.add(PR.box(2.2,2.2,7,true),T([0,0,zc]),"#f8f8fa");tg.add(PR.box(2.24,.5,7.02,true),T([0,.7,zc]),"#bfe0ff");tg.add(PR.box(2.26,.25,7.04,true),T([0,.2,zc]),"#2a6ae0")}
- tg.add(PR.sphere(1.1,14,10).filter(t=>t.some(q=>q[2]>0)),T([0,1.1,3.5+14.8],0,[1,1,2.4]),"#f8f8fa",{smooth:true});
- const tr=new N3(R.mesh(tg),{toon:1,out:.03});C.dyn.push(tr);C.upd.push(t=>{const L=z1-z0-22,u=(t*14)%(2*L),zz=z0+(u<L?u:2*L-u);tr.p=[x,HY+.35,zz];tr.r=[0,u<L?0:Math.PI,0]})}
-function chShanghai(){const X0=CH_RIVER+8;
- shBund();shMaglev();
- shPearl(X0+14,-36);shTower(X0+30,-58);shSWFC(X0+40,-40,.3);shJinMao(X0+26,-24);
- const PAL=["#7fa2bf","#9db4c6","#c0ccd6","#6f8aa6","#b8c4ce","#d6d2c8","#8a9cae"];
- for(let i=0,n=0;i<500&&n<44;i++){const x=rr(X0+6,X0+70),z=rr(-130,40);const far=x-X0;if(!free2(x,z,4.6))continue;
-  const H=(18+rnd()*34)*(1+ (1-Math.min(1,Math.hypot(x-X0-30,z+45)/70))*.7);shGeneric(x,z,H,n%3,PAL[n%PAL.length]);n++}
- function free2(x,z,r){return C.occ.every(o=>Math.hypot(x-o[0],z-o[1])>o[2]+r)}}
+/* ================= LA CITTÀ IMPERIALE SUL GRANDE CANALE (fuori dal bordo destro della mappa) =================
+   Sulla riva vicina il paese d'acqua (case bianche coi tetti grigi, logge di legno, lanterne, scalette sull'acqua),
+   il Grande Canale con le giunche dalle vele a stecche e le barchette, il ponte di pietra a schiena d'asino;
+   sull'altra riva la capitale cinta di mura (come Xi'an): la porta con la torre degli arcieri, le torri d'angolo,
+   la Pagoda dell'Oca Selvatica, la Torre della Campana e quella del Tamburo, il palazzo dai tetti gialli e le case. */
+const CA_ROOF="#3c434e",CA_WALL="#f2eee6",CA_WOOD="#8a3a2a",CA_BRICK="#b4a68c",CA_BRICK2="#a2947a";
+function caHouse(g,gn,x,z,rot,W,D,H,roofC,wallC,y0){const y=y0??C.rawH(x,z)-.2,m=T([x,y,z],[0,rot,0]),P=(p,r,sc)=>M4.mul(m,T(p,r,sc));
+ g.add(PR.box(W*2+.3,.5+2,D*2+.3,true),P([0,-2,0]),"#8e8676");g.add(PR.box(W*2,H,D*2,true),P([0,.5,0]),wallC||CA_WALL);
+ for(const sd of [-1,1])for(let k=0;k<Math.max(1,Math.round(W/1.2));k++)gn.add(PR.box(.6,.75,.06,true),P([-W+.9+k*(W*2-1.8)/Math.max(1,Math.round(W/1.2)-1||1),.5+H*.45,sd*(D+.02)]),"#4a3a30");
+ gn.add(PR.box(.9,1.5,.06,true),P([0,.5,D+.03]),CA_WOOD);const w=M4.pt(m,[0,0,0]);hipRoof(g,w[0],y+.5+H,w[2],W+.6,D+.6,Math.min(W,D)*.7+.4,.35,roofC||CA_ROOF,rot)}
+function caTiered(g,gn,x,y,z,rot,W,D,levels,wallC,roofC){/* padiglione a più piani con le gronde sovrapposte */let yy=y;for(let i=0;i<levels;i++){const s2=1-i*.16,w=W*s2,d=D*s2,h=2.4*(1-i*.08);
+  g.add(PR.box(w*2,h,d*2,true),T([x,yy,z],[0,rot,0]),wallC);const nc=Math.max(3,Math.round(w/1.1));for(let k=0;k<=nc;k++)for(const sd of [-1,1]){const q=M4.pt(T([x,yy,z],[0,rot,0]),[-w+k*(2*w)/nc,0,sd*(d+.15)]);gn.add(PR.cyl(.14,.14,h,6),T(q),CA_WOOD)}
+  hipRoof(g,x,yy+h,z,w+1.1,d+1.1,i===levels-1?1.6:.9,.55,roofC,rot);yy+=h+(i===levels-1?0:.9)}return yy}
+function caWaterTown(){const g=GG(),gn=GN(),qx=CH_RIVER-7.6;
+ /* banchina di pietra con le scalette che scendono in acqua */g.add(PR.box(2.4,6,240,true),T([qx,-4.6,-20]),"#9c9484");gn.add(PR.box(2.6,.2,240,true),T([qx,1.4,-20]),"#bdb5a2");
+ for(let z=-110;z<90;z+=16){for(let k=0;k<4;k++)gn.add(PR.box(1,.3,2.2,true),T([qx+1.6+k*.5,1.1-k*.38,z]),"#b0a894")}
+ let i=0;for(let z=-104;z<70;z+=6.2,i++){if(Math.abs(z+42)<6)continue;const x=CH_RIVER-12.4+((i*7)%3)*.5,W=2.3+((i*13)%3)*.35,D=2.2,H=2.6+((i*5)%3)*1.1;
+  caHouse(g,gn,x,z,TAU/4,D,W,H,CA_ROOF,i%5===3?"#e8dcc4":CA_WALL,C.rawH(x,z)-.3);
+  /* loggia di legno sull'acqua e lanterne rosse */if(i%2===0){g.add(PR.box(1.4,.25,W*1.6,true),T([x+D+.7,.5+H*.5+C.rawH(x,z)-.3,z]),CA_WOOD);for(const sd of [-1,1])gn.add(PR.box(.12,1,.12,true),T([x+D+1.3,.5+H*.5+C.rawH(x,z)-.3,z+sd*W*.7]),CA_WOOD)}
+  const L=new Geo();L.add(PR.sphere(.3,10,8),T([x+D+.25,C.rawH(x,z)+H*.75,z+W*.4],0,[1,1.25,1]),"#ff3a2a");C.items.push({m:R.mesh(L),M:M4.id(),emis:1.1,noShadow:1})}
+ /* salici sulla riva */for(let z=-96;z<60;z+=13){const x=CH_RIVER-17.5;tree(x,z,1.2,"round",C.rawH(x,z)-.2)}}
+function caArchBridge(z){const g=GG(),gn=GN(),x0=CH_RIVER-7.6,x1=CH_RIVER+4.6,cx=(x0+x1)/2,L=x1-x0,HB=4.4,W=2.4;
+ /* arco di pietra a schiena d'asino: l'impalcato segue una curva, sotto l'arco a tutto sesto che si riflette nell'acqua */
+ const N=22;for(let k=0;k<N;k++){const u0=k/N,u1=(k+1)/N,xa=x0+L*u0,xb=x0+L*u1,ya=1.3+HB*Math.sin(Math.PI*u0),yb=1.3+HB*Math.sin(Math.PI*u1);
+  const xm=(xa+xb)/2,ym=(ya+yb)/2,ang=Math.atan2(yb-ya,xb-xa),len=Math.hypot(xb-xa,yb-ya);g.add(PR.box(len+.05,.6,W*2,true),T([xm,ym-.3,z],[0,0,ang]),"#bdb5a2");
+  for(const sd of [-1,1]){gn.add(PR.box(len+.05,.18,.22,true),T([xm,ym+.95,z+sd*(W-.1)],[0,0,ang]),"#d2cab6");if(k%2===0)gn.add(PR.box(.28,1,.28,true),T([xa,ya,z+sd*(W-.1)]),"#d2cab6")}
+  /* gradini */gn.add(PR.box(.12,.06,W*2-.4,true),T([xa,ya+.02,z]),"#a8a090")}
+ /* fianchi pieni con l'arco aperto */const R0=L/2-.7,cyA=-.6;for(const sd of [-1,1]){const zz=z+sd*(W-.02),tri=[];const NA=20;for(let k=0;k<NA;k++){const a0=k/NA*Math.PI,a1=(k+1)/NA*Math.PI;const p0=[cx+Math.cos(a0)*R0,cyA+Math.sin(a0)*R0],p1=[cx+Math.cos(a1)*R0,cyA+Math.sin(a1)*R0];
+   const top=u=>1.3+HB*Math.sin(Math.PI*Math.max(0,Math.min(1,(u-x0)/L)))-.6;const q0=[p0[0],top(p0[0])],q1=[p1[0],top(p1[0])];tri.push([[p0[0],p0[1],zz],[q0[0],q0[1],zz],[q1[0],q1[1],zz]],[[p0[0],p0[1],zz],[q1[0],q1[1],zz],[p1[0],p1[1],zz]])}
+  g.add(tri,null,"#b4ac98",{fix:false});g.add(tri.map(t=>[t[0],t[2],t[1]]),null,"#b4ac98",{fix:false})}
+ {const tri=[];const NA=20;for(let k=0;k<NA;k++){const a0=k/NA*Math.PI,a1=(k+1)/NA*Math.PI;const A=[cx+Math.cos(a0)*R0,cyA+Math.sin(a0)*R0],B=[cx+Math.cos(a1)*R0,cyA+Math.sin(a1)*R0];tri.push([[A[0],A[1],z-W],[B[0],B[1],z-W],[B[0],B[1],z+W]],[[A[0],A[1],z-W],[B[0],B[1],z+W],[A[0],A[1],z+W]])}g.add(tri,null,"#8e8676",{fix:false})}
+ for(const sd of [-1,1])g.add(PR.box(3,3.4,W*2+.4,true),T([cx+sd*(L/2+.4),-2,z]),"#a8a090")}
+function caJunk(col){const g=new Geo(),HU="#6a4426",HU2="#4e2f1a";
+ g.add(PR.box(2.6,1.2,9,true),T([0,0,0]),HU);g.add(PR.box(2.8,.25,9.2,true),T([0,1.2,0]),HU2);g.add(PR.box(2.6,1.4,2,true),T([0,1.2,-3.6]),HU);g.add(PR.box(2.2,.9,1.6,true),T([0,1.2,3.8]),HU);
+ for(const [zz,h,w] of [[.6,9.5,5],[-2.6,7,3.8],[3.4,5.4,2.8]]){g.add(PR.cyl(.1,.12,h,6),T([0,1.2,zz]),"#3a2a1a");
+  /* vela a stecche (bambù) */g.add(PR.box(.08,h*.78,w,true),T([0,1.2+h*.2,zz-w*.35]),col);for(let k=0;k<6;k++)g.add(PR.box(.14,.08,w+.1,true),T([.03,1.2+h*.2+k*h*.78/5.4,zz-w*.35]),"#3a2a1a")}
+ g.add(PR.box(.05,.6,.9,true),T([0,9,.6]),"#e8302a");return new N3(R.mesh(g),{toon:1,out:.03})}
+function caCanal(){for(let k=0;k<3;k++){const b=caJunk(["#b0483a","#c8763a","#a85a3a"][k]);C.dyn.push(b);const ph=k*55,sp=1.4+k*.4,lane=CH_RIVER-2.8+k*2.8;
+  /* le giunche hanno gli alberi alti: navigano solo a monte del ponte di pietra, senza passarci sotto */C.upd.push(t=>{const u=((t*sp+ph)%150),dir=Math.floor((t*sp+ph)/150)%2?-1:1,zz=dir>0?-30+u:120-u;b.p=[lane,-.6+Math.sin(t*1.2+k)*.06,zz];b.r=[0,dir>0?0:Math.PI,Math.sin(t*.9+k)*.03]})}
+ /* barchette col barcaiolo */for(let k=0;k<4;k++){const g=new Geo();g.add(PR.sphere(1,10,6).filter(t=>t.some(q=>q[1]<.1)),T([0,.3,0],0,[.8,.5,2.4]),"#8a6a3a");g.add(PR.cyl(.9,.9,1.6,10,false).filter(t=>t.some(q=>q[1]>.4)),T([0,.3,0],[TAU/4,0,0]),"#4a3a28");
+  const b=new N3(R.mesh(g),{toon:1,out:.02});const m=npc({top:"#3a5a7a",hat:"straw",hatC:"#e8cc80",skin:"#e8c098",hair:"#1a1a20",s:.7});m.p=[0,.3,-1.6];b.add(m);C.dyn.push(b);
+  const z0=-90+k*44;C.upd.push(t=>{b.p=[CH_RIVER-4.5+(k%2)*9,-.55+Math.sin(t*1.5+k)*.04,z0+Math.sin(t*.05+k)*12];b.r=[0,Math.cos(t*.05+k)>0?0:Math.PI,Math.sin(t*1.2+k)*.04];npcPose(m,"hands",t,k)})}}
+function caCity(){const g=GG(),gn=GN(),X0=CH_RIVER+9,X1=X0+62,Z0=-118,Z1=34,HW=9,TK=2.4;
+ const wy=(x,z)=>C.rawH(x,z);
+ /* mura: un muraglione spesso con i merli, le torri sporgenti e le torri d'angolo */
+ const wall=(ax,az,bx,bz)=>{const L=Math.hypot(bx-ax,bz-az),ang=-Math.atan2(bz-az,bx-ax),cx=(ax+bx)/2,cz=(az+bz)/2,y=wy(cx,cz);g.add(PR.box(L,HW+3,TK*2,true),T([cx,y-3,cz],[0,ang,0]),CA_BRICK);gn.add(PR.box(L,.3,TK*2+.2,true),T([cx,y+HW,cz],[0,ang,0]),"#aa9e88");
+  const n=Math.floor(L/1.3);for(let k=0;k<n;k++){const u=(k+.5)/n,px=ax+(bx-ax)*u,pz=az+(bz-az)*u;for(const sd of [-1,1]){const ox=Math.sin(-ang)*0,q=M4.pt(T([px,0,pz],[0,ang,0]),[0,0,sd*(TK-.2)]);if(sd<0||k%2===0)gn.add(PR.box(.7,.8,.4,true),T([q[0],y+HW+.1,q[2]],[0,ang,0]),CA_BRICK2)}}
+  for(let k=1;k<L/14;k++){const u=k*14/L,px=ax+(bx-ax)*u,pz=az+(bz-az)*u,q=M4.pt(T([px,0,pz],[0,ang,0]),[0,0,TK+1.4]);g.add(PR.box(4,HW+3.3,3,true),T([q[0],y-3,q[2]],[0,ang,0]),CA_BRICK);
+   const w=q;g.add(PR.box(3.2,2.2,2.4,true),T([w[0],y+HW+.2,w[2]],[0,ang,0]),CA_WALL);hipRoof(g,w[0],y+HW+2.4,w[2],2.2,1.8,1,.35,CA_ROOF,ang)}};
+ wall(X0,Z0,X0,Z1);wall(X1,Z0,X1,Z1);wall(X0,Z0,X1,Z0);wall(X0,Z1,X1,Z1);
+ for(const [cx,cz] of [[X0,Z0],[X0,Z1],[X1,Z0],[X1,Z1]]){const y=wy(cx,cz);g.add(PR.box(7,HW+3.4,7,true),T([cx,y-3,cz]),CA_BRICK);caTiered(g,gn,cx,y+HW+.4,cz,0,3,3,2,"#c4283a",CA_ROOF)}
+ /* la porta sul canale: il grande bastione con il passaggio ad arco, la torre degli arcieri e dietro il padiglione rosso */
+ {const gz=-42,y=wy(X0,gz),cx=X0;g.add(PR.box(9,HW+3.6,18,true),T([cx,y-3,gz]),CA_BRICK);gn.add(PR.box(.2,5,4.4,true),T([cx-4.52,y-.2,gz]),"#2a2420");gn.add(PR.cyl(2.2,2.2,.2,16,true),T([cx-4.52,y+4.8,gz],[0,0,TAU/4]),"#2a2420");
+  /* torre degli arcieri: parete fitta di feritoie */g.add(PR.box(6,5,15,true),T([cx-.6,y+HW+.6,gz]),CA_BRICK2);for(let r=0;r<3;r++)for(let k=0;k<9;k++)gn.add(PR.box(.08,.5,.5,true),T([cx-3.62,y+HW+1.4+r*1.4,gz-6+k*1.5]),"#2a2420");
+  hipRoof(g,cx-.6,y+HW+5.6,gz,4,8.2,2,.6,CA_ROOF,TAU/4);caTiered(g,gn,cx+5,y+HW+.6,gz,TAU/4,6,3.2,2,"#c4283a",CA_ROOF);
+  /* bandiere sulla porta */for(const sd of [-1,1])flagPole(cx-3,gz+sd*8.5,"#e8302a",4,y+HW+.6)}
+ /* dentro: le vie con le case dai tetti grigi */let n=0;for(let gx=X0+8;gx<X1-5;gx+=7.2)for(let gz=Z0+7;gz<Z1-5;gz+=7.6){const near=Math.hypot(gx-(X0+30),gz+40)<16||Math.hypot(gx-(X0+44),gz+86)<12||Math.hypot(gx-(X0+16),gz+42)<9||Math.hypot(gx-(X0+44),gz+8)<12;if(near)continue;
+  caHouse(g,gn,gx+((n*7)%3-1)*.6,gz,((n*5)%4)*TAU/4,2.4+((n*3)%3)*.4,2.1,2.4+((n*11)%3)*.6,n%9===4?"#2a6a5a":CA_ROOF,n%6===2?"#c4283a":CA_WALL);n++}
+ /* la Torre della Campana al centro */{const x=X0+30,z=-40,y=wy(x,z);g.add(PR.box(12,7,12,true),T([x,y-1,z]),CA_BRICK);for(const r of [0,TAU/4])gn.add(PR.box(12.1,4,3,true),T([x,y-1,z],[0,r,0]),"#2a2420");caTiered(g,gn,x,y+6,z,0,4.4,4.4,3,"#c4283a","#2a6a5a")}
+ /* la Torre del Tamburo */{const x=X0+16,z=-42,y=wy(x,z);g.add(PR.box(10,6,7,true),T([x,y-1,z]),CA_BRICK);caTiered(g,gn,x,y+5,z,0,4.2,2.8,2,"#c4283a",CA_ROOF);
+  for(let k=0;k<5;k++){gn.add(PR.cyl(.6,.6,.5,12,true),T([x-2.4+k*1.2,y+6.2,z+2.95],[TAU/4,0,0]),"#c4283a");gn.add(PR.cyl(.5,.5,.52,12,true),T([x-2.4+k*1.2,y+6.2,z+2.96],[TAU/4,0,0]),"#e8dcc0")}}
+ /* la Pagoda dell'Oca Selvatica: sette piani di mattoni che si restringono */{const x=X0+44,z=-86,y=wy(x,z);g.add(PR.box(14,2.4,14,true),T([x,y-1,z]),"#a89c86");let yy=y+1.4,w=5.4;
+  for(let i=0;i<7;i++){const h=i?4.6-i*.25:6.5;g.add(PR.box(w*2,h,w*2,true),T([x,yy,z]),i%2?"#c8b08a":"#c2a984");for(const r of [0,TAU/4])gn.add(PR.box(1,1.6,w*2+.08,true),T([x,yy+h*.45,z],[0,r,0]),"#3a2a20");
+   for(let k=0;k<3;k++)gn.add(PR.box(w*2+.5+k*.3,.22,w*2+.5+k*.3,true),T([x,yy+h+k*.22,z]),"#a8906a");yy+=h+.66;w*=.88}
+  g.add(PR.pyr(w*2.3,2.4,w*2.3),T([x,yy,z]),"#8a7a5a");g.add(PR.cyl(.1,.3,3,6),T([x,yy+2.2,z]),"#c8a040")}
+ /* il palazzo del governatore coi tetti gialli */{const x=X0+44,z=-8,y=wy(x,z);g.add(PR.box(18,1.6,12,true),T([x,y-.4,z]),"#f2efe6");chHall(x,z,y+1.2,7,3.6,4,"#f2c230",-TAU/4,true)}
+ /* lanterne rosse lungo le mura */const L=new Geo();for(let z=Z0+6;z<Z1;z+=7){L.add(PR.sphere(.4,10,8),T([X0-TK-.3,wy(X0,z)+HW-1.4,z],0,[1,1.3,1]),"#ff3a2a")}C.items.push({m:R.mesh(L),M:M4.id(),emis:1.1,noShadow:1});
+ /* campi e colline oltre la città */for(let i=0;i<14;i++){const x=rr(X0,X1),z=rr(Z1+8,Z1+40);tree(x,z,rr(1.2,1.6),i%3?"round":"pine",C.rawH(x,z)-.2)}}
+function chAncientRight(){caWaterTown();caArchBridge(-42);caCanal();caCity()}
 /* ---- lanterne volanti che salgono al tramonto ---- */
 function chSkyLanterns(){for(let i=0;i<22;i++){const x0=rr(-50,50),z0=rr(-40,50),sp=rr(.5,.9),ph=rr(0,30);const s={t:tx("glow"),c:[x0,0,z0],w:1.3,h:1.6,a:.85,tint:[1,.6,.25]};C.sprites.push(s);
   C.upd.push(t=>{const k=((t*sp+ph)%40);s.c=[x0+Math.sin(t*.3+i)*2,6+k*1.2,z0+Math.cos(t*.25+i)*2];s.a=k>32?.85*(40-k)/8:.85})}}
@@ -7645,7 +7661,7 @@ function chPaddies(x,z){const y0=Y(x,z),g=GN();for(let i=0;i<4;i++){const w=9-i*
 function chExtra(){chKarst();
  /* la Cina non è solo l'impero Ming: l'esercito di terracotta, il tè, la danza del drago, il giardino con la porta della luna, le lanterne */
  {const S2=C.chSpots||{};if(S2.tc)chTerracotta(S2.tc[0],S2.tc[1],0);if(S2.tea)chTea(S2.tea[0],S2.tea[1]);if(S2.dd)chDragonDance(S2.dd[0],S2.dd[1])}
- chMoonGarden(-40,2);chSkyLanterns();try{chShanghai()}catch(e){console.error('shanghai',e)}
+ chMoonGarden(-40,2);chSkyLanterns();try{chAncientRight()}catch(e){console.error('ancient right',e)}
  /* porte pailou sopra il sentiero: solo dove la strada è dritta, lontano dalle tappe e dalle altre anse del sentiero */
  {const P=C.pts,placed=[];if(P&&P.length>40)for(const f0 of [.2,.5,.78])for(let dk=0;dk<60;dk++){const i=Math.floor(P.length*f0)+(dk%2?1:-1)*Math.ceil(dk/2)*2;if(i<8||i>P.length-9)continue;
   const [x,z]=P[i],a=P[i+6],b=P[i-6],c=P[i+3],d=P[i-3];const t1=Math.atan2(a[1]-c[1],a[0]-c[0]),t2=Math.atan2(d[1]-b[1],d[0]-b[0]);if(Math.abs(Math.atan2(Math.sin(t1-t2),Math.cos(t1-t2)))>.12)continue;
