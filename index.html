@@ -7331,16 +7331,16 @@ function isRaw(x,z){let h=.9+hills(x,z,1.3,.07)+(fbm(x*.25,z*.25)-.5)*.5;
  return h}
 const nsRidgeI=(x,z)=>1-Math.abs(2*fbm(x,z)-1);
 function isCol(x,z,h,sl){const d=z-isCliffZ(x),k=isGla(x);
- if(h<-.25)return "#2a2c30";
+ if(h<-.25)return "#3a4048";
  /* ghiaccio */if((k>.45&&d<1.5&&h>.8)||(z<-72&&h>14))return fbm(x*.4,z*.15)>.62?"#a8d8f0":fbm(x*.8,z*.3)>.7?"#7ab8e0":"#eef6fc";
  /* Kirkjufell a strati */{const dx=(x-IS_KI[0])/1.45,dk=Math.hypot(dx,z-IS_KI[1]);if(dk<15&&h>5){if(h>25)return "#f4f8fc";return Math.floor((h+fbm(x*.3,z*.3)*1.5)/2.4)%2?"#4e6a40":"#6a7a4c"}}
  /* parete della scogliera: roccia con strisce di muschio */if(d<1.5&&d>-5.5-k*20&&sl>.7){const n=fbm(x*.35,h*.5),mo=fbm(x*.9+3,h*.2);return mo>.62?"#5f7f4c":mo>.55?"#4f6a44":n>.55?"#5a5e68":n>.42?"#4a4e58":"#3e424c"}
  if(d<-5)return fbm(x*.12,z*.12)>.5?"#6f9a52":"#86b060";
  /* campo geotermico colorato */{const lg=Math.hypot(x-IS_GE[0],z-IS_GE[1]);if(lg<9){const n=fbm(x*.6,z*.6);return lg<3.5?"#e8e2d0":n>.6?"#e09a3a":n>.48?"#e8cc60":"#cfc6a8"}}
  /* laguna blu: bordo di lava nera e silice bianca */if(Math.hypot(x-IS_BL[0],z-IS_BL[1])<10.5)return h<.4?"#cfeef0":"#26262c";
- /* spiaggia nera */if(h<1.05&&(z>40||x>40))return fbm(x*.5,z*.5)>.6?"#2e2e34":"#1e1e24";
+ /* spiaggia nera: solo una fascia sottile sulla riva, sfumata verso il prato */if((z>40||x>40)&&h<.62){const k=ss(.05,.62,h);return mixc("#34343c","#6a7a5a",k*k)}
  if(sl>.9)return "#3e424c";
- const n=fbm(x*.09,z*.09),m=fbm(x*.33+5,z*.33);if(m>.76&&n<.45)return "#4a5a3a";/* lava coperta di muschio */
+ const n=fbm(x*.09,z*.09),m=fbm(x*.33+5,z*.33);if(m>.78&&n<.42)return "#5a6e44";/* lava coperta di muschio */
  return n>.62?"#a8bc6a":n>.45?"#7fa458":n>.32?"#64884a":"#55753e"}
 
 /* cascata 2.0: velo d'acqua disegnato dallo shader dell'acqua che scorre (strisce che scendono, bordi sfrangiati, schiuma in basso),
@@ -7402,7 +7402,7 @@ function sunVoyager(x,z,rot){const y=Y(x,z),m=T([x,y,z],[0,rot,0]);const g=GG(),
  for(let i=-2;i<=2;i++)for(const s of [-1,1])beam(g,pt([0,.9,i*1.3]),pt([s*1.1,2.4-Math.abs(i)*.2,i*1.3+.6]),.07,S);occ(x,z,3)}
 /* faraglioni e organo di basalto */
 function seaStack(x,z,h,r){const y=-1.5;crag.taper=.1;crag(x,y,z,r,h,r*.8,["#26262c","#2e2e34","#36363e"],"#5f7f4c");crag.taper=0}
-function basaltWall(x0,z0,x1,z1,h){const L=Math.hypot(x1-x0,z1-z0),n=Math.round(L/1.05);for(let i=0;i<n;i++){const f=i/n,x=x0+(x1-x0)*f,z=z0+(z1-z0)*f;const hh=h*(.55+.45*Math.sin(f*Math.PI))*(.8+fbm(i*.4,1)*.4);for(let r=0;r<2;r++){const zz=z+r*1,xx=x+r*.5;GG().add(PR.cyl(.56,.56,hh-r*1.6,6),T([xx,C.H(xx,zz)-.5,zz],[0,.3,0]),i%3?"#2e3038":"#3a3c46");GG().add(PR.cyl(.5,.5,.12,6),T([xx,C.H(xx,zz)-.5+hh-r*1.6,zz],[0,.3,0]),"#5f7f4c")}}}
+function basaltWall(x0,z0,x1,z1,h){const L=Math.hypot(x1-x0,z1-z0),n=Math.round(L/1.05);for(let i=0;i<n;i++){const f=i/n,x=x0+(x1-x0)*f,z=z0+(z1-z0)*f;const hh=h*(.55+.45*Math.sin(f*Math.PI))*(.8+fbm(i*.4,1)*.4);for(let r=0;r<2;r++){const zz=z+r*1,xx=x+r*.5;GG().add(PR.cyl(.56,.56,hh-r*1.6,6),T([xx,C.H(xx,zz)-.5,zz],[0,.3,0]),i%3?"#4a4e58":"#5a5e6a");GG().add(PR.cyl(.5,.5,.12,6),T([xx,C.H(xx,zz)-.5+hh-r*1.6,zz],[0,.3,0]),"#5f7f4c")}}}
 /* iceberg blu e bianchi che galleggiano nella laguna */
 function icebergs(cx,cz,r,n){for(let i=0;i<n;i++){const a=rnd()*TAU,d=Math.sqrt(rnd())*r,x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d*.8;const s=rr(.8,2.2);const g=new Geo();const tris=PR.ico(1,1).map(t=>t.map(q=>[q[0]*(1+fbm(q[0]*3+i,q[2]*3)*.6),q[1]*(q[1]>0?1.4:.5),q[2]*(1+fbm(q[2]*3,q[0]*3+i)*.6)]));
   g.add(tris,T([0,0,0],0,[s,s,s]),i%3?"#e8f6ff":"#8ed0f0");const b=new N3(R.mesh(g),{toon:1,out:.04,p:[x,-.45,z]});C.dyn.push(b);const ph=rnd()*TAU;C.upd.push(t=>{b.p=[x+Math.sin(t*.05+ph)*.8,-.45+Math.sin(t*.8+ph)*.06,z];b.r=[Math.sin(t*.6+ph)*.04,t*.02+ph,0]})}}
@@ -7427,7 +7427,7 @@ function volcanoFx(){const cx=-30,cz=-128,y0=-4,H=78,r0=44,r1=5,yt=y0+H;const g=
  for(let i=0;i<18;i++){const s={t:tx("puff"),c:[cx,yt,cz],w:6,h:6,a:.5,tint:[.42,.4,.44]};C.sprites.push(s);C.upd.push(t=>{const k=(t*.045+i/18)%1;s.c=[cx+k*34+Math.sin(i)*3,yt+3+k*42,cz+k*8];s.w=s.h=7+k*26;s.a=(1-k)*.55})}}
 
 Object.assign(TH.iceland,{env:sky("#14245c","#ffa888","#3a3a48",{stars:.6,aur:1,sun:"#ffd8b0",L:[.75,.42,.35],sky:hex("#8aa4d8"),ground:hex("#4a5a48"),sunC:hex("#ffe0b0"),fogN:60,fogF:230}),
- water:-.4,deep:"#123c5a",shallow:"#3ab0c8",road:["#a88050","#6a4a2a"],farH:.3,farRaw:1,snowCap:false,res:130,
+ water:-.4,deep:"#0f3a5c",shallow:"#3fb4cc",road:["#cfc4ac","#8a8070"],roadW:1,stones:false,farH:.3,farRaw:1,snowCap:false,res:156,
  terrain:{h:isRaw,col:isCol},
  build(){
   /* le cascate */{const sx=IS_SK[0],sz=isCliffZ(sx)-.6,top=Math.max(C.rawH(sx,sz-2),C.rawH(sx,sz-4))+.05;isFall(sx,sz,7.5,top,-.3,1.2,10);occ(IS_SK[0],IS_SK[1],7)}
@@ -7438,14 +7438,14 @@ Object.assign(TH.iceland,{env:sky("#14245c","#ffa888","#3a3a48",{stars:.6,aur:1,
   for(const [x,z] of [[IS_GE[0]+6,IS_GE[1]-3],[IS_GE[0]-7,IS_GE[1]-1],[IS_GE[0]+2,IS_GE[1]+8]]){const y=C.H(x,z);for(let i=0;i<4;i++){const s={t:tx("puff"),c:[x,y,z],w:2,h:2,a:.3};C.sprites.push(s);C.upd.push(t=>{const k=(t*.25+i/4)%1;s.c=[x+k*2,y+k*5,z-k];s.w=s.h=1+k*3;s.a=(1-k)*.4})}}
   /* Laguna Blu lattiginosa e fumante */{const [x,z]=IS_BL;C.items.push({m:R.mesh(new Geo().add(PR.disc(7.2,28),T([x,-.36,z]),"#8ee4ee",{up:true})),M:M4.id(),alpha:.92,emis:.3,noShadow:1});
    for(let i=0;i<10;i++){const s={t:tx("puff"),c:[x,0,z],w:5,h:5,a:.4};C.sprites.push(s);C.upd.push(t=>{const k=(t*.1+i/10)%1;s.c=[x+Math.sin(i*2)*4,-.3+k*5,z+Math.cos(i*3)*4];s.w=s.h=4+k*5;s.a=(1-k)*.38})}
-   for(let i=0;i<16;i++){const a=i/16*TAU,xx=x+Math.cos(a)*8.6,zz=z+Math.sin(a)*8.6;if(nearPath(xx,zz)[0]>2.5)rock(xx,zz,rr(.6,1.2),"#24242a")}occ(x,z,9)}
+   for(let i=0;i<16;i++){const a=i/16*TAU,xx=x+Math.cos(a)*8.6,zz=z+Math.sin(a)*8.6;if(nearPath(xx,zz)[0]>2.5)rock(xx,zz,rr(.6,1.2),"#3c3c44")}occ(x,z,9)}
   /* laguna glaciale con gli iceberg e la spiaggia dei diamanti */icebergs(IS_LG[0],IS_LG[1],8,14);occ(IS_LG[0],IS_LG[1],10);
   /* il vulcano e l'aurora */volcanoFx();aurora();
   /* Reykjavík: casette colorate, chiesa e Sun Voyager */
   hallgrim2(-50,30,.5);[[-40,40],[-46,44],[-36,30],[-52,40],[-42,24],[-56,22]].forEach(([x,z],i)=>{if(free(x,z,2.4))rvkHouse(x,z,rr(-.4,.4)+.5,["#e5484d","#ffc933","#2a7de1","#2fb857","#ffffff","#ff8a3a"][i%6])});
   {const s=flatSpot([[-12,49],[0,50],[-22,49]],2.5,2);if(s)sunVoyager(s[0],s[1],1.4)}
   /* spiaggia nera: faraglioni (Reynisdrangar) e organo di basalto */
-  seaStack(62,18,13,2.6);seaStack(58,30,9,2);seaStack(66,8,16,2.2);basaltWall(52,-24,56,-6,7);occ(54,-15,6);
+  seaStack(30,64,14,2.6);seaStack(37,62,10,2);seaStack(24,68,17,2.2);basaltWall(10,55,22,57,6);occ(16,56,6);
   /* fattoria col tetto d'erba */{const s=flatSpot([[-20,-30],[-8,22],[10,-28]],7,1.4);if(s){[[0,0,.2],[4.6,1,.4]].forEach(([dx,dz,r])=>{if(free(s[0]+dx,s[1]+dz,2.4)){turfHouse(s[0]+dx,s[1]+dz,r);occ(s[0]+dx,s[1]+dz,3)}})}}
   /* massi di lava coperti di muschio */scatter(36,(x,z)=>{const y=C.H(x,z),s=rr(.6,1.4);GG().add(PR.ico(s,1),T([x,y+s*.2,z],[rnd(),rnd()*3,0],[1.2,.6,1]),pick(["#6f9a52","#7fa458","#5f8a46"]));if(rnd()<.4)GG().add(PR.ico(s*.5,0),T([x+s*.6,y,z],[rnd(),0,0]),"#2c2c32")},{clear:2.6,ok:(x,z)=>z>isCliffZ(x)+3});
   /* lupini viola */scatter(70,(x,z)=>{const y=C.H(x,z),g=GS();for(let i=0;i<3;i++){const px=x+rr(-.4,.4),pz=z+rr(-.4,.4),h=rr(.5,.9);g.add(PR.cyl(.02,.03,h,3),T([px,y,pz]),"#4a7a3a");g.add(PR.cyl(0,.09,h*.6,5),T([px,y+h,pz]),pick(["#8a5ad8","#a070e8","#6a4ac8","#e080c8"]))}},{clear:1.6,ok:(x,z)=>z>isCliffZ(x)+3&&C.H(x,z)>.6});
@@ -7454,6 +7454,10 @@ Object.assign(TH.iceland,{env:sky("#14245c","#ffa888","#3a3a48",{stars:.6,aur:1,
   herd("horse",6,-16,-24,10,.9);herd("sheep",6,10,22,10,1);herd("puffin",8,52,-10,5,1.2);flock(6,10,-50,24,26,"#ffffff");whale(10,72);
   {const ls=longship();C.dyn.push(ls);C.upd.push(t=>{const a=t*.04;ls.p=[Math.cos(a)*80,-.35+Math.sin(t*1.2)*.12,Math.sin(a)*20+70];ls.r=[Math.sin(t)*.03,Math.atan2(-Math.sin(a)*80,Math.cos(a)*20),0]})}
   for(const [x,z] of [[-6,30],[8,26],[-16,6],[16,4],[-8,-14],[20,-20]]){if(nearPath(x,z)[0]>2.6&&free(x,z,1.2))lamp(x,z,"#1a1a24")}
+  {const s0=flatSpot([[44,46],[40,50],[48,40]],2,1.2);if(s0){const [x,z]=s0,y=C.H(x,z),g=GG();g.add(PR.cyl(1,1.3,8,14),T([x,y,z]),"#f4f4f4");for(const k of [2,5])GN().add(PR.cyl(1.16,1.22,.9,14),T([x,y+k,z]),"#e5484d");
+   g.add(PR.cyl(.8,.8,1.4,10),T([x,y+8,z]),"#2a2a34");g.add(PR.cyl(0,1.1,1.2,10),T([x,y+9.4,z]),"#e5484d");C.sprites.push({t:tx("glow"),c:[x,y+8.7,z],w:3,h:3,a:.9,tint:[1,.95,.7]});
+   const bm={t:tx("glow"),c:[x,y+8.7,z],w:16,h:2.2,a:.35,tint:[1,.95,.75]};C.sprites.push(bm);C.upd.push(t=>{const a=t*1.2;bm.c=[x+Math.cos(a)*8,y+8.7,z+Math.sin(a)*8];bm.a=.18+.2*Math.max(0,Math.sin(a))});occ(x,z,2.5)}}
+  /* nebbiolina bassa che scivola ai piedi della scogliera */for(let i=0;i<9;i++){const s={t:tx("puff"),c:[0,0,0],w:18,h:3.4,a:.22,tint:[.85,.9,1]};C.sprites.push(s);const ph=rnd()*90;C.upd.push(t=>{const x=((t*.7+ph)%110)-55,z=isCliffZ(x)+7+Math.sin(ph)*4;s.c=[x,C.H(x,z)+1.4,z];s.a=.22*Math.min(1,(55-Math.abs(x))/14)})}
   particles("spark",16,{size:.22,fall:.3,area:40,top:20,tw:1,base:6})}});
 
 /* ================= CASTELLO SFORZESCO 2.0 (Vigevano) — ispirato al grande castello degli Sforza di Milano =================
@@ -10122,6 +10126,11 @@ TH.transylvania.cine={kicker:"Romania · 31 ottobre",title:"Transilvania",sub:"L
 TH.castle.cine={kicker:"Milano · 1450",title:"Castello Sforzesco",sub:"La corte degli Sforza",keys:[
  {t:0,at:[0,9,-60],yaw:.05,pitch:.1,dist:50,fov:.72},{t:3.6,at:[0,8,-62],yaw:.95,pitch:.26,dist:44,fov:.8},
  {t:6.6,at:[0,6,-48],yaw:-.75,pitch:.42,dist:50,fov:.9},{t:9.4,at:[0,2,-10],yaw:.3,pitch:.62,dist:95,fov:1.05}]};
+/* Islanda: volo dedicato tra le meraviglie (Skógafoss, Strokkur, Kirkjufell, Laguna Blu) sotto l'aurora */
+TH.iceland.cine={kicker:"Islanda · notte polare",title:"Islanda",sub:"Terra di ghiaccio e di fuoco",keys:[
+ {t:0,at:[-6,9,-52],yaw:.02,pitch:.1,dist:74,fov:.62},{t:3.2,at:[-6,7,-51],yaw:.4,pitch:.16,dist:24,fov:.8},
+ {t:6.4,at:[34,4,-4],yaw:-.9,pitch:.28,dist:24,fov:.84},{t:9.4,at:[-48,13,-34],yaw:.75,pitch:.06,dist:62,fov:.78},
+ {t:12.2,at:[-44,1,-6],yaw:.4,pitch:.52,dist:30,fov:.9},{t:15,at:[0,2,-6],yaw:.3,pitch:.66,dist:98,fov:1.05}]};
 const CINE_AUTO={sicily:["Sicilia · la fattoria","Sicilia","Tra limoni e l'Etna",.8],castle:["Milano · 1450","Castello Sforzesco","La corte degli Sforza",.7],germany:["Baviera · dicembre","Germania","Il villaggio del mercatino",.5],river:["Vigevano · La Sforzesca","Leonardo e il Ticino","L'acqua che fa girare i mulini",.7],iceland:["Islanda · notte polare","Islanda","Sotto l'aurora boreale",0],market:["Vigevano · giorno di mercato","Il Mercato","Frutta, pane e formaggio",.7],france:["Parigi · Belle Époque","Francia","Sotto la Torre Eiffel",.7],
  sea:["Oceano · 1715","Mare dei Pirati","A caccia del tesoro",.7],house:["Vigevano","La Casa di Ciapin","Dove abita il tuo folletto",.7,1],jungle:["Amazzonia","La Giungla","Nel cuore della foresta",.5],
  city:["Londra","Londra","Tra il Tamigi e i bus rossi",.6],snow:["Himalaya · 8.849 m","Monte Everest","Verso il tetto del mondo",.6],space:["Sistema Solare","Lo Spazio","Tra pianeti e stelle",0],
