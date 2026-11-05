@@ -812,6 +812,7 @@ img.wthumb{object-fit:cover;width:100%;height:100%;display:block}.twc.lock img.w
 .w3d.cineout .w3hud,.w3d.cineout .w3nav,.w3d.cineout .w3panel,.w3d.cineout .w3hint{transition:opacity .9s ease!important}
 @media (prefers-reduced-motion:reduce){.w3cine i,.w3ctit{animation-duration:.01s}}
 body:has(.w3cine:not(.off)) .w3hint{opacity:0!important}
+.whytip{display:block;margin-top:6px;font-size:14px;line-height:1.35;font-weight:600;opacity:.92}.whybox{line-height:1.4}
 /* vignettatura da cinema sui mondi 3D: un gradiente fisso, costo quasi zero */
 .w3dwrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 120% 95% at 50% 45%,transparent 58%,rgba(20,10,30,.32) 100%)}
 .w3nav{position:absolute;bottom:calc(200px + env(safe-area-inset-bottom));touch-action:none;user-select:none;-webkit-user-select:none;width:58px;height:58px;border-radius:50%;border:3px solid var(--ink,#2a1535);background:linear-gradient(#fff,#ffe8f2);box-shadow:0 5px 0 var(--ink,#2a1535);font-size:22px;font-weight:900;color:var(--ink,#2a1535);z-index:3;cursor:pointer;display:grid;place-items:center}
@@ -2804,7 +2805,7 @@ function hint(q,free){if(q.done)return;if(!free)markMiss(q);
 }
 function markMiss(q){if(!q.missed){q.missed=true;G.combo=0;haptic([40,40,40]);const cb=$("#combo");if(cb)cb.classList.remove("show");if(!q.retry)G.miss++;S.ko++;wmUpdate(q,false);requeue(q);G.missRun=(G.missRun||0)+1;G.okRun=0;if(q.w&&!(G.missW||(G.missW=[])).includes(q.w))G.missW.push(q.w);if(q.w&&["type","dict","tiles","spell","listen","pic","read"].includes(q.t)){srsWrong(wkey(q.w))}}}
 function bad(q,msg){SFX.no();if(G&&G.boss&&G.shield&&!q.missed){G.shield=0;msg=`🛡️ <b>${JR[G.w][0].split(",")[0]}</b> ti ha protett{a|o}! Questo errore non conta. Riprova!`;const al=app.querySelector(".ally");if(al)al.innerHTML=bossImg(G.w,52,"hit",[0,0],"",true)+"<span></span>"}else markMiss(q);if(G&&G.boss&&!q.missedRow){q.missedRow=1;G.missRow=(G.missRow||0)+1;if(G.missRow>=2){G.missRow=0;G.hp=Math.min(G.Q.length,G.hp+2);const h=$("#hp");if(h)h.style.width=(G.hp/G.Q.length*100)+"%";G.healed=1}}
- if(G&&(G.boss||G.jr)){bossMood("tease",1200);const bt=$("#btaunt");if(bt){bt.textContent=T(G.jr?"Ih ih! Sbagliato!":G.healed?`⚡ ${WORLDS[G.w].boss[0].replace(/^(Il |Lo |La |L')/,"")} ${BOSS_INFO[G.w].heal}! +2`:BOSS_LINES[G.w][2]);G.healed=0;bt.classList.remove("show");void bt.offsetWidth;bt.classList.add("show")}}$("#gb").innerHTML=T(`<span class="who">CIAPIN</span>${msg||pick(OOPS)}`);setMood(app.querySelector(".guide .ciap"),"sad",1100);const av=app.querySelector(".stage");if(av){av.classList.remove("shk");void av.offsetWidth;av.classList.add("shk")}}
+ if(G&&(G.boss||G.jr)){bossMood("tease",1200);const bt=$("#btaunt");if(bt){bt.textContent=T(G.jr?"Ih ih! Sbagliato!":G.healed?`⚡ ${WORLDS[G.w].boss[0].replace(/^(Il |Lo |La |L')/,"")} ${BOSS_INFO[G.w].heal}! +2`:BOSS_LINES[G.w][2]);G.healed=0;bt.classList.remove("show");void bt.offsetWidth;bt.classList.add("show")}}let tip="";try{if(!msg&&q.s&&["fillc","fillt","lsent"].includes(q.t))tip=`<small class="whytip">💡 ${localWhy(q.s)}</small>`}catch(e){}$("#gb").innerHTML=T(`<span class="who">CIAPIN</span>${msg||pick(OOPS)}${tip}`);setMood(app.querySelector(".guide .ciap"),"sad",1100);const av=app.querySelector(".stage");if(av){av.classList.remove("shk");void av.offsetWidth;av.classList.add("shk")}}
 function good(q,msg){if(q.done)return;q.done=true;SFX.ok();haptic(25);if(!q.missed){S.ok++;wmUpdate(q,true);G.okRun=(G.okRun||0)+1;G.missRun=0;if(q.retry&&!msg)msg="Ora la sai! 💪";else if(q.rev&&!msg)msg="Te la ricordavi! ⏰"}
  if(!q.missed){G.combo=(G.combo||0)+1;G.best=Math.max(G.best||0,G.combo);const xp=10+Math.min(10,(G.combo-1)*2);G.xp=(G.xp||0)+xp;G.coins=(G.coins||0)+1;floatReward(`+${xp} XP`);questEv("ok");questEv("combo",G.combo,true);if(["type","dict","fillt"].includes(q.t))questEv("type");
   if(G.combo>=3){const cb=$("#combo");if(cb){cb.textContent=`🔥 ${G.combo} di fila!`;cb.classList.remove("show");void cb.offsetWidth;cb.classList.add("show")}tone([[523+G.combo*40,.06],[659+G.combo*40,.08]],"triangle",.06)}}
@@ -3161,10 +3162,43 @@ async function aiPron(word,box){const fb=()=>{box.innerHTML=T(`<span class="mute
  box.innerHTML=`<div class="dots3"><i></i><i></i><i></i></div>`;
  try{const r=await aiCall("pron",{age:S.age,text:word});const p={say:String(r.say||"").slice(0,80),tip:String(r.tip||"").slice(0,160)};PRON_CACHE[word]=p;S.pron=S.pron||{};S.pron[word]=p;save();box.innerHTML=`🗣️ <b>${esc(p.say)}</b><br><small>${esc(p.tip)}</small>`;say(word,.5)}
  catch(e){if(["not_granted","sampling_disabled","not_declared"].includes(e?.code))AI_DENIED=true;fb()}}
-async function aiWhy(q,box){const s=q.s;if(!aiOn()){box.innerHTML=`<small>${esc(nm(s.it))}</small>`;return}
+/* ================= SPIEGAZIONI "PERCHÉ?" SENZA INTERNET =================
+   Dalla risposta giusta e dalle trappole capisce di che regola si tratta e la spiega in italiano, da maestra. */
+const WHY_H={there:"there = là / c'è",their:"their = il loro",theyre:"they're = they are (loro sono)",where:"where = dove",were:"were = erano (passato di are)",wear:"wear = indossare",which:"which = quale / che (per le cose)",witch:"witch = strega",whose:"whose = di chi",whos:"who's = who is (chi è)",to:"to = a / verso",too:"too = troppo / anche",two:"two = due",weather:"weather = il tempo che fa",whether:"whether = se",write:"write = scrivere",right:"right = giusto / destra",hour:"hour = ora (60 minuti)",our:"our = nostro",by:"by = in (con un mezzo: by bus)",buy:"buy = comprare",bye:"bye = ciao",then:"then = poi",than:"than = di (nei confronti)",sea:"sea = mare",see:"see = vedere",plane:"plane = aereo",plain:"plain = semplice",knows:"knows = sa",nose:"nose = naso",night:"night = notte",knight:"knight = cavaliere",four:"four = quattro",for:"for = per",eight:"eight = otto",ate:"ate = mangiò",wood:"wood = legno",would:"would = -rei (vorrei = I would like)",made:"made = fatto",maid:"maid = cameriera",tail:"tail = coda",tale:"tale = racconto",ears:"ears = orecchie",years:"years = anni",hair:"hair = capelli",hare:"hare = lepre",here:"here = qui",whale:"whale = balena",wheel:"wheel = ruota",beach:"beach = spiaggia",peach:"peach = pesca",scared:"scared = spaventato",scary:"scary = che fa paura",bored:"bored = annoiato",boring:"boring = noioso",board:"board = lavagna / tavola",exciting:"exciting = emozionante",excited:"excited = emozionato",quick:"quick = veloce (aggettivo)",quickly:"quickly = velocemente (come si fa una cosa)",lives:"lives = vive",loves:"loves = ama",leaves:"leaves = foglie",ever:"ever = mai (nelle domande: Have you ever…?)",never:"never = mai (in frase negativa)",every:"every = ogni",just:"just = appena",yet:"yet = ancora (nelle domande e negazioni)",always:"always = sempre",usually:"usually = di solito"};
+const WHY_PREP={in:"in = dentro",on:"on = sopra / su (e con i giorni: on Monday)",at:"at = a (un punto, un'ora: at seven)",under:"under = sotto",over:"over = sopra (senza toccare)",behind:"behind = dietro",between:"between = tra due cose",beside:"beside = accanto",next:"next to = vicino / accanto",near:"near = vicino",opposite:"opposite = di fronte",of:"of = di",from:"from = da",after:"after = dopo",before:"before = prima",with:"with = con",around:"around = intorno",about:"about = su / circa",into:"into = dentro (entrando)"};
+const WHY_Q={who:"who = chi",what:"what = cosa",where:"where = dove",when:"when = quando",why:"why = perché (domanda)",how:"how = come",which:"which = quale",whose:"whose = di chi"};
+const WHY_IRR={went:"go",saw:"see",ate:"eat",drank:"drink",gave:"give",found:"find",wrote:"write",took:"take",bought:"buy",flew:"fly",won:"win",slept:"sleep",came:"come",ran:"run",sold:"sell",built:"build",said:"say",made:"make",had:"have",was:"be",were:"be",did:"do",told:"tell",met:"meet",fell:"fall"};
+function localWhy(s){const k=x=>x.toLowerCase().replace(/[’']/g,"");const a=k(s.a),D=s.d.map(k),all=[a,...D],has=x=>all.includes(x),out=[];const A=`«<b>${esc(s.a)}</b>»`;
+ const add=t=>{if(t&&!out.includes(t))out.push(t)};
+ if(s.d.some(d=>typeof TRAPS!=="undefined"&&TRAPS.has(s.a+"|"+d)))add(`Occhio allo spelling: si scrive ${A}. Leggilo lettera per lettera: ${esc(s.a.toUpperCase().split("").join("-"))}.`);
+ if(["am","is","are","was","were","im"].includes(a)&&D.some(d=>["am","is","are","was","were","where"].includes(d)))add("Il verbo essere: <b>I am</b>; <b>he / she / it</b> e una cosa sola → <b>is</b>; <b>you / we / they</b> e i plurali → <b>are</b>. Al passato: was (I, he, she, it) e were (you, we, they).");
+ if(["do","does","did","dont","doesnt","didnt"].includes(a))add("Con <b>he / she / it</b> si usa <b>does / doesn't</b>; con <b>I / you / we / they</b> si usa <b>do / don't</b>. Al passato, per tutti: <b>did / didn't</b>. Dopo do, does e did il verbo resta senza -s.");
+ if(["has","have","had"].includes(a)&&D.some(d=>["has","have","is","having"].includes(d)))add("Avere: <b>he / she / it → has</b> (has got); <b>I / you / we / they → have</b>.");
+ if(["can","cant","could","must","mustnt","should","will","would"].includes(a)&&!(a==="would"&&has("wood")))add("Dopo <b>can, must, should, will</b> il verbo resta semplice, senza -s e senza to: she can swim, you must stop.");
+ if(has("much")&&has("many"))add("<b>many</b> con le cose che si contano (many eggs, many pencils); <b>much</b> con quelle che non si contano (much water) e per il prezzo: How much is it?");
+ if(has("some")&&has("any"))add("<b>some</b> nelle frasi affermative e quando chiedi o offri (Can I have some juice?); <b>any</b> nelle domande normali e nelle negazioni (Is there any cheese?).");
+ if((a==="a"||a==="an")&&(has("a")&&has("an")))add("<b>an</b> davanti a un suono di vocale (an egg, an apple); <b>a</b> davanti a una consonante (a goat).");
+ if(["his","her","he","she"].includes(a)&&D.some(d=>["his","her","he","she"].includes(d)))add("<b>his</b> = di lui, <b>her</b> = di lei: in inglese conta chi possiede, non la cosa posseduta.");
+ if(["this","these","that","those"].includes(a)&&D.some(d=>["this","these","thes"].includes(d)))add("<b>this</b> = questo (uno solo), <b>these</b> = questi (più di uno).");
+ if(WHY_PREP[a]&&D.some(d=>WHY_PREP[d]))add("Le preposizioni: "+[a,...D].filter(x=>WHY_PREP[x]).map(x=>WHY_PREP[x]).join(" · ")+".");
+ if(WHY_Q[a]&&D.some(d=>WHY_Q[d]))add("Le parole delle domande: "+[a,...D].filter(x=>WHY_Q[x]).map(x=>WHY_Q[x]).join(" · ")+".");
+ const hom=[a,...D].filter(x=>WHY_H[x]);if(WHY_H[a]&&hom.length>1)add("Sembrano simili ma vogliono dire cose diverse: "+hom.map(x=>WHY_H[x]).join(" · ")+".");
+ if(/(er|est)$/.test(a)&&D.some(d=>/(er|est)$/.test(d)&&d!==a&&d.slice(0,3)===a.slice(0,3))&&(/\bthan\b/i.test(s.en)||s.en.toLowerCase().includes("the "+a)||/(ier|er)$/.test(a)&&/easier|faster|higher/.test(a))||a==="more"||a==="better"||a==="best")add("Per confrontare due cose: <b>-er + than</b> (bigger than). Per il più di tutti: <b>the -est</b> (the tallest). Parole lunghe: more / the most. Irregolari: good → better → best."+(/(gg|tt|nn)(er|est)$/.test(a)?" Le parole corte come big raddoppiano la consonante: bigger.":/i(er|est)$/.test(a)?" La y finale diventa i: happy → happier.":""));
+ if(/ing$/.test(a)){add("Per un'azione che succede adesso: <b>am / is / are + -ing</b>."+(/([bcdfgklmnprstvz])\1ing$/.test(a)?` Qui la consonante finale raddoppia: ${esc(s.a.replace(/([a-z])\1ing$/i,"$1"))} → ${esc(s.a)}.`:D.some(d=>/([a-z])\1ing$/.test(d))?" Qui la consonante NON raddoppia.":""))}
+ if(WHY_IRR[a]&&D.some(d=>/ed$/.test(d)))add(`${A} è il passato irregolare di <b>${WHY_IRR[a]}</b>: non si aggiunge -ed.`);
+ else if(/ied$/.test(a))add("Passato regolare con la y: la y diventa i e si aggiunge -ed (study → studied, carry → carried).");
+ else if(/ed$/.test(a)&&D.some(d=>!/ed$/.test(d)))add("Passato regolare: si aggiunge <b>-ed</b> al verbo (climb → climbed, walk → walked).");
+ if(/s$/.test(a)&&D.some(d=>d===a.slice(0,-1)||d===a.slice(0,-2))&&!out.length){const sing=/^[A-Z]/.test(s.en)&&/^(the|a|an|my|your|his|her|he|she|it)\b/i.test(s.en);add(sing||/\b(he|she|it)\b/i.test(s.en)?"Con <b>he / she / it</b> (o una persona o cosa sola) il verbo prende la <b>-s</b>: she likes, he watches.":"Più di uno = plurale: di solito si aggiunge <b>-s</b> (hand → hands), dopo s, x, sh, ch si aggiunge <b>-es</b> (box → boxes).")}
+ if(D.some(d=>d===a+"s"||d===a+"es")&&!out.length)add(/^(i|you|we|they)\b/i.test(s.en)||/s\b/.test(s.en.split(" ")[0])?"Con <b>I / you / we / they</b> o con un plurale il verbo NON prende la -s: I like, rabbits like.":"Qui serve la forma senza -s.");
+ if(["geese","teeth","feet","children","mice","people","sheep","women","men"].includes(a))add(`Plurale irregolare: ${A} non si forma con la -s (goose → geese, tooth → teeth, foot → feet, child → children).`);
+ if(/^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december)s?$/.test(a))add("Giorni e mesi in inglese si scrivono sempre con la <b>maiuscola</b>.");
+ if(!out.length&&WHY_H[a])add(WHY_H[a]+".");
+ if(!out.length)add(`La parola giusta è ${A}: ${D.length?"le altre ("+s.d.map(esc).join(", ")+") qui non hanno senso o sono scritte male.":""}`);
+ return out.slice(0,2).join("<br>")}
+async function aiWhy(q,box){const s=q.s;const loc=()=>`🤔 ${T(localWhy(s))}<br><small>🇮🇹 ${esc(nm(s.it))}</small>`;if(!aiOn()){box.innerHTML=loc();return}
  box.innerHTML=`<div class="dots3"><i></i><i></i><i></i></div>`;
  try{const r=await aiCall("why",{age:S.age,text:nm(s.en),answer:s.a,wrong:s.d});box.innerHTML=`🤔 ${esc(String(r.why||r.text||"").slice(0,300))}`}
- catch(e){if(["not_granted","sampling_disabled","not_declared"].includes(e?.code))AI_DENIED=true;box.innerHTML=`<small>${esc(nm(s.it))}</small>`}}
+ catch(e){if(["not_granted","sampling_disabled","not_declared"].includes(e?.code))AI_DENIED=true;box.innerHTML=loc()}}
 
 /* ================= PAGINA INIZIALE 2.0 (biglietto da visita) ================= */
 /* Skyline neon di Vigevano: portici, Torre del Bramante, Duomo a facciata concava, Castello */
@@ -5937,8 +5971,16 @@ function evHimalaya(){const g=new Geo();/* catena dell'Himalaya: picchi innevati
   for(let k=0;k<NS;k++){const A=base[k],B=base[(k+1)%NS],C2=mid[(k+1)%NS],D=mid[k];tris.push([A,C2,B],[A,D,C2]);cols.push(k%2?rk:sn,k%2?rk:sn);tris.push([D,top,C2]);cols.push(k%3?sn:"#c8d4ea")}
   let q=0;g.add(tris,null,()=>cols[q++],{fix:false,smooth:true})}
  C.items.push({m:R.mesh(g),M:M4.id(),noShadow:1})}
+/* EVEREST: il sentiero diventa una vera traccia di alpinisti: neve battuta (non una strada), orme, paletti con le bandierine */
+TH.snow.road=["#dde5f2","#8fa2c4"];TH.snow.roadW=.95;TH.snow.stones=false;
+function evTrail(){const P=C.pts,PH=C.ph,g=new Geo(),fl=new Geo();
+ /* orme alternate dentro la traccia */for(let i=2;i<P.length-2;i++){const a=P[i-1],b=P[i+1],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz)||1,nx=-dz/L,nz=dx/L,s=i%2?1:-1,p=P[i];
+  g.add(PR.box(.22,.03,.36,true),T([p[0]+nx*.3*s,PH[i]+.24,p[1]+nz*.3*s],[0,Math.atan2(dx,dz),0]),"#a8b8d4")}
+ /* paletti di bambù con la bandierina rossa, ai lati, ogni pochi metri */for(let i=6;i<P.length-4;i+=7){if(C.br[i])continue;const a=P[i-1],b=P[i+1],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz)||1,s=(i/7|0)%2?1:-1;
+  const x=P[i][0]-dz/L*1.6*s,z=P[i][1]+dx/L*1.6*s;if(C.nodes.some(n=>Math.hypot(n[0]-x,n[1]-z)<2.6))continue;const y=C.H(x,z);g.add(PR.cyl(.035,.04,1.6,5),T([x,y,z]),"#d8b878");fl.add(PR.box(.03,.24,.4,true),T([x,y+1.4,z+.2]),(i/7|0)%3?"#e5484d":"#ffc933")}
+ C.items.push({m:R.mesh(g),M:M4.id(),noShadow:1});C.items.push({m:R.mesh(fl),M:M4.id(),sway:.4,noShadow:1})}
 const _snowBuild2=TH.snow.build;
-TH.snow.build=function(){_snowBuild2();const n=C.nodes,P=C.pts,PH=C.ph;
+TH.snow.build=function(){_snowBuild2();const n=C.nodes,P=C.pts,PH=C.ph;try{evTrail()}catch(e){console.error("evTrail",e)}
  /* cartelli con quota e nome di ogni tappa */
  n.forEach(([x0,z0],i)=>{let x,z;for(let k=0;k<16;k++){const a=k/16*TAU+(i%2?0:Math.PI);[x,z]=away(x0+Math.cos(a)*3.5,z0+Math.sin(a)*3.5,3.4);if(C.occ.every(o=>Math.hypot(x-o[0],z-o[1])>o[2]+1.2))break}occ(x,z,1.2);const y=C.H(x,z);GG().add(PR.box(.18,2.4,.18,true),T([x,y,z]),"#7a4a2a");GG().add(PR.box(1.8,.9,.12,true),T([x,y+2,z],[0,Math.atan2(-x+x0,-z+z0),0]),"#a8703e");
   C.sprites.push({t:textSprite(EV_ALT[i][0],EV_ALT[i][1]),c:[x,y+3.6,z],w:4.6,h:1.15,a:1})});
@@ -6837,6 +6879,45 @@ function trCastle(x,z){const y0=Y(x,z);const g=GG(),gn=GN();
  /* bandiera nera strappata */g.add(PR.cyl(.05,.05,3,4),T([x+7,y+21+3.6*1.9-2,z-3.5]),"#3a3a4a");
  occ(x,z,14)}
 
+/* IL CASTELLO DI DRACULA 2.0: cinta di mura merlate sulla rupe, mastio altissimo con tetto a punta d'ardesia,
+   palazzo gotico con abbaini, torri tonde con caditoie e coni neri, torretta sottile, portone ad arco con la grata,
+   scalinata scavata nella roccia. Finestre a sesto acuto tutte in un'unica mesh (pochi draw call). */
+let TR_WIN=[];
+function trCastle2(x,z){const y0=Y(x,z);const g=GG(),gn=GN(),lit=new Geo();TR_WIN=[];
+ const ST="#5a5468",ST2="#4a4458",DK="#1c1824",RF="#2a2638",RF2="#3a2030",TRIM="#6e6880";
+ /* la rupe */crag.taper=.35;crag(x,y0-2,z,13,13,11,["#4a4456","#3e3a4a","#565064"],"#2e3a36");crag.taper=0;
+ for(const [dx,dz,s] of [[-11,5,4.2],[10,7,3.8],[-7,-9,4.6],[12,-6,4]])crag(x+dx,y0-1,z+dz,s,s*1.7,s,["#4a4456","#3e3a4a"],"#2e3a36");
+ const y=y0+10;
+ const win=(px,py,pz,rot,w,h,on)=>{const m=T([px,py,pz],[0,rot,0]);const ge=on?lit:gn,col=on?((px*7+py*3|0)%3?"#ffb040":"#ff3a2a"):DK;
+  ge.add(PR.box(w,h,.1,true),m,col);ge.add([[[-w/2,h,0],[w/2,h,0],[0,h+w*.85,0]],[[-w/2,h,0],[0,h+w*.85,0],[w/2,h,0]]],m,col,{fix:false});
+  gn.add(PR.box(w+.24,.14,.18,true),M4.mul(m,T([0,-.07,0])),TRIM);if(on)TR_WIN.push([px+Math.sin(rot)*.4,py+h*.6,pz+Math.cos(rot)*.4])};
+ const merlons=(cx,cy,cz,w,d)=>{for(const [ax,az,len,rot] of [[0,d/2,w,0],[0,-d/2,w,0],[w/2,0,d,TAU/4],[-w/2,0,d,TAU/4]])for(let k=-len/2+.4;k<=len/2-.3;k+=1.1){const c=Math.cos(rot),s=Math.sin(rot);gn.add(PR.box(.55,.7,.5,true),T([cx+ax+k*c,cy,cz+az-k*s],[0,rot,0]),ST2)}};
+ /* cinta di mura sul ciglio della rupe, con il camminamento */
+ const RW=10.5,NW=12;for(let k=0;k<NW;k++){const a=(k+.5)/NW*TAU;if(Math.abs(Math.sin(a))<.26&&Math.cos(a)>0)continue;/* varco del portone davanti */
+  const m=M4.mul(T([x,y-3,z],[0,-a+TAU/4,0]),T([0,0,RW]));g.add(PR.box(5.7,5,1.1,true),m,ST2);for(let j=-2;j<=2;j++)gn.add(PR.box(.6,.7,.6,true),M4.mul(m,T([j*1.15,5,.3])),ST2)}
+ /* torri tonde agli angoli della cinta: caditoie, coni d'ardesia, finestrelle */
+ [[-8,5,13,1.9],[8.4,4.6,15,2],[-7.6,-6.4,17,2.1],[8,-6.8,14,1.8]].forEach(([dx,dz,h,r],i)=>{const tx0=x+dx,tz=z+dz;g.add(PR.cyl(r,r*1.12,h,14),T([tx0,y-4,tz]),i%2?ST:ST2);
+  gn.add(PR.cyl(r*1.25,r*1.05,.9,14),T([tx0,y-4+h-.6,tz]),TRIM);g.add(PR.cyl(r*1.28,r*1.28,.25,14),T([tx0,y-4+h+.3,tz]),DK);
+  g.add(PR.cyl(0,r*1.34,r*3.4,14),T([tx0,y-4+h+.5,tz]),i%2?RF:RF2);g.add(PR.cyl(.04,.06,1.6,4),T([tx0,y-4+h+.5+r*3.4-.2,tz]),"#6a6478");
+  for(let k=0;k<2;k++){const a=Math.atan2(dx,dz)+(k-.5)*.9;win(tx0+Math.sin(a)*r*1.06,y-1+k*4.5,tz+Math.cos(a)*r*1.06,a,.45,1.1,(i+k)%2===0)}});
+ /* il palazzo gotico (davanti al mastio) */
+ g.add(PR.box(11,8,6,true),T([x,y,z+.5]),ST);g.add(PR.box(11.3,.4,6.3,true),T([x,y+8,z+.5]),TRIM);g.add(PR.prism(6.8,5.2,11.6),T([x,y+8.2,z+.5],[0,TAU/4,0]),RF);
+ for(let i=-2;i<=2;i++){win(x+i*2.1,y+1.2,z+3.56,0,.62,1.7,i!==0&&(i+5)%3!==1);win(x+i*2.1,y+4.8,z+3.56,0,.56,1.5,i%2===0)}
+ for(const sx of [-2.6,2.6]){g.add(PR.box(1.4,1.6,1.2,true),T([x+sx,y+9.6,z+2.4]),ST);g.add(PR.prism(1.6,1.3,1.6),T([x+sx,y+11.2,z+2.4],[0,0,0]),RF);win(x+sx,y+9.8,z+3.02,0,.4,.8,sx>0)}
+ /* contrafforti */for(const sx of [-5.6,-1.9,1.9,5.6])g.add(PR.prism(.9,5.5,1.3),T([x+sx,y,z+3.9],[0,TAU/4,0]),ST2);
+ /* il mastio: torre quadrata altissima con tetto a punta e quattro torrette pensili */
+ const kx=x-1.5,kz=z-3.2,kh=24;g.add(PR.box(5.4,kh,5.4,true),T([kx,y-3,kz]),ST2);gn.add(PR.box(6.2,.9,6.2,true),T([kx,y-3+kh-.4,kz]),TRIM);merlons(kx,y-3+kh+.6,kz,6,6);
+ g.add(PR.pyr(5.6,9,5.6),T([kx,y-3+kh+.4,kz]),RF);g.add(PR.cyl(.05,.07,2.2,4),T([kx,y-3+kh+9.2,kz]),"#6a6478");
+ for(const [ax,az] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const px=kx+ax*3,pz=kz+az*3,py=y-3+kh-2.5;g.add(PR.cyl(.8,.4,1.4,10),T([px,py-1.2,pz]),ST);g.add(PR.cyl(.8,.8,2.6,10),T([px,py,pz]),ST);g.add(PR.cyl(0,.95,3.2,10),T([px,py+2.6,pz]),RF2)}
+ for(let k=0;k<5;k++)win(kx,y+2+k*3.6,kz+2.75,0,.55,1.4,k===4||k===2);for(let k=0;k<3;k++)win(kx+2.75,y+5+k*4.2,kz,TAU/4,.5,1.3,k===2);
+ /* torretta sottile accanto al mastio */g.add(PR.cyl(1,1.05,20,12),T([x+3.6,y-3,z-3.6]),ST);g.add(PR.cyl(1.2,1.2,.5,12),T([x+3.6,y+17,z-3.6]),TRIM);g.add(PR.cyl(0,1.25,5.4,12),T([x+3.6,y+17.4,z-3.6]),RF);win(x+3.6,y+12,z-2.55,0,.4,1,1);
+ /* il portone con l'arco, la grata e due torrette */const gz=z+RW;g.add(PR.box(5,7,2.4,true),T([x,y-3,gz]),ST2);merlons(x,y+4.3,gz,5,2.4);
+ gn.add(PR.box(2.2,3,.12,true),T([x,y-3,gz+1.22]),"#120e16");gn.add(PR.cyl(1.1,1.1,.12,14).filter(t=>t.some(q=>q[2]<0)),T([x,y,gz+1.22],[TAU/4,0,0]),"#120e16");
+ for(let k=-2;k<=2;k++)gn.add(PR.box(.08,3.4,.08,true),T([x+k*.42,y-3,gz+1.3]),"#3a3444");for(let k=0;k<4;k++)gn.add(PR.box(2,.08,.08,true),T([x,y-2.6+k*.9,gz+1.3]),"#3a3444");
+ for(const sx of [-1,1]){g.add(PR.cyl(1,1.1,9,12),T([x+sx*3,y-3,gz+.4]),ST);g.add(PR.cyl(0,1.2,3.4,12),T([x+sx*3,y+6,gz+.4]),RF2)}
+ /* scalinata scavata nella rupe fino al portone */for(let k=0;k<12;k++){const sz=gz+2+k*1.05,sy=y-3-k*.85;if(sy<C.H(x,sz)-.3)break;gn.add(PR.box(2.6,.85,1.05,true),T([x,sy-.85,sz]),k%2?"#5a5468":"#524c60")}
+ /* bandiera nera strappata sul mastio */gn.add(PR.box(.04,1.1,1.8,true),T([kx,y-3+kh+10.4,kz+.9]),"#140a14");
+ C.items.push({m:R.mesh(lit),M:M4.id(),emis:1.3,noShadow:1});occ(x,z,15)}
 function trTomb(x,z,k,rot){const y=Y(x,z)-.15,g=GG(),gn=GN(),c=pick(["#8a8698","#7a7688","#9a96a8"]);const tilt=rr(-.15,.15);
  if(k===0){g.add(PR.box(1,1.3,.3,true),T([x,y,z],[0,rot,tilt]),c);g.add(PR.cyl(.5,.5,.3,12).filter(t=>t.some(q=>q[2]<0)),M4.mul(T([x,y,z],[0,rot,tilt]),T([0,1.3,-.15],[TAU/4,0,0])),c);gn.add(PR.box(.5,.08,.05,true),M4.mul(T([x,y,z],[0,rot,tilt]),T([0,1.1,.16])),"#4a4658");gn.add(PR.box(.08,.4,.05,true),M4.mul(T([x,y,z],[0,rot,tilt]),T([0,.92,.16])),"#4a4658")}
  else if(k===1){g.add(PR.box(.22,1.8,.22,true),T([x,y,z],[0,rot,tilt]),c);g.add(PR.box(1,.22,.22,true),M4.mul(T([x,y,z],[0,rot,tilt]),T([0,1.25,0])),c)}
@@ -6883,7 +6964,7 @@ function bats(n,cx,cy,cz,r){for(let i=0;i<n;i++){const b=new N3(null),wing=sd=>n
 TH.transylvania=Object.assign({},TH.transylvaniaOld,{env:sky("#07061a","#2e2a5a","#141428",{stars:1.2,sun:"#a8b4ff",L:[-.35,.7,-.35],sky:hex("#4a4a8a"),ground:hex("#1e1a30"),sunC:hex("#fff6d0"),fogN:18,fogF:120}),
  road:["#5e5874","#3a3450"],pine:["#121e28","#1a2a34","#24363e"],
  terrain:{h:(x,z)=>.4+hills(x,z,2,.05)+Math.min(cone(x,z,8,-66,40,27,1.1),18.5)+cone(x,z,-30,-50,12,6,1.3),col:(x,z,h,sl)=>sl>.9?"#2e2a3e":(fbm(x*.1,z*.1)>.55?"#22362e":fbm(x*.3,z*.3)>.6?"#3a3424":"#2c4234")},
- build(){trCastle(8,-66);
+ build(){trCastle2(8,-66);
   /* la luna piena enorme con l'alone, dietro il castello */
   const mt=texC(256,256,x=>{const g=x.createRadialGradient(128,128,10,128,128,128);g.addColorStop(0,"#fffbe8");g.addColorStop(.85,"#f4ecc8");g.addColorStop(1,"#e8dcb0");x.fillStyle=g;x.beginPath();x.arc(128,128,126,0,TAU);x.fill();x.fillStyle="rgba(180,170,140,.45)";for(const [a,b,r] of [[90,80,26],[160,110,18],[120,170,30],[70,150,14],[175,175,12],[140,60,10]]){x.beginPath();x.arc(a,b,r,0,TAU);x.fill()}});
   C.sprites.push({t:tx("glow"),c:[30,70,-185],w:120,h:120,a:.35});C.sprites.push({t:mt,c:[30,70,-180],w:46,h:46,a:1});
@@ -7538,7 +7619,7 @@ function trVillage(){const g=GG(),gn=GN(),lit=new Geo();const HC=["#e8e0cc","#d8
  C.items.push({m:R.mesh(lit),M:M4.id(),emis:1.2,noShadow:1});
  /* lampioni e fumo dai camini */for(let i=0;i<6;i++){const a=i/6*TAU+.3,x=c[0]+Math.cos(a)*9.5,z=c[1]+Math.sin(a)*9.5;if(!free(x,z,1))continue;const y=C.H(x,z);GG().add(PR.cyl(.06,.08,2.6,5),T([x,y,z]),"#2a2a34");C.sprites.push({t:tx("glow"),c:[x,y+2.7,z],w:1.8,h:1.8,a:.8,tint:[1,.8,.4]})}
  return c}
-function trTorchRoad(){/* torce lungo la salita dall'ultima tappa al castello */const a=C.nodes[9],b=[8,-60];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let k=1;k<L/4;k++){const f=k*4/L;for(const sd of [-1,1]){const x=a[0]+(b[0]-a[0])*f+sd*2.2,z=a[1]+(b[1]-a[1])*f;if(!free(x,z,.8)&&k>2)continue;const y=C.H(x,z);GG().add(PR.cyl(.07,.1,1.8,5),T([x,y,z]),"#3a2a22");const s={t:tx("glow"),c:[x,y+2,z],w:1.4,h:1.8,a:.9,tint:[1,.55,.2]};C.sprites.push(s);C.upd.push(t=>{s.w=1.3+Math.sin(t*12+x)*.15})}}}
+function trTorchRoad(){/* torce lungo la salita dall'ultima tappa al castello */const a=C.nodes[9],b=[8,-48];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let k=1;k<L/4;k++){const f=k*4/L;for(const sd of [-1,1]){const x=a[0]+(b[0]-a[0])*f+sd*2.2,z=a[1]+(b[1]-a[1])*f;if(!free(x,z,.8)&&k>2)continue;const y=C.H(x,z);GG().add(PR.cyl(.07,.1,1.8,5),T([x,y,z]),"#3a2a22");const s={t:tx("glow"),c:[x,y+2,z],w:1.4,h:1.8,a:.9,tint:[1,.55,.2]};C.sprites.push(s);C.upd.push(t=>{s.w=1.3+Math.sin(t*12+x)*.15})}}}
 {const tb=TH.transylvania.build;TH.transylvania.build=function(){tb.apply(this,arguments);try{trVillage();trTorchRoad();
   /* il castello illuminato dalla luna: alone freddo sulla rupe */C.sprites.push({t:tx("glow"),c:[8,C.H(8,-66)+10,-62],w:46,h:34,a:.22,tint:[.7,.75,1]})}catch(e){console.error("transylvania+",e)}}}
 /* ---------- TRANSILVANIA HORROR: il castello di Dracula vivo (finestre che tremolano rosse, torce, pipistrelli),
@@ -7547,11 +7628,11 @@ function trTorchRoad(){/* torce lungo la salita dall'ultima tappa al castello */
 {const tb=TH.transylvania.build;TH.transylvania.build=function(){tb.apply(this,arguments);try{trHorror()}catch(e){console.error("transylvania horror",e)}}}
 function trHorror(){const cx=8,cz=-66,y=C.H(cx,cz)+9.5;
  /* finestre del castello: bagliori rossi e arancio che tremolano */
- const W=[];for(let i=-2;i<=2;i++)for(const yy of [1.5+.9,5.3+.75])W.push([cx+i*2.4,y+yy,cz+4.4]);for(let k=0;k<4;k++)W.push([cx-1,y+8.7+k*3,cz-.5]);
+ const W=TR_WIN.slice();
  W.forEach((p,i)=>{if(i%3===1)return;const s={t:tx("glow"),c:p,w:2.2,h:2.6,a:.7,tint:i%2?[1,.25,.15]:[1,.55,.2]};C.sprites.push(s);C.upd.push(t=>{s.a=.45+.3*Math.abs(Math.sin(t*(3+i%4)+i*1.7))})});
- /* torce al portone e bagliore caldo dal basso */for(const sx of [-1,1]){const s={t:tx("glow"),c:[cx+sx*2.2,y+2.6,cz+4.8],w:2,h:2.6,a:.9,tint:[1,.5,.15]};C.sprites.push(s);C.upd.push(t=>{s.w=1.8+Math.sin(t*13+sx)*.25})}
- C.sprites.push({t:tx("glow"),c:[cx,y+1,cz+6],w:16,h:8,a:.25,tint:[1,.4,.2]});
- /* altri pipistrelli intorno alle guglie */bats(10,cx-1,y+24,cz-3,7);
+ /* torce al portone e bagliore caldo dal basso */for(const sx of [-1,1]){const s={t:tx("glow"),c:[cx+sx*1.6,y-.2,cz+12.2],w:2,h:2.6,a:.9,tint:[1,.5,.15]};C.sprites.push(s);C.upd.push(t=>{s.w=1.8+Math.sin(t*13+sx)*.25})}
+ C.sprites.push({t:tx("glow"),c:[cx,y-1,cz+12],w:12,h:7,a:.28,tint:[1,.4,.2]});
+ /* altri pipistrelli intorno alle guglie */bats(10,cx-1.5,y+30,cz-3,8);
  /* nebbia bassa che striscia tra le tombe e sul sentiero */const mist=tx("puff");for(let i=0;i<10;i++){const s={t:mist,c:[0,0,0],w:16,h:3.2,a:.2,tint:[.72,.66,.95]};C.sprites.push(s);const z0=rr(-40,40),ph=rnd()*80;
   C.upd.push(t=>{const x=((t*.9+ph)%100)-50;s.c=[x,C.H(x,z0)+.9,z0];s.a=.22*Math.min(1,(50-Math.abs(x))/12)})}
  /* occhi rossi nel bosco che si aprono e si chiudono */for(let i=0,n=0;i<60&&n<9;i++){const x=rr(-46,46),z=rr(-46,46);if(free(x,z,3)&&nearPath(x,z)[0]>6){n++;const yy=C.H(x,z)+1.3;
