@@ -4461,7 +4461,12 @@ float shadowAt(){if(uShOn<.5)return 1.;vec3 s=vLS.xyz/vLS.w*.5+.5;if(s.x<0.||s.x
 void main(){float fd=length(uCam-vW);float f0=clamp((fd-uFogN)/(uFogF-uFogN),0.,1.);
  if(uOut>0.){gl_FragColor=vec4(mix(vec3(.16,.08,.21),uFog,f0*f0),1.);return;}
  vec3 n=normalize(vN);vec3 v=normalize(uCam-vW);
- if(uWave>0.){float wf=1.-smoothstep(45.,150.,length(vW-uCam))*.85;n=normalize(vec3((sin(vW.x*.8+uTime*1.6)*.16+sin(vW.z*1.7-uTime*2.1)*.06*wf)*wf,1.,(cos(vW.z*.7+uTime*1.3)*.16+cos(vW.x*1.9+uTime*1.7)*.06*wf)*wf));}
+ vec2 wp=vW.xz;float wf=1.;
+ if(uWave>0.){wf=1.-smoothstep(40.,160.,fd)*.85;float t=uTime;vec2 g=vec2(0.);
+  /* quattro treni d'onda in direzioni diverse + increspature fini vicino alla camera */
+  g+=vec2(.8,.3)*cos(dot(wp,vec2(.8,.3))+t*1.6)*.13;g+=vec2(-.2,1.1)*cos(dot(wp,vec2(-.2,1.1))+t*1.9)*.09;
+  g+=vec2(1.7,1.3)*cos(dot(wp,vec2(1.7,1.3))-t*2.4)*.045*wf;g+=vec2(-2.9,1.6)*cos(dot(wp,vec2(-2.9,1.6))+t*3.1)*.03*wf;
+  g+=vec2(4.3,-3.7)*cos(dot(wp,vec2(4.3,-3.7))+t*4.2)*.014*wf*wf;n=normalize(vec3(-g.x*wf,1.,-g.y*wf));}
  float sh=shadowAt();float d=max(dot(n,uL),0.);
  if(uToon>0.)d=smoothstep(.08,.16,d)*.45+smoothstep(.45,.55,d)*.55;
  d*=mix(.35,1.,sh);
@@ -4477,7 +4482,14 @@ void main(){float fd=length(uCam-vW);float f0=clamp((fd-uFogN)/(uFogF-uFogN),0.,
   amb=mix(uGround,uSky,.75);d=max(d,.35);}
  vec3 col=bc*uTint*(amb*.6+d*uSun*.78)+bc*uEmis;
  if(uToon>0.){float r=1.-max(dot(n,v),0.);col+=pow(r,3.)*.2*uSky;vec3 hh=normalize(uL+v);col+=smoothstep(.93,.975,dot(n,hh))*.16*sh*uSun;}
- if(uWave>0.){float fr=pow(1.-max(dot(n,v),0.),3.);col=mix(col,uSky*1.05,fr*.55);vec3 h=normalize(uL+v);col+=pow(max(dot(n,h),0.),90.)*1.2*sh*uSun;}
+ if(uWave>0.){float t=uTime;
+  /* riflesso del cielo (Fresnel di Schlick) con il gradiente orizzonte-zenit */float fr=.03+.97*pow(1.-max(dot(n,v),0.),5.);vec3 rf=reflect(-v,n);
+  vec3 skyR=mix(uFog*1.02,uSky*1.12,clamp(rf.y*2.2,0.,1.));col=mix(col,skyR,clamp(fr*.7+.05,0.,.75));
+  /* scintillio del sole: riflesso stretto e alone largo */float sd=max(dot(rf,uL),0.);col+=(pow(sd,320.)*3.*(.35+.65*wf)+pow(sd,36.)*.2)*sh*uSun;
+  /* acqua bassa: caustiche che danzano */float shl=clamp((vC.g+vC.b-vC.r*.6-.9)*1.3,0.,1.)*(1.-smoothstep(.8,.9,min(vC.r,vC.b)));
+  float ca=pow(abs(sin(wp.x*1.9+t*1.1+sin(wp.y*1.3+t))*sin(wp.y*2.1-t*.9+sin(wp.x*1.1-t*.7))),5.);col+=ca*shl*.28*wf*uSun;
+  /* schiuma che va e viene sulla riva */float fm=smoothstep(.78,.9,min(vC.r,vC.b));float nz=sin(wp.x*1.4+t*.9)*sin(wp.y*1.2-t*.7)+sin((wp.x-wp.y)*2.9+t*1.8)*.5;
+  col=mix(col,vec3(.97,.99,1.)*(amb*.5+uSun*.6),fm*smoothstep(-.2,.7,nz+fm*.6)*.85);}
  vec3 fc=uFog+uSunF*pow(max(dot(-v,uL),0.),5.);col=mix(grade(col),fc,f0*f0);gl_FragColor=vec4(col,uAlpha*fa);if(uDbg>0.){vec3 q=vLS.xyz/vLS.w*.5+.5;gl_FragColor=vec4(sh,q.z,unpack(texture2D(uShM,q.xy)),1.);}}`;
 const DVS=`attribute vec3 aP;uniform mat4 uM,uLVP;uniform float uTime,uSway,uWave;varying float vZ;void main(){vec4 w=uM*vec4(aP,1.);if(uSway>0.){w.x+=sin(uTime*1.5+w.x*.21+w.z*.17)*.13*uSway;w.z+=cos(uTime*1.2+w.z*.23)*.09*uSway;}vec4 p=uLVP*w;vZ=p.z/p.w*.5+.5;gl_Position=p;}`;
 const DFS=`precision highp float;varying float vZ;vec4 pack(float d){vec4 e=fract(vec4(1.,255.,65025.,16581375.)*d);e-=e.yzww*vec4(1./255.,1./255.,1./255.,0.);return e;}void main(){gl_FragColor=pack(vZ);}`;
