@@ -9615,8 +9615,17 @@ function build(wi){const tb=performance.now();const W=WORLDS[wi],k=W.th,th=TH[k]
  C.buildMs=performance.now()-tb;return C}
 
 /* ---------- apertura del mondo ---------- */
+/* stile cinema per i mondi dopo Piazza Ducale: foschia calda verso il sole e volo d'apertura calcolato sul sentiero (niente geometria in più) */
+const CINE_AUTO={sicily:["Sicilia · la fattoria","Sicilia","Tra limoni e l'Etna",.8],castle:["Milano · 1450","Castello Sforzesco","La corte degli Sforza",.7],germany:["Baviera · dicembre","Germania","Il villaggio del mercatino",.5],river:["Vigevano · La Sforzesca","Leonardo e il Ticino","L'acqua che fa girare i mulini",.7],iceland:["Islanda · notte polare","Islanda","Sotto l'aurora boreale",0],market:["Vigevano · giorno di mercato","Il Mercato","Frutta, pane e formaggio",.7],france:["Parigi · Belle Époque","Francia","Sotto la Torre Eiffel",.7]};
+function cineUp(th){if(!th||th._cu||th.cine)return;const k=Object.keys(TH).find(n=>TH[n]===th);const A=CINE_AUTO[k];if(!A)return;th._cu=1;
+ if(th.env&&A[3]){th.env=Object.assign({},th.env,{haze:th.env.haze||A[3],sunF:th.env.sunF||[.26*A[3],.15*A[3],.04*A[3]]})}
+ th.autoCine={kicker:A[0],title:A[1],sub:A[2]}}
+function autoCineKeys(posAt,NS){const p=i=>posAt(NS[Math.max(0,Math.min(NS.length-1,i))]),L=p(NS.length-1),M=p(5),F=p(1);
+ const yw=q=>Math.atan2(-(q.dx||0),-(q.dz||1));let cx=0,cz=0;NS.forEach((_,i)=>{const q=p(i);cx+=q.x;cz+=q.z});cx/=NS.length;cz/=NS.length;
+ return [{t:0,at:[L.x,L.y+3,L.z],yaw:yw(L)+.5,pitch:.06,dist:16,fov:.78},{t:3.3,at:[M.x,M.y+2.5,M.z],yaw:yw(M)-.6,pitch:.14,dist:24,fov:.85},
+  {t:6.2,at:[F.x,F.y+3,F.z],yaw:yw(F)+.9,pitch:.24,dist:34,fov:.92},{t:8.8,at:[cx,2,cz],yaw:.3,pitch:.62,dist:92,fov:1.05}]}
 function open(wi){try{ensure();return open2(wi)}catch(err){console.error("3D",err);BROKEN=true;worldMap2D(wi)}}
-function open2(wi){G0();S.h3d=(S.h3d||0)+1;const run=++RUN;const W=WORLDS[wi];S.world=wi;
+function open2(wi){G0();S.h3d=(S.h3d||0)+1;const run=++RUN;const W=WORLDS[wi];S.world=wi;cineUp(TH[W.th]);
  const from=(typeof G!=="undefined"&&G&&G.w===wi)?G.l:null;G=null;SCR="";
  const cur=[...Array(10).keys()].find(l=>levelOpen(wi,l)&&!starsOf(wi,l));
  app.innerHTML=`<div class="screen w3d"><div class="w3dwrap" id="w3w"></div>
@@ -9686,7 +9695,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
   /* visuale di partenza con logica: guarda il sentiero davanti e, in fondo, il posto del boss (il monumento del mondo) */const la=posAt(Math.min(PD[PD.length-1],st.s+14)),bp=posAt(PD[PD.length-1]);const vx=(la.x-p0.x)*.55+(bp.x-p0.x)*.45,vz=(la.z-p0.z)*.55+(bp.z-p0.z)*.45;
   startYaw=Math.atan2(vx,vz)+Math.PI;goal.yaw=TP()?startYaw:st.face+Math.PI+.35;if(TP())Object.assign(goal,{dist:TPD.dist+7,pitch:TPD.pitch+.08})}
  /* apertura "da cinema" (th.cine): bande nere, titolo e un volo di camera scritto per il mondo; la prima volta per sessione, un tocco la salta */
- let cine=null,hadCine=false;if(th.cine&&from==null&&!CINE_DONE[wi]&&!window.__noCine){CINE_DONE[wi]=1;hadCine=true;const K=th.cine.keys;cine={t:-.3,K,dur:K[K.length-1].t,out:1.9};const scr=document.querySelector(".w3d");
+ if(!th.cine&&th.autoCine)th.cine=Object.assign({keys:autoCineKeys(posAt,NS)},th.autoCine);let cine=null,hadCine=false;if(th.cine&&from==null&&!CINE_DONE[wi]&&!window.__noCine){CINE_DONE[wi]=1;hadCine=true;const K=th.cine.keys;cine={t:-.3,K,dur:K[K.length-1].t,out:1.9};const scr=document.querySelector(".w3d");
   if(scr){scr.classList.add("cine");const d=document.createElement("div");d.className="w3cine";d.innerHTML=`<i></i><i></i><div class="w3ctit"><small>${th.cine.kicker||""}</small><b>${th.cine.title||esc(W.n)}</b><em>${th.cine.sub||""}</em></div>`;scr.appendChild(d);cine.el=d;cine.scr=scr}}
  const cineEnd=()=>{if(cine&&cine.t<cine.dur)cine.t=cine.dur};
  const afterCine=(fn,ms,keep)=>{const w=()=>{if(run!==RUN)return;if(cine)return setTimeout(w,200);setTimeout(fn,hadCine&&!keep?Math.min(ms,900):ms)};w()};
