@@ -9622,8 +9622,8 @@ function cineUp(th){if(!th||th._cu||th.cine)return;const k=Object.keys(TH).find(
  th.autoCine={kicker:A[0],title:A[1],sub:A[2]}}
 function autoCineKeys(posAt,NS){const p=i=>posAt(NS[Math.max(0,Math.min(NS.length-1,i))]),L=p(NS.length-1),M=p(5),F=p(1);
  const yw=q=>Math.atan2(-(q.dx||0),-(q.dz||1));let cx=0,cz=0;NS.forEach((_,i)=>{const q=p(i);cx+=q.x;cz+=q.z});cx/=NS.length;cz/=NS.length;
- return [{t:0,at:[L.x,L.y+3,L.z],yaw:yw(L)+.5,pitch:.06,dist:16,fov:.78},{t:3.3,at:[M.x,M.y+2.5,M.z],yaw:yw(M)-.6,pitch:.14,dist:24,fov:.85},
-  {t:6.2,at:[F.x,F.y+3,F.z],yaw:yw(F)+.9,pitch:.24,dist:34,fov:.92},{t:8.8,at:[cx,2,cz],yaw:.3,pitch:.62,dist:92,fov:1.05}]}
+ return [{t:0,at:[L.x,L.y+3,L.z],yaw:yw(L)+.5,pitch:.2,dist:16,fov:.78},{t:3.3,at:[M.x,M.y+2.5,M.z],yaw:yw(M)-.6,pitch:.5,dist:28,fov:.85},
+  {t:6.2,at:[F.x,F.y+3,F.z],yaw:yw(F)+.9,pitch:.55,dist:38,fov:.92},{t:8.8,at:[cx,2,cz],yaw:.3,pitch:.62,dist:92,fov:1.05}]}
 function open(wi){try{ensure();return open2(wi)}catch(err){console.error("3D",err);BROKEN=true;worldMap2D(wi)}}
 function open2(wi){G0();S.h3d=(S.h3d||0)+1;const run=++RUN;const W=WORLDS[wi];S.world=wi;cineUp(TH[W.th]);
  const from=(typeof G!=="undefined"&&G&&G.w===wi)?G.l:null;G=null;SCR="";
