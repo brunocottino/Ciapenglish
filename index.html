@@ -811,6 +811,7 @@ img.wthumb{object-fit:cover;width:100%;height:100%;display:block}.twc.lock img.w
 .w3d.cine .w3hud,.w3d.cine .w3nav,.w3d.cine .w3panel,.w3d.cine .w3hint,.w3d.cine .w3bub{opacity:0!important;pointer-events:none!important}
 .w3d.cineout .w3hud,.w3d.cineout .w3nav,.w3d.cineout .w3panel,.w3d.cineout .w3hint{transition:opacity .9s ease!important}
 @media (prefers-reduced-motion:reduce){.w3cine i,.w3ctit{animation-duration:.01s}}
+body:has(.w3cine:not(.off)) .w3hint{opacity:0!important}
 .w3nav{position:absolute;bottom:calc(200px + env(safe-area-inset-bottom));touch-action:none;user-select:none;-webkit-user-select:none;width:58px;height:58px;border-radius:50%;border:3px solid var(--ink,#2a1535);background:linear-gradient(#fff,#ffe8f2);box-shadow:0 5px 0 var(--ink,#2a1535);font-size:22px;font-weight:900;color:var(--ink,#2a1535);z-index:3;cursor:pointer;display:grid;place-items:center}
 .w3nav:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink,#2a1535)}.w3nav.l{left:14px}.w3nav.r{right:14px}
 
@@ -9021,6 +9022,14 @@ TH.piazza.build=function(){
  /* vita in piazza: passanti, piccioni, rondini */for(let i=0;i<6;i++){const p=townsfolk(i+3);const xs=(i%2?1:-1)*rr(9,16);npcWalk(p,[[xs,rr(-30,-10)],[xs+rr(-3,3),rr(20,50)]],rr(.9,1.3),i*.3,2)}
  pz3Town();herd("pigeon",12,-6,10,14,1.2);herd("pigeon",8,8,-22,8,1.2);flock(5,0,0,26,20,"#2a2a34");clouds(5,46)};
 TH.piazza.camIn=(x,y,z)=>y<15.4&&(Math.abs(x)>23.3||z>67.9);
+/* Piazza Ducale da cinema: luce dorata del tardo pomeriggio, sole basso alle spalle della piazza che accende la facciata del Duomo,
+   ombre lunghe dei portici, foschia calda verso il sole. Nessuna geometria in più: stessa fluidità. */
+TH.piazza.env=sky("#3a6fc0","#ffdcae","#ead2aa",{Lraw:1,L:[.6,.34,.72],sun:[1.5,1.2,.9],sunC:hex("#ffd9a2"),sky:hex("#8ea8d6"),ground:hex("#b69a76"),fog:hex("#f3d6b4"),fogN:70,fogF:320,haze:.75,sunF:[.3,.16,.03]});
+TH.piazza.cine={kicker:"Vigevano · 1494",title:"Piazza Ducale",sub:"Il salotto di Ludovico il Moro",keys:[
+ {t:0,at:[0,9,-46],yaw:.25,pitch:.05,dist:26,fov:.78},
+ {t:3.4,at:[0,5,-10],yaw:-.5,pitch:.1,dist:34,fov:.85},
+ {t:6.4,at:[30,14,8],yaw:-1.3,pitch:.18,dist:40,fov:.9},
+ {t:9,at:[0,2,10],yaw:.3,pitch:.6,dist:95,fov:1.05}]};
 /* ---------- la città intorno: isolati di case con tetti in coppi (solo per le viste dall'alto) ---------- */
 function pz3Town(){const g=GG(),rnd=pz3Rnd(909),PL=["#e2c48e","#d9a777","#e8d2a6","#cf9a7a","#e6b98a","#d8bfa0","#c98f6a","#efdcb4"],RF=["#a8543a","#b4603e","#9a4a32","#ba6a48"];
  const bad=(x,z)=>(x>27&&x<66&&z>-20&&z<36)||(Math.abs(x)<31&&z>-58&&z<75)||(Math.abs(x)<16&&z<-58&&z>-80);
