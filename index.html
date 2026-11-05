@@ -812,6 +812,8 @@ img.wthumb{object-fit:cover;width:100%;height:100%;display:block}.twc.lock img.w
 .w3d.cineout .w3hud,.w3d.cineout .w3nav,.w3d.cineout .w3panel,.w3d.cineout .w3hint{transition:opacity .9s ease!important}
 @media (prefers-reduced-motion:reduce){.w3cine i,.w3ctit{animation-duration:.01s}}
 body:has(.w3cine:not(.off)) .w3hint{opacity:0!important}
+/* vignettatura da cinema sui mondi 3D: un gradiente fisso, costo quasi zero */
+.w3dwrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 120% 95% at 50% 45%,transparent 58%,rgba(20,10,30,.32) 100%)}
 .w3nav{position:absolute;bottom:calc(200px + env(safe-area-inset-bottom));touch-action:none;user-select:none;-webkit-user-select:none;width:58px;height:58px;border-radius:50%;border:3px solid var(--ink,#2a1535);background:linear-gradient(#fff,#ffe8f2);box-shadow:0 5px 0 var(--ink,#2a1535);font-size:22px;font-weight:900;color:var(--ink,#2a1535);z-index:3;cursor:pointer;display:grid;place-items:center}
 .w3nav:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink,#2a1535)}.w3nav.l{left:14px}.w3nav.r{right:14px}
 
@@ -9618,7 +9620,8 @@ function build(wi){const tb=performance.now();const W=WORLDS[wi],k=W.th,th=TH[k]
 /* stile cinema per i mondi dopo Piazza Ducale: foschia calda verso il sole e volo d'apertura calcolato sul sentiero (niente geometria in più) */
 const CINE_AUTO={sicily:["Sicilia · la fattoria","Sicilia","Tra limoni e l'Etna",.8],castle:["Milano · 1450","Castello Sforzesco","La corte degli Sforza",.7],germany:["Baviera · dicembre","Germania","Il villaggio del mercatino",.5],river:["Vigevano · La Sforzesca","Leonardo e il Ticino","L'acqua che fa girare i mulini",.7],iceland:["Islanda · notte polare","Islanda","Sotto l'aurora boreale",0],market:["Vigevano · giorno di mercato","Il Mercato","Frutta, pane e formaggio",.7],france:["Parigi · Belle Époque","Francia","Sotto la Torre Eiffel",.7]};
 function cineUp(th){if(!th||th._cu||th.cine)return;const k=Object.keys(TH).find(n=>TH[n]===th);const A=CINE_AUTO[k];if(!A)return;th._cu=1;
- if(th.env&&A[3]){th.env=Object.assign({},th.env,{haze:th.env.haze||A[3],sunF:th.env.sunF||[.26*A[3],.15*A[3],.04*A[3]]})}
+ if(th.env&&A[3]){const L0=th.env.L||[.7,.62,.35];th.env=Object.assign({},th.env,{haze:th.env.haze||A[3],sunF:th.env.sunF||[.26*A[3],.15*A[3],.04*A[3]],
+  /* anche durante il gioco: sole più basso e caldo = ombre lunghe e luce da film */Lraw:1,L:[Math.abs(L0[0])+.2,.42,.3],sun:th.env.sun||"#ffe6c4"})}
  th.autoCine={kicker:A[0],title:A[1],sub:A[2]}}
 function autoCineKeys(posAt,NS){const p=i=>posAt(NS[Math.max(0,Math.min(NS.length-1,i))]),L=p(NS.length-1),M=p(5),F=p(1);
  const yw=q=>Math.atan2(-(q.dx||0),-(q.dz||1));let cx=0,cz=0;NS.forEach((_,i)=>{const q=p(i);cx+=q.x;cz+=q.z});cx/=NS.length;cz/=NS.length;
