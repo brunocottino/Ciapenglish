@@ -4946,6 +4946,11 @@ function makeAvatar(av){const PR=PRHQ;av=Object.assign({skin:"#ffdcc4",hair:"#6b
  body.add(back);
  knees.forEach(x=>merge(x));elbows.forEach(x=>merge(x));[legL,legR].forEach(x=>merge(x,knees));[armL,armR].forEach(x=>merge(x,elbows));merge(head,[eyes]);wings.forEach(w=>merge(w));merge(back,wings);merge(body,[legL,legR,armL,armR,head,back]);
  return {root,body,legL,legR,armL,armR,head,eyes,mouth,wings,wingType:WG,knees,elbows}}
+/* nello spazio non si cammina: si vola con lo zaino a razzo. Gambe unite e un po' piegate che ondeggiano piano, braccia aperte per l'equilibrio, corpo inclinato in avanti quando va */
+function flyPose(A,st,t){const v=Math.min(1,(st.speed||0)/6),f=Math.sin(t*1.7)*.07;
+ A.legL.r=[.22+v*.4+f,0,.05];A.legR.r=[.22+v*.4-f*.6,0,-.05];A.knees[0].r=[.3+v*.2,0,0];A.knees[1].r=[.38+v*.2,0,0];
+ if(!(st.cheer>0)&&!st.act){A.armL.r=[-.15-v*.35,0,-.55+Math.sin(t*1.3)*.05];A.armR.r=[-.15-v*.35,0,.55-Math.sin(t*1.3)*.05];A.elbows[0].r=[-.35,0,0];A.elbows[1].r=[-.35,0,0]}
+ A.body.p=[0,Math.sin(t*1.8)*.06,0]}
 /* animazioni: camminata legata alla velocità (niente piedi che scivolano), inclinazione in curva, azioni spontanee da ferma */
 const IDLE=["look","hop","twirl","stretch","wave","look","dance"];
 function animAvatar(A,st,t,dt){const v=cl(st.speed/6,0,1.25),ph=st.phase;const sw=Math.sin(ph)*Math.min(1,v*1.3);
@@ -10415,7 +10420,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
   const wantF=st.walk?st.head:(st.node===9?Math.atan2(BP[0]-ps.x,BP[1]-ps.z):(!TP()||st.idleT>5||st.wave>0)?Math.atan2(cam.eye[0]-ps.x,cam.eye[2]-ps.z):st.head);
   let df=((wantF-st.face+Math.PI)%TAU+TAU)%TAU-Math.PI;const turn=df*Math.min(1,dt*(st.walk?9:4));st.face+=turn;st.turn+=((turn/Math.max(dt,1e-3))*.12-st.turn)*Math.min(1,dt*6);
   let arc=0;if(SPC){let k=0;while(k<NS.length-2&&st.s>NS[k+1])k++;const L=NS[k+1]-NS[k]||1,f=Math.max(0,Math.min(1,(st.s-NS[k])/L));arc=Math.sin(f*Math.PI)*Math.min(4,L*.35)}
-  A.root.p=[ps.x,ps.y+(SPC?.55+Math.sin(t*1.6)*.25+arc:0),ps.z];A.root.r=[SPC?Math.min(.35,(st.speed||0)*.05):0,st.face,0];animAvatar(A,st,t,dt);
+  A.root.p=[ps.x,ps.y+(SPC?.55+Math.sin(t*1.6)*.25+arc:0),ps.z];A.root.r=[SPC?Math.min(.35,(st.speed||0)*.05):0,st.face,0];animAvatar(A,st,t,dt);if(SPC)flyPose(A,st,t);
   if(SPC){const bx=-Math.sin(st.face)*.75,bz=-Math.cos(st.face)*.75,py=A.root.p[1];JF.forEach((s,i)=>{const sd=i%2?1:-1,k=((t*2.2+i*.37)%1),px=Math.cos(st.face)*.45*sd,pz=-Math.sin(st.face)*.45*sd;
    if(i<4){s.c=[ps.x+bx+px,py+1.1-k*.3,ps.z+bz+pz];s.w=s.h=.7+Math.sin(t*20+i)*.15+(st.speed||0)*.04;s.a=.9}else{s.c=[ps.x+bx+px,py+1-k*2.4,ps.z+bz+pz];s.w=s.h=.35*(1-k);s.a=1-k}})}
   /* il compagno segue Lea */
