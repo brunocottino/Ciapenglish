@@ -200,7 +200,7 @@ h1,h2,h3{margin:0;font-family:var(--title);font-weight:400;line-height:1.15;text
 .slot{width:38px;height:54px;border-radius:10px 10px 4px 4px;background:#f3eee0;border-bottom:5px solid var(--ink);font-family:var(--body);font-weight:900;font-size:36px;display:flex;align-items:flex-end;justify-content:center;line-height:1.1;color:var(--sky-d)}
 .slot.cur{border-color:var(--berry);background:#ffe9ef}
 .slots.long{gap:6px 4px}.slots.long .slot{width:28px;height:48px;font-size:29px}.slots.xlong .slot{width:25px;height:42px;font-size:25px;border-radius:7px 7px 3px 3px}
-.slot.gap{width:16px;background:none;border:0}
+.slot.gap{width:16px;background:none;border:0}.sword{display:inline-flex;flex-wrap:nowrap;gap:inherit}.slot.sep{width:14px;background:none;border:0;box-shadow:none;font-weight:900}
 .slot.given{color:var(--mute)}
 .slot.good{color:var(--leaf-d);background:#dcf8e5}
 .tin{position:absolute;inset:0;width:100%;height:100%;opacity:.01;font-size:16px;border:0;background:transparent;color:transparent;caret-color:transparent}
@@ -2913,7 +2913,8 @@ function good(q,msg){if(q.done)return;q.done=true;SFX.ok();haptic(25);if(!q.miss
  clearTimeout(G.autoT);if(!q.missed&&!last&&!G.ko&&S.autoNext!==false&&!q.x){const d=["order","match","fillc","fillt","lsent"].includes(q.t)?1700:1150;n.classList.add("auto");n.style.setProperty("--ad",d+"ms");G.autoT=setTimeout(()=>{if(document.body.contains(n))adv()},d)}
 }
 /* --- lettere --- */
-function drawTiles(q){$("#slots").innerHTML=q.target.split("").map((_,k)=>`<div class="slot ${k===q.typed.length?"cur":""}">${q.typed[k]?q.typed[k].c:""}</div>`).join("");
+function drawTiles(q){const full=(q.w&&q.w.en||q.target).toLowerCase();let j=0;
+ $("#slots").innerHTML=slotWords(full.split("").map(ch=>{if(!/[a-z]/.test(ch))return ch===" "?" ":`<div class="slot sep">${esc(ch)}</div>`;const k=j++;return `<div class="slot ${k===q.typed.length?"cur":""}">${q.typed[k]?q.typed[k].c:""}</div>`}));
  $("#tiles").innerHTML=q.L.map((L,k)=>`<button class="tile ${L.u?"u":""}" data-k="${k}">${L.c}</button>`).join("")+`<button class="tile" id="bk" style="background:#fff;box-shadow:inset -4px -4px 0 #ddd3b8" aria-label="Cancella">⌫</button>`;
  app.querySelectorAll(".tile[data-k]").forEach(b=>b.onclick=()=>{if(q.done)return;const L=q.L[+b.dataset.k];if(L.u||q.typed.length>=q.target.length)return;SFX.tap();L.u=true;q.typed.push(L);drawTiles(q);checkTiles(q)});
  $("#bk").onclick=()=>{if(q.done)return;const L=q.typed.pop();if(L){L.u=false;drawTiles(q)}}}
@@ -2921,19 +2922,26 @@ function checkTiles(q){if(q.typed.length<q.target.length)return;if(q.typed.map(x
   if(q.wrongs>=2){setTimeout(()=>{if(q.done)return;q.L.forEach(x=>x.u=false);q.typed=[];for(const c of q.target){const L=q.L.find(x=>!x.u&&x.c===c);if(L){L.u=true;q.typed.push(L)}}drawTiles(q);good(q,`Si scrive: <b>${esc(q.w.en)}</b>. ${G.boss||G.jr?"La ripasseremo!":"Tra poco te la richiedo!"}`)},700);return}setTimeout(()=>{q.typed.forEach(x=>x.u=false);q.typed=[];drawTiles(q)},700)}}
 /* --- scrittura con tastiera --- */
 function drawSlots(q){if(!$("#slots"))return;const v=$("#tin").value,ans=q.ans;$("#slots").className="slots "+(ans.length>10?"xlong":ans.length>7?"long":"");
- $("#slots").innerHTML=ans.split("").map((c,k)=>{if(c===" ")return `<div class="slot gap"></div>`;const typed=v[k]||"";const giv=q.given&&k===0;
-   return `<div class="slot ${k===v.length?"cur":""} ${giv?"given":""}">${esc(typed)}</div>`}).join("")}
+ $("#slots").innerHTML=slotWords(ans.split("").map((c,k)=>{if(c===" ")return " ";const typed=v[k]||"";const giv=q.given&&k===0;
+   return `<div class="slot ${k===v.length?"cur":""} ${giv?"given":""}">${esc(typed)}</div>`}))}
+/* ogni parola resta intera sulla sua riga: si va a capo solo tra una parola e l'altra */
+function slotWords(parts){const out=[];let cur=[];parts.forEach(x=>{if(x===" "){out.push(cur);cur=[]}else cur.push(x)});out.push(cur);return out.length>1?out.map(w=>`<span class="sword">${w.join("")}</span>`).join(`<div class="slot gap"></div>`):out[0].join("")}
+const SEP=/[\s'’-]/;const compactW=x=>norm(x).replace(/[\s'-]/g,"");
+function weaveSep(raw,ans){const L=String(raw).replace(/[\s'’-]/g,"");let out="",i=0;for(const c of ans){if(i>=L.length)break;if(SEP.test(c)){out+=c===" "?" ":c;continue}out+=L[i++]}return out+L.slice(i)}
 /* varianti giuste nelle frasi da completare scrivendo (inglese britannico / americano, verbi con due passati) */
 const ANS_ALT={learned:["learnt"],learnt:["learned"],dreamed:["dreamt"],burned:["burnt"],spelled:["spelt"],favourite:["favorite"],colour:["color"],colours:["colors"],grey:["gray"],mum:["mom"],theatre:["theater"],metres:["meters"],kilometres:["kilometers"],centre:["center"],neighbour:["neighbor"],travelling:["traveling"],pyjamas:["pajamas"],maths:["math"],cafe:["café"],"café":["cafe"]};
 function setupType(q){const t=$("#tin");if(q.given){t.value=q.ans[0]}drawSlots(q);
  const end=()=>{try{t.setSelectionRange(t.value.length,t.value.length)}catch(e){}};t.onfocus=()=>setTimeout(end,0);
- t.oninput=()=>{if(q.given&&!t.value.toLowerCase().startsWith(q.ans[0].toLowerCase())){t.value=q.ans[0]+t.value.replace(q.ans[0],"");end()}drawSlots(q);SFX.tap();const tm=$("#tapme");if(tm)tm.style.visibility="hidden"};
+ t.oninput=()=>{if(q.given&&!t.value.toLowerCase().startsWith(q.ans[0].toLowerCase())){t.value=q.ans[0]+t.value.replace(q.ans[0],"");end()}
+  /* parole composte: lo spazio, l'apostrofo e il trattino si mettono da soli quando arrivi lì (puoi anche scriverli tu, non si raddoppiano) */
+  if(!q.free&&/[\s'’-]/.test(q.ans)){const w=weaveSep(t.value,q.ans);if(w!==t.value){t.value=w;end()}}drawSlots(q);SFX.tap();const tm=$("#tapme");if(tm)tm.style.visibility="hidden"};
  t.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();$("#chk").click()}};
  const tb=$("#tb");if(tb)tb.onclick=()=>t.focus();setTimeout(()=>t.focus({preventScroll:true}),350);
  $("#chk").onclick=()=>{if(q.done)return;const v=t.value;if(!v.trim())return t.focus();
-  const okList=(q.w?q.w.alts:[q.ans,...(ANS_ALT[String(q.ans).toLowerCase()]||[])]).map(norm);const right=okList.includes(norm(v));
-  if(q.fixing){if(right){good(q,"Ora la sai scrivere! 👍");$("#fixbox").innerHTML="";if(q.t==="fillt")fillBlank(q.ans)}else{bad(q,"Guarda bene come si scrive e riprova!")}return}
-  if(right){$("#slots")&&$("#slots").querySelectorAll(".slot").forEach(s=>s.classList.add("good"));if(q.t==="fillt")fillBlank(q.ans);good(q)}
+  const okList=(q.w?q.w.alts:[q.ans,...(ANS_ALT[String(q.ans).toLowerCase()]||[])]).map(norm);let right=okList.includes(norm(v)),sepMsg="";
+  if(!right&&SEP.test(q.ans)&&(q.w?q.w.alts:[q.ans]).some(x=>compactW(x)===compactW(v))){right=true;sepMsg=`Giusto! Attent${S.gender==="m"?"o":"a"} però: si scrive <b>${esc(q.ans)}</b>, ${/ /.test(q.ans)?"con lo spazio":/-/.test(q.ans)?"con il trattino":"con l'apostrofo"}.`;t.value=q.ans;drawSlots(q)}
+  if(q.fixing){if(right){good(q,sepMsg||"Ora la sai scrivere! 👍");$("#fixbox").innerHTML="";if(q.t==="fillt")fillBlank(q.ans)}else{bad(q,"Guarda bene come si scrive e riprova!")}return}
+  if(right){$("#slots")&&$("#slots").querySelectorAll(".slot").forEach(s=>s.classList.add("good"));if(q.t==="fillt")fillBlank(q.ans);good(q,sepMsg||undefined)}
   else{bad(q,"Ops! Guarda come si scrive...");q.fixing=true;
    const a=q.ans,u=v;const diff=a.split("").map((c,k)=>`<span class="${(u[k]||"").toLowerCase()===c.toLowerCase()?"g":"x"}">${c===" "?"&nbsp;":esc(c)}</span>`).join("");
    $("#fixbox").innerHTML=`<div class="panel fix"><div>Hai scritto: <b>${esc(u)}</b></div><div>Si scrive: <span class="w">${diff}</span></div><div class="muted">Le lettere rosse erano sbagliate. Ora riscrivila giusta!</div></div>`;
