@@ -2402,19 +2402,64 @@ let UTT=null,SAY_FAIL=0,AUDIO_WARNED=false;
 function audioHelp(force){if(AUDIO_WARNED&&!force)return;AUDIO_WARNED=true;
  const msg=!window.speechSynthesis?"🔇 Questa app non permette la voce. Apri il gioco nel browser (Safari o Chrome) per sentire l'inglese.":"🔇 Non senti la voce? Togli il silenzioso, alza il volume. Se ancora niente, apri il gioco nel browser (Safari o Chrome).";
  if(typeof toastTop==="function")toastTop(msg)}
+/* testo pronto per la voce: sigle lettera per lettera, simboli in parole, puntini come pausa, punto finale per un'intonazione calma */
+function sayPrep(t,cheer){let x=String(t).replace(/\{N\}/g,S.name||"").replace(/\{([^|}]*)\|([^}]*)\}/g,(m,f,o)=>S.gender==="m"?o:f);
+ x=x.replace(/\bPE\b/g,"P.E.").replace(/\bIT\b(?=\s|$|[.,!?])/g,"I.T.").replace(/\bTV\b/g,"T.V.").replace(/°\s?C\b/g," degrees").replace(/\s?×\s?/g," times ").replace(/\s?÷\s?/g," divided by ").replace(/\s[−-]\s/g," minus ").replace(/\s\+\s/g," plus ").replace(/\s=\s/g," equals ");
+ x=x.replace(/\s*(\.\.\.|…)\s*/g," ... ").replace(/[«»"“”]/g,"").replace(/\s+/g," ").trim();
+ if(cheer&&!/[.!?]$/.test(x))x+="!";else if(!/[.!?,]$/.test(x))x+=".";return x}
 function say(t,rate){try{if(!window.speechSynthesis){audioHelp();return}const s=speechSynthesis;const base=S.rate||.92;const cheer=/[!]\s*$/.test(t)||/^(well done|great|perfect|super|amazing|brilliant|awesome|cool|yes|hello|hi|welcome|wow|time)/i.test(t.trim());const r=rate&&rate<.7?base*.7:base*(cheer?1.04:1);
- const txt=t.replace(/\{N\}/g,S.name).replace(/\.\s*$/,"!").replace(/([^.!?])$/,cheer?"$1!":"$1");
+ const txt=sayPrep(t,cheer);musicDuck(Math.min(6,1+txt.length/14));
  const go=()=>{const u=new SpeechSynthesisUtterance(txt);UTT=u;const v=voice();u.lang=v?v.lang:"en-GB";if(v)u.voice=v;u.rate=r;u.pitch=rate&&rate<.7?1:(cheer?1.06:1.02);u.volume=1;let started=false;
   u.onstart=()=>{started=true;SAY_FAIL=0};u.onerror=ev=>{if(ev.error!=="interrupted"&&ev.error!=="canceled"){SAY_FAIL++;if(SAY_FAIL>=2)audioHelp()}};
   s.speak(u);if(s.paused)s.resume();setTimeout(()=>{if(!started&&UTT===u&&!s.speaking){SAY_FAIL++;if(SAY_FAIL>=2)audioHelp()}},2500)};
  if(s.speaking||s.pending){s.cancel();setTimeout(go,120)}else go()}catch(e){audioHelp()}}
 // iOS/Android: la voce va "sbloccata" dal primo tocco
 let SPEECH_UNLOCKED=false;addEventListener("pointerdown",()=>{if(SPEECH_UNLOCKED||!window.speechSynthesis)return;SPEECH_UNLOCKED=true;try{const u=new SpeechSynthesisUtterance(" ");u.volume=0;speechSynthesis.speak(u)}catch(e){}},{capture:true});
-let AC=null;
-function tone(seq,type="square",vol=.07){if(!S.sfx)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const n=AC.currentTime;let t=0;seq.forEach(([f,d])=>{if(f){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,n+t);g.gain.setValueAtTime(0,n+t+d*.95);o.connect(g).connect(AC.destination);o.start(n+t);o.stop(n+t+d)}t+=d})}catch(e){}}
-const SFX={ok:()=>tone([[784,.07],[1047,.07],[1319,.12]]),no:()=>tone([[196,.1],[147,.16]],"square",.06),tap:()=>tone([[660,.03]],"square",.04),
-  win:()=>tone([[523,.1],[659,.1],[784,.1],[1047,.18],[0,.05],[784,.08],[1047,.3]]),hit:()=>tone([[110,.05],[90,.05],[70,.08]],"sawtooth",.08),
-  unlock:()=>tone([[392,.08],[523,.08],[659,.08],[784,.08],[1047,.08],[1319,.25]],"triangle",.1)};
+/* ================= SUONI 2.0: timbri morbidi (campanelle e marimba, niente onde quadre), inviluppi senza click,
+   un filo di riverbero, e ogni suono ha più varianti così non è mai uguale ================= */
+let AC=null,AU=null;
+function audioCtx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();
+ if(!AU){const out=AC.createDynamicsCompressor();out.threshold.value=-18;out.ratio.value=3;out.connect(AC.destination);
+  const master=AC.createGain();master.gain.value=.75;master.connect(out);
+  const lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=3200;lp.Q.value=.4;lp.connect(master);
+  /* riverbero leggero: due ritardi incrociati con il filtro */const dl=AC.createDelay(),dl2=AC.createDelay(),fb=AC.createGain(),wet=AC.createGain(),dlp=AC.createBiquadFilter();
+  dl.delayTime.value=.13;dl2.delayTime.value=.19;fb.gain.value=.32;wet.gain.value=.22;dlp.type="lowpass";dlp.frequency.value=1800;
+  dl.connect(dlp);dlp.connect(dl2);dl2.connect(fb);fb.connect(dl);dl2.connect(wet);wet.connect(master);
+  AU={in:lp,rev:dl,master}}return AC}
+/* una nota: f frequenza, t inizio (s da ora), d durata, v volume, kind = bell | marimba | soft | pluck */
+function note(f,t,d,v,kind){const a=audioCtx(),n=a.currentTime+t,g=a.createGain();g.connect(AU.in);const sg=a.createGain();sg.gain.value=kind==="soft"?.15:.35;g.connect(sg);sg.connect(AU.rev);
+ const part=(mult,amp,type)=>{const o=a.createOscillator();o.type=type||"sine";o.frequency.value=f*mult;const og=a.createGain();og.gain.value=amp;o.connect(og);og.connect(g);o.start(n);o.stop(n+d+.05)};
+ if(kind==="bell"){part(1,1);part(2.01,.32);part(3,.12)}else if(kind==="marimba"){part(1,1);part(4,.16);part(10,.03)}else if(kind==="pluck"){part(1,1,"triangle");part(2,.2)}else part(1,1,"triangle");
+ const att=kind==="soft"?.04:.006;g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+att);g.gain.exponentialRampToValueAtTime(.0008,n+d)}
+function tone(seq,type,vol=.07){if(!S.sfx)return;try{let t=0;const k=type==="square"||type==="sawtooth"?"marimba":"bell";seq.forEach(([f,d])=>{if(f)note(f,t,Math.max(.12,d*2.2),Math.min(.12,vol*1.2),k);t+=d})}catch(e){}}
+const PENTA=[0,2,4,7,9,12,14,16];const fq=(root,st)=>root*Math.pow(2,st/12);const pk=a=>a[(Math.random()*a.length)|0];
+function play(kind,notes,root,gap,dur,vol){if(!S.sfx)return;try{notes.forEach((st,i)=>note(fq(root,st),i*gap,dur,vol,kind))}catch(e){}}
+const SFX={
+ ok:()=>{const r=pk([523.25,587.33,659.25]);play("marimba",pk([[0,4,7],[0,7,12],[4,7,12],[0,4,9]]),r,.075,.5,.11)},
+ no:()=>{const r=pk([220,196]);play("soft",pk([[4,0],[7,4],[3,0]]),r,.12,.45,.07)},
+ tap:()=>{if(!S.sfx)return;try{note(pk([1318.5,1396.9,1568]),0,.09,.035,"pluck")}catch(e){}},
+ win:()=>{const r=523.25;play("bell",[0,4,7,12,16],r,.11,1.1,.09);setTimeout(()=>play("marimba",pk([[12,7,12,16],[16,12,19],[7,12,16,19]]),r,.09,.7,.07),620)},
+ hit:()=>{if(!S.sfx)return;try{const a=audioCtx(),n=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type="sine";o.frequency.setValueAtTime(180,n);o.frequency.exponentialRampToValueAtTime(55,n+.25);
+  g.gain.setValueAtTime(.18,n);g.gain.exponentialRampToValueAtTime(.001,n+.3);o.connect(g);g.connect(AU.in);o.start(n);o.stop(n+.32)}catch(e){}},
+ unlock:()=>{const r=pk([392,440]);play("bell",[0,4,7,12,16,19],r,.07,1.2,.075)}};
+/* ================= MUSICA DI SOTTOFONDO (facoltativa): mai uguale, generata al momento.
+   Accordi morbidi che cambiano piano piano e una melodia pentatonica a passi, volume basso; si abbassa quando parla la voce. ================= */
+let MUS=null;
+function musicOn(){return !!S.music&&!!S.sfx}
+function musicStart(){if(MUS||!musicOn())return;try{audioCtx()}catch(e){return}const a=AC,bus=a.createGain();bus.gain.value=0;bus.connect(AU.in);bus.gain.linearRampToValueAtTime(.55,a.currentTime+3);
+ const keys=[261.63,293.66,246.94,220];const prog=[[0,4,7],[-3,0,4],[5,9,12],[-5,-1,2]];let step=0,bar=0,root=pk(keys),last=4;
+ const voice=(f,t,d,v,k)=>{const n=a.currentTime+t,g=a.createGain();g.connect(bus);const o=a.createOscillator();o.type=k==="pad"?"sine":"triangle";o.frequency.value=f;o.connect(g);
+  if(k==="pad"){const o2=a.createOscillator();o2.type="sine";o2.frequency.value=f*1.003;o2.connect(g);o2.start(n);o2.stop(n+d+.1)}
+  g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+(k==="pad"?1.2:.02));g.gain.exponentialRampToValueAtTime(.0006,n+d);o.start(n);o.stop(n+d+.1)};
+ const tick=()=>{if(!MUS)return;const ch=prog[bar%4];if(step%8===0){ch.forEach(st=>voice(fq(root/2,st),0,4.6,.035,"pad"));voice(fq(root/4,ch[0]),0,4,.05,"pad")}
+  if(Math.random()<.62){last=Math.max(0,Math.min(PENTA.length-1,last+pk([-2,-1,-1,1,1,2,0])));voice(fq(root,PENTA[last]),0,1.6,.045,"mel")}
+  step++;if(step%8===0){bar++;if(bar%16===0)root=pk(keys)}MUS.t=setTimeout(tick,560+Math.random()*120)};
+ MUS={bus,t:setTimeout(tick,300)}}
+function musicStop(){if(!MUS)return;const m=MUS;MUS=null;clearTimeout(m.t);try{m.bus.gain.cancelScheduledValues(AC.currentTime);m.bus.gain.linearRampToValueAtTime(0,AC.currentTime+.8);setTimeout(()=>{try{m.bus.disconnect()}catch(e){}},1000)}catch(e){}}
+function musicDuck(sec){if(!MUS||!AC)return;const g=MUS.bus.gain,n=AC.currentTime;try{g.cancelScheduledValues(n);g.setValueAtTime(g.value,n);g.linearRampToValueAtTime(.15,n+.15);g.linearRampToValueAtTime(.55,n+sec+.8)}catch(e){}}
+function musicSync(){if(musicOn()&&!document.hidden)musicStart();else musicStop()}
+document.addEventListener("visibilitychange",musicSync);addEventListener("pointerdown",()=>{if(musicOn()&&!MUS)musicStart()},{capture:true});
+
 
 /* ================= UTIL ================= */
 const $=s=>document.querySelector(s),appEl=$("#app");
@@ -2454,10 +2499,10 @@ function title(){G=null;
   <div style="flex:1;min-height:26vh"></div>
   <div class="duo">${S.started?avatarImg(S.av,96,"m-wave"):""}${ciapImg(S.started?104:118,"wave")}</div>
   <button class="btn neonb" id="go" style="font-size:22px;padding:14px 30px"><span class="start"><i>▶</i> ${S.started?"CONTINUA":"START"}</span></button>
-  <div class="row" style="justify-content:center"><button class="link" id="par">Area genitori</button><button class="link" id="snd">Suoni: ${S.sfx?"sì":"no"}</button></div>
+  <div class="row" style="justify-content:center"><button class="link" id="par">Area genitori</button><button class="link" id="snd">Suoni: ${S.sfx?"sì":"no"}</button><button class="link" id="mus">Musica: ${S.music?"sì":"no"}</button></div>
  </div>`;
  $("#go").onclick=()=>{SFX.unlock();say(S.started?"Welcome back, "+S.name+"!":"Hello! Let's play!");S.started?overworld():chooseGender()};
- skyline();$("#par").onclick=parents;$("#snd").onclick=()=>{S.sfx=!S.sfx;save();title()};
+ skyline();$("#par").onclick=parents;$("#snd").onclick=()=>{S.sfx=!S.sfx;save();musicSync();title()};$("#mus")&&($("#mus").onclick=()=>{S.music=!S.music;if(S.music&&!S.sfx)S.sfx=true;save();musicSync();if(S.music)SFX.unlock();title()});
 }
 
 /* ================= CREA PERSONAGGIO ================= */
@@ -2849,7 +2894,7 @@ function bad(q,msg){SFX.no();if(G&&G.boss&&G.shield&&!q.missed){G.shield=0;msg=`
  if(G&&(G.boss||G.jr)){bossMood("tease",1200);const bt=$("#btaunt");if(bt){bt.textContent=T(G.jr?"Ih ih! Sbagliato!":G.healed?`⚡ ${WORLDS[G.w].boss[0].replace(/^(Il |Lo |La |L')/,"")} ${BOSS_INFO[G.w].heal}! +2`:BOSS_LINES[G.w][2]);G.healed=0;bt.classList.remove("show");void bt.offsetWidth;bt.classList.add("show")}}let tip="";try{if(!msg&&q.s&&["fillc","fillt","lsent"].includes(q.t))tip=`<small class="whytip">💡 ${localWhy(q.s)}</small>`}catch(e){}$("#gb").innerHTML=T(`<span class="who">CIAPIN</span>${msg||pick(OOPS)}${tip}`);setMood(app.querySelector(".guide .ciap"),"sad",1100);const av=app.querySelector(".stage");if(av){av.classList.remove("shk");void av.offsetWidth;av.classList.add("shk")}}
 function good(q,msg){if(q.done)return;q.done=true;SFX.ok();haptic(25);if(!q.missed){trk(q,true);if(!G.test){S.ok++;wmUpdate(q,true)}G.okRun=(G.okRun||0)+1;G.missRun=0;if(q.retry&&!msg)msg="Ora la sai! 💪";else if(q.rev&&!msg)msg="Te la ricordavi! ⏰"}
  if(!q.missed){G.combo=(G.combo||0)+1;G.best=Math.max(G.best||0,G.combo);const xp=10+Math.min(10,(G.combo-1)*2);G.xp=(G.xp||0)+xp;G.coins=(G.coins||0)+1;floatReward(`+${xp} XP`);questEv("ok");questEv("combo",G.combo,true);if(["type","dict","fillt"].includes(q.t))questEv("type");
-  if(G.combo>=3){const cb=$("#combo");if(cb){cb.textContent=`🔥 ${G.combo} di fila!`;cb.classList.remove("show");void cb.offsetWidth;cb.classList.add("show")}tone([[523+G.combo*40,.06],[659+G.combo*40,.08]],"triangle",.06)}}
+  if(G.combo>=3){const cb=$("#combo");if(cb){cb.textContent=`🔥 ${G.combo} di fila!`;cb.classList.remove("show");void cb.offsetWidth;cb.classList.add("show")}play("bell",[PENTA[Math.min(7,G.combo-1)],PENTA[Math.min(7,G.combo)]+12],523.25,.07,.7,.06)}}
  if(q.t==="speak"||q.t==="speaks")questEv("speak");
  if(q.w&&!q.missed&&!G.test){if(!S.learned[q.w.en]){S.learned[q.w.en]=1;G.newW.push(q.w)}const k=wkey(q.w);if(G.review||q.rev)srsRight(k);else srsLearn(k)}
  if(q.ws&&!q.missed&&!G.test)q.ws.forEach(w=>{if(!S.learned[w.en]){S.learned[w.en]=1;G.newW.push(w)}});
@@ -3588,7 +3633,7 @@ function titleTron(){G=null;try{closeModal()}catch(e){}const st=S.started;const 
    <div class="tstage"><div class="tbub">${st?`Pront{a|o}? <b>Let's go!</b>`:`<b>Hello!</b> Vieni con me?`}</div>
     <div class="duo">${st?avatarImg(S.av,96,"m-wave"):""}${ciapImg(st?104:118,"wave")}</div><div class="tshadow"></div></div>
    <button class="btn neonb" id="go"><span class="start"><i>▶</i> ${st?"CONTINUA":"START"}</span></button>
-   <div class="row tlinks"><button class="link" id="par">Area genitori</button><button class="link" id="snd">Suoni: ${S.sfx?"sì":"no"}</button></div>
+   <div class="row tlinks"><button class="link" id="par">Area genitori</button><button class="link" id="snd">Suoni: ${S.sfx?"sì":"no"}</button><button class="link" id="mus">Musica: ${S.music?"sì":"no"}</button></div>
    <button class="tcue" id="cue">Scopri i ${nW} mondi<i>⌄</i></button>
   </section>
   <section class="tworlds" id="tw">
@@ -3603,7 +3648,7 @@ function titleTron(){G=null;try{closeModal()}catch(e){}const st=S.started;const 
  const go=()=>{SFX.unlock();say(st?"Welcome back, "+S.name+"!":"Hello! Let's play!");st?overworld():chooseGender()};
  $("#go").onclick=go;$("#go2").onclick=go;
  $("#cue").onclick=()=>{const t=$("#tw");t&&t.scrollIntoView({behavior:"smooth",block:"start"})};
- $("#par").onclick=parents;$("#snd").onclick=()=>{S.sfx=!S.sfx;save();title()};
+ $("#par").onclick=parents;$("#snd").onclick=()=>{S.sfx=!S.sfx;save();musicSync();title()};$("#mus")&&($("#mus").onclick=()=>{S.music=!S.music;if(S.music&&!S.sfx)S.sfx=true;save();musicSync();if(S.music)SFX.unlock();title()});
  app.querySelectorAll(".twc").forEach(b=>b.onclick=()=>worldPeek(+b.dataset.w));
 }
 function worldPeek(w){const W=WORLDS[w],st=S.started,open=st&&worldOpen(w),s=STAGES[W.st];SFX.unlock&&SFX.unlock();
@@ -3639,7 +3684,7 @@ function title(){G=null;try{closeModal()}catch(e){}const st=S.started;const nW=W
   :[["scopri","🌍","25 mondi",0],["par","👪","Genitori",0],["teach","👩‍🏫","Insegnanti",0]];
  app.innerHTML=`<div class="t3d" id="t3d" aria-hidden="true"><div class="t3fb"><i></i><i></i><i></i></div></div><div class="screen tpage3">
   <section class="h3">
-   <div class="tbar3">${st?`<button class="tme" id="me">${avatarImg(S.av,34)}<b>${esc(S.name)}</b><span>⭐ ${totalStars()}</span></button>`:`<span></span>`}<button class="tsnd" id="snd" aria-label="Suoni">${S.sfx?"🔊":"🔇"}</button></div>
+   <div class="tbar3">${st?`<button class="tme" id="me">${avatarImg(S.av,34)}<b>${esc(S.name)}</b><span>⭐ ${totalStars()}</span></button>`:`<span></span>`}<button class="tsnd" id="snd" aria-label="Suoni">${S.sfx?"🔊":"🔇"}</button><button class="tsnd tmus" id="mus" aria-label="Musica" title="Musica di sottofondo" style="opacity:${S.music?1:.55}">🎵</button></div>
    <h1 class="logo3"><span class="a">CIAP</span><span class="b">ENGLISH</span></h1>
    <div class="tag3">${st?`Bentornat{a|o}! Pront{a|o} per il prossimo livello?`:`Impara l'inglese girando il mondo, partendo da Vigevano`}</div>
    <div class="grow"></div>
@@ -3664,7 +3709,7 @@ function title(){G=null;try{closeModal()}catch(e){}const st=S.started;const nW=W
  const scrollW=()=>{const t=$("#tw");t&&t.scrollIntoView({behavior:"smooth",block:"start"})};$("#cue").onclick=scrollW;
  const on=(id,f)=>{const b=$("#dk_"+id);if(b)b.onclick=()=>{SFX.unlock();SFX.tap&&SFX.tap();f()}};
  on("mondi",overworld);on("rip",()=>{if(!due){tell("Nessuna parola da ripassare adesso: ottimo lavoro! Torna più tardi.","happy");return}review()});on("alb",()=>album(S.world||0));on("bag",bagScreen);on("shop",shop);on("par",parents);on("scopri",scrollW);
- $("#snd").onclick=()=>{S.sfx=!S.sfx;save();$("#snd").textContent=S.sfx?"🔊":"🔇"};
+ $("#snd").onclick=()=>{S.sfx=!S.sfx;save();musicSync();$("#snd").textContent=S.sfx?"🔊":"🔇"};$("#mus")&&($("#mus").onclick=()=>{S.music=!S.music;if(S.music&&!S.sfx){S.sfx=true;$("#snd").textContent="🔊"}save();musicSync();$("#mus").style.opacity=S.music?1:.55;toastTop(S.music?"🎵 Musica di sottofondo accesa":"Musica spenta")});
  const me=$("#me");if(me)me.onclick=overworld;
  app.querySelectorAll(".twc").forEach(b=>b.onclick=()=>worldPeek(+b.dataset.w));
  /* ogni carosello parte dal mondo in corso */
