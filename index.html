@@ -4724,7 +4724,7 @@ function makeWater(){const w=C.th.water;if(w==null)return;const N=60,S=C.th.wate
 function makePath(){const th=C.th,[fill,edge]=th.road||["#ecd29a","#c8a464"];const g=new Geo(),gp=new Geo();const P=C.pts,ph=C.ph,br=C.br;
  const ta=[],te=[],tb=[],tbe=[];const w0=th.roadW||1.05,w1=w0+.32;
  const NR=P.map((p,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)];const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz)||1;return [-dz/L,dx/L]});
- for(let i=0;i<P.length-1;i++){const a=P[i],b=P[i+1];const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz)||1,nx=-dz/L,nz=dx/L;
+ for(let i=0;i<P.length-1;i++){const a=P[i],b=P[i+1];if(th.pathHide&&th.pathHide((a[0]+b[0])/2,(a[1]+b[1])/2))continue;const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz)||1,nx=-dz/L,nz=dx/L;
   const q=(k,w,s)=>{const p=P[k],n=NR[k];return [p[0]+n[0]*w*s,ph[k]+.22,p[1]+n[1]*w*s]};const ya=ph[i],yb=ph[i+1];const isB=br[i]||br[i+1];const F=isB?tb:ta,E=isB?tbe:te;const j=i+1;
   F.push([q(i,w0,1),q(i,w0,-1),q(j,w0,-1)],[q(i,w0,1),q(j,w0,-1),q(j,w0,1)]);
   E.push([q(i,w1,1),q(i,w0,1),q(j,w0,1)],[q(i,w1,1),q(j,w0,1),q(j,w1,1)],[q(i,w0,-1),q(i,w1,-1),q(j,w1,-1)],[q(i,w0,-1),q(j,w1,-1),q(j,w0,-1)]);
@@ -6642,7 +6642,7 @@ TH.house={farH:.5,farBlend:1,fancyBridge:1,bridgeC:"#d8c09a",bridgeE:"#a87a52",f
   g.add(PR.box(36,1,8,true),T([2,0,-16]),"#a87a52");for(let x=-15.6;x<20;x+=.6)gn.add(PR.box(.03,.02,8,true),T([x,1.01,-16]),"#8a5a32");gn.add(PR.box(36,.04,8,true),T([2,.99,-16]),"#c08850");
   [[.75,-20.4],[.5,-21.15],[.25,-21.9]].forEach(([h,z])=>g.add(PR.box(16,h,.75,true),T([8,0,z]),"#a87a52"));/* gradini della veranda */
   /* --- muri: da dentro restano i muri alti fino al soffitto (3,6 m), sparisce solo il piano di sopra con il tetto --- */
-  const SID="#f4e4b2",TRIM="#ffffff",ROOF="#5e6779",ROOF2="#4e5668";const SHC=["#2c4a6e","#2c4a6e","#2c4a6e","#2c4a6e"];
+  const SID="#f8e9c8",TRIM="#ffffff",ROOF="#cc4a3a",ROOF2="#a8382c";const SHC=["#3f7d55","#3f7d55","#3f7d55","#3f7d55"];
   const ext=[[-30,24,30,24],[30,24,30,-12],[30,-12,-30,-12],[-30,-12,-30,24]];
   ext.forEach(([x0,z0,x1,z1])=>{wallRun(g,x0,z0,x1,z1,1,2.6,SID,{gap:2.6});wallRun(shell,x0,z0,x1,z1,3.6,.8,SID,{gap:2.6,lintel:4.4});{const L=Math.hypot(x1-x0,z1-z0);shell.add(PR.box(L+.3,9.4,.3,true),T([(x0+x1)/2,4.4,(z0+z1)/2],[0,-Math.atan2(z1-z0,x1-x0),0]),SID)}wallRun(g,x0,z0,x1,z1,.7,.32,"#8f8a84",{gap:2.6,th:.36});wallRun(g,x0,z0,x1,z1,3.55,.14,"#ffffff",{gap:2.6,th:.4})});
   /* cornici dipinte e fiori rampicanti agli angoli */for(const [x,z] of [[-30,24],[30,24],[30,-12],[-30,-12]]){shell.add(PR.box(.6,13,.6,true),T([x,1,z]),"#ffffff");g.add(PR.box(.6,2.7,.6,true),T([x,1,z]),"#ffffff")}
@@ -6736,7 +6736,7 @@ TH.house={farH:.5,farBlend:1,fancyBridge:1,bridgeC:"#d8c09a",bridgeE:"#a87a52",f
 /* LA CASA AMERICANA: corpo centrale a due piani con il frontone sulla strada, due ali basse con i tetti a capanna,
    rivestimento a doghe azzurro-grigio, cornici bianche, persiane blu scuro, tetto in scandole antracite, torretta, camino in mattoni */
 function americanShell(){if(C._oldSI)for(const it of C._oldSI){const k=C.items.indexOf(it);if(k>=0)C.items.splice(k,1)}
- const sh=new Geo(),sn=new Geo(),SIDE="#f4e4b2",LINE="#e2d09a",TR="#ffffff",RF="#6c768a",RF2="#5c6578",BR="#a4483a",SHT="#2c4a6e";
+ const sh=new Geo(),sn=new Geo(),SIDE="#f8e9c8",LINE="#e9d6ac",TR="#ffffff",RF="#cc4a3a",RF2="#a8382c",BR="#9a4a3a",SHT="#3f7d55";
  const W=(x,y,z,rot,w,h)=>windowAt(sn,x,y,z,rot,w,h,{shutter:SHT,glass:"#bfe6ff"});
  /* doghe orizzontali su un muro (anche al piano terra, saltando porte e passaggi) */
  const siding=(geo,x0,z0,x1,z1,y0,y1,out,skipPath)=>{const L=Math.hypot(x1-x0,z1-z0),a=Math.atan2(z1-z0,x1-x0),nx=Math.sin(a)*out,nz=-Math.cos(a)*out,n=Math.max(1,Math.round(L/2));
@@ -10255,6 +10255,8 @@ TH.iceland.cine={kicker:"Islanda · notte polare",title:"Islanda",sub:"Terra di 
 TH.house.cine={kicker:"Vigevano",title:"La Casa di Ciapin",sub:"Dove abita il tuo folletto",keys:[
  {t:0,at:[0,6,24],yaw:.02,pitch:.1,dist:46,fov:.66},{t:3.4,at:[-18,6,22],yaw:.55,pitch:.16,dist:34,fov:.76},
  {t:6.6,at:[0,8,4],yaw:1.6,pitch:.55,dist:52,fov:.86},{t:9.6,at:[0,4,-30],yaw:2.9,pitch:.42,dist:36,fov:.86},{t:12.4,at:[0,2,-10],yaw:3.3,pitch:.62,dist:92,fov:1.05}]};
+TH.house.pathHide=(x,z)=>x>-30.6&&x<30.6&&z>-12.6&&z<31.6;
+TH.space.starTrail=()=>{};
 const CINE_AUTO={sicily:["Sicilia · la fattoria","Sicilia","Tra limoni e l'Etna",.8],castle:["Milano · 1450","Castello Sforzesco","La corte degli Sforza",.7],germany:["Baviera · dicembre","Germania","Il villaggio del mercatino",.5],river:["Vigevano · La Sforzesca","Leonardo e il Ticino","L'acqua che fa girare i mulini",.7],iceland:["Islanda · notte polare","Islanda","Sotto l'aurora boreale",0],market:["Vigevano · giorno di mercato","Il Mercato","Frutta, pane e formaggio",.7],france:["Parigi · Belle Époque","Francia","Sotto la Torre Eiffel",.7],
  sea:["Oceano · 1715","Mare dei Pirati","A caccia del tesoro",.7],house:["Vigevano","La Casa di Ciapin","Dove abita il tuo folletto",.7,1],jungle:["Amazzonia","La Giungla","Nel cuore della foresta",.5],
  city:["Londra","Londra","Tra il Tamigi e i bus rossi",.6],snow:["Himalaya · 8.849 m","Monte Everest","Verso il tetto del mondo",.6],space:["Sistema Solare","Lo Spazio","Tra pianeti e stelle",0],
