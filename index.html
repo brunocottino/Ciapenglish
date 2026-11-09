@@ -377,6 +377,21 @@ h1,h2,h3{margin:0;font-family:var(--title);font-weight:400;line-height:1.15;text
 .pgwords{display:flex;flex-wrap:wrap;gap:6px}.pgcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:300px}.pgcal i{aspect-ratio:1;border-radius:5px;border:1.5px solid rgba(35,29,79,.25)}
 .pgtips{display:flex;flex-direction:column;gap:8px}.pgtips>div{background:#fff;border:2.5px solid var(--line);border-radius:14px;padding:9px 12px;font-size:16px;line-height:1.4}
 .pgdet summary{font-weight:900;cursor:pointer}.pgdet div{font-size:14px;line-height:1.5;color:var(--mute);margin-top:6px}
+/* briefing della missione */
+.bfmodal .panel{max-width:520px;padding:14px 14px 12px;text-align:left;align-items:stretch;max-height:calc(100vh - 24px);overflow:auto}
+.bfmodal .pkx{position:absolute;right:12px;top:10px}.bfmodal>.panel{position:relative}
+.brief{display:flex;flex-direction:column;gap:12px}.bfdots{display:flex;gap:6px;justify-content:center}.bfdots i{width:28px;height:7px;border-radius:9px;background:#e4ddf0;border:1.5px solid var(--line)}.bfdots i.d{background:var(--leaf)}.bfdots i.c{background:var(--sun)}
+.bfart{border:3px solid var(--line);border-radius:18px;overflow:hidden;aspect-ratio:5/3}.bfart svg{display:block;width:100%;height:100%}
+.bfh{margin:0;font-family:var(--title);font-size:22px;text-align:center}
+.bfkey{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;font:inherit;background:#fff;border:3px solid var(--line);border-radius:16px;padding:10px 12px;box-shadow:0 4px 0 var(--line);cursor:pointer}
+.bfkey span{font-size:19px;font-weight:900;line-height:1.3}.bfkey small{color:var(--mute);font-size:14px}.bfkey mark,.bfcan mark{background:#ffe680;border-radius:5px;padding:0 3px;color:inherit}
+.bfsec{display:flex;flex-direction:column;gap:6px}.bftop{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bftop>div{background:#fff;border:2.5px solid var(--line);border-radius:14px;padding:6px 8px}.bftop b{font-size:13px}
+.bfw{display:flex;gap:4px;margin-top:4px}.bfw button{flex:1;min-width:0;background:none;border:0;padding:2px;border-radius:10px;cursor:pointer;font:inherit}.bfw button.hit{background:#e8f7ec}.bfw img{width:100%;max-width:46px;aspect-ratio:1;display:block;margin:0 auto}.bfw small{display:block;font-size:11px;font-weight:800;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bfcan{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:5px}.bfcan li{position:relative;padding-left:26px;font-size:15px;line-height:1.35}.bfcan li:before{content:"⭐";position:absolute;left:0}.bfcan.ok li:before{content:"✅"}
+.bfpath{display:grid;grid-template-columns:1fr 1fr;gap:6px}.bfpath>div{display:flex;align-items:center;gap:6px;background:#fff;border:2.5px solid var(--line);border-radius:12px;padding:5px 8px;font-size:13px;line-height:1.2}.bfpath i{font-style:normal;font-size:18px}.bfpath .boss{grid-column:1/-1;background:#ffe6ea}.bfpath .jr{background:#fff3dc}.bfpath .done{opacity:.7}
+.bfspk{align-self:center}.bfopts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.bfopts button{background:#fff;border:3px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 4px 0 var(--line);cursor:pointer}.bfopts img{width:100%;aspect-ratio:1;display:block}.bfopts .ok{background:#c6ecd0}.bfopts .no{background:#ffd6de;opacity:.6}
+.bfnav{justify-content:space-between}.bfnav .btn:only-child{margin-left:auto}.bfmini{text-align:left;margin-top:4px}.bfdone{width:100%;max-width:440px;text-align:left}
+.pgcan{background:#fff;border:2.5px solid var(--line);border-radius:14px;padding:8px 12px}.pgcan small{display:block;color:var(--mute);font-size:14px;line-height:1.35;margin-top:2px}.pgcan.cur{background:#fff8e0}
 .mbar{display:flex;height:16px;border-radius:999px;overflow:hidden;border:3px solid var(--line);background:#eee;margin:6px 0}.mbar i{display:block;height:100%}
 .opt.reveal{animation:pop .5s 2}
 .opt[disabled]{opacity:.55}
@@ -2540,7 +2555,7 @@ function askLevel(w,l){const W=WORLDS[w];if(!levelOpen(w,l)){SFX.no();tell("Prim
 function worldMap2D(w){G=null;const W=WORLDS[w];const cur=[...Array(10).keys()].find(l=>levelOpen(w,l)&&!starsOf(w,l));
  app.innerHTML=`<div class="screen wm">
   <div class="hud"><button class="iconbtn" id="back" aria-label="Mondi">◀</button><div class="grow"><div class="lbl" style="color:#cfc6ff">Mondo ${wpos(w)+1} · ${STAGES[W.st].n}</div><h2 class="white" style="font-size:20px">${W.n}</h2></div>
-   <div class="hudbox" style="padding-left:10px"><img src="${starURL()}" width="26" alt="">${worldStars(w)}/30</div>${typeof W3D!=="undefined"&&W3D.ok()&&!W3D.broken?`<button class="iconbtn" id="to3d" aria-label="Mappa 3D" style="font-weight:900;font-size:15px">3D</button>`:""}</div>
+   <div class="hudbox" style="padding-left:10px"><img src="${starURL()}" width="26" alt="">${worldStars(w)}/30</div>${typeof W3D!=="undefined"&&W3D.ok()&&!W3D.broken?`<button class="iconbtn" id="to3d" aria-label="Mappa 3D" style="font-weight:900;font-size:15px">3D</button>`:""}<button class="iconbtn" id="goal" aria-label="Obiettivi del mondo">🎯</button></div>
   <div class="mapbox">${mapSVG(w)}${NODES.map(([x,y],l)=>{const open=levelOpen(w,l),st=starsOf(w,l),boss=l===9;
     return `<button class="lvnode ${boss?"boss":""} ${st?"done":""} ${open?"":"lock"} ${l===cur?"cur":""}" style="left:${x/MW*100}%;top:${y/MH*100}%" data-l="${l}" aria-label="Livello ${l+1}: ${esc(levelName(w,l)[1])}${st?", "+st+" stelle":""}">
      ${boss?`<img class="bi" src="${pixURL(open?(st?"🏆":"⚔️"):"🔒")}" alt="">`:(open?l+1:`<span class="lk">🔒</span>`)}
@@ -2549,12 +2564,12 @@ function worldMap2D(w){G=null;const W=WORLDS[w];const cur=[...Array(10).keys()].
   <div class="guide">${ciapImg(70,"n","talk")}<div class="say" id="tip"><span class="who">CIAPIN</span>${cur===undefined?"Hai finito questo mondo! Rigioca i livelli per avere 3 stelle ovunque.":`Prossimo: <b>${esc(levelName(w,cur)[1])}</b>. Tocca il cerchio che brilla!`}</div></div>
  </div>`;
 
- try{declutter2D(app.querySelector(".mapbox svg.wmap"))}catch(e){}$("#back").onclick=overworld;const t3=$("#to3d");if(t3)t3.onclick=()=>{S.map3d=true;save();worldMap(w)};
+ try{declutter2D(app.querySelector(".mapbox svg.wmap"))}catch(e){}$("#back").onclick=overworld;$("#goal").onclick=()=>briefing(w);const t3=$("#to3d");if(t3)t3.onclick=()=>{S.map3d=true;save();worldMap(w)};
  fitMBSay();const mb=$("#mboss");if(mb)mb.onclick=()=>{const beat=starsOf(w,9)>0;const t=$("#mbsay");t.innerHTML=T(beat?BOSS_LINES[w][1]:BOSS_LINES[w][0]);fitMBSay();t.classList.remove("show");void t.offsetWidth;t.classList.add("show");const sv=mb.querySelector(".boss");sv.classList.add("jig");setTimeout(()=>sv.classList.remove("jig"),650);SFX.tap()};
  app.querySelectorAll(".lvnode").forEach(b=>b.onclick=()=>askLevel(w,+b.dataset.l));
  const target=()=>app.querySelector(`.lvnode[data-l="${cur??9}"]`);
  scrollTo(0,0);
- if(!S.seen[w]){S.seen[w]=1;save();setTimeout(()=>modal(`${ciapImg(96,"wave")}<h2 style="font-size:22px">${W.n}</h2><div class="say" style="text-align:left">${W.intro}</div><button class="btn" data-close>ANDIAMO! ▶</button>`,m=>m.querySelector("[data-close]").addEventListener("click",()=>glideTo(target(),250))),200)}
+ if(!S.seen[w]){S.seen[w]=1;save();setTimeout(()=>briefing(w,()=>glideTo(target(),250)),200)}
  else glideTo(target(),700);
 }
 
@@ -2918,7 +2933,7 @@ function finish(){if(G.test)return testDone();const n=G.Q.filter(q=>!q.retry).le
   <div class="rewards"><div class="rw"><b>+${gx}</b><span>XP</span></div><div class="rw"><b>+${gc}</b><span>🪙 monete</span></div>${G.best>=3?`<div class="rw"><b>${G.best}</b><span>🔥 di fila</span></div>`:""}</div>
   <div class="lvbar"><span>Lv ${LP.l}</span><div class="bar"><i style="width:${(LP.p*100).toFixed(0)}%"></i></div><span>Lv ${LP.l+1}</span></div>
   ${lv1>lv0?`<div class="levelup">⬆️ LIVELLO ${lv1}!</div>`:""}
-  <div class="say" style="max-width:420px"><span class="who">CIAPIN</span>${n-m} risposte giuste al primo colpo su ${n}.${G.newW.length?` Hai imparato <b>${G.newW.length}</b> parole nuove per il tuo album!`:""}${st<3&&!G.review?" Rigioca per prendere 3 stelle!":""}${note?"<br>"+note:""}</div>
+  ${G.boss&&!G.review&&typeof goalsDone==="function"?goalsDone(G.w):""}<div class="say" style="max-width:420px"><span class="who">CIAPIN</span>${n-m} risposte giuste al primo colpo su ${n}.${G.newW.length?` Hai imparato <b>${G.newW.length}</b> parole nuove per il tuo album!`:""}${st<3&&!G.review?" Rigioca per prendere 3 stelle!":""}${note?"<br>"+note:""}</div>
   ${(G.missW||[]).length?`<div class="panel" style="width:100%;max-width:440px"><span class="lbl">Da ripassare (tocca per ascoltare)</span><div class="row" style="justify-content:center">${G.missW.map(w=>`<button class="mini" data-say="${esc(w.en)}"><img src="${pixURL(w.e)}" width="26" alt="" style="vertical-align:middle"> ${esc(w.en)} <small class="muted">${esc(w.it)}</small></button>`).join("")}</div></div>`:""}
   ${G.newW.length?`<div class="row" style="justify-content:center">${G.newW.slice(0,12).map(w=>`<img src="${pixURL(w.e)}" width="40" title="${esc(w.en)}" alt="${esc(w.en)}">`).join("")}</div>`:""}
   ${unlocked?`<div class="panel" style="align-items:center"><img src="${pixURL(unlocked.ic)}" width="64" alt=""><b style="font-size:20px">Nuovo mondo sbloccato: ${unlocked.n}!</b>${newAcc?`<span>E un nuovo accessorio: <b>${newAcc}</b>!</span>`:""}</div>`:""}
@@ -3143,6 +3158,7 @@ function progressHTML(){snapDay();const st=stageStats(),E=pgEstimate(st),V=pgVer
    <small class="muted">${o.sec} parole sicure, ${o.kn} in consolidamento su ${o.N} · livelli ${o.lv}/${o.lvN}${(()=>{const a=s30h.sg[i];return a&&a[1]>=10?` · precisione 30 g ${pct(a[0]/a[1])}`:""})()}</small></div>`).join("")}
   <div class="pgnote">🟢 sicure = le scrive da sol${g} · 🟡 in consolidamento = le riconosce. Una tappa è «raggiunta» quando ne conosce bene circa il 70% (parole e livelli).</div></div>
 
+ ${goalsParentHTML()}
  <div class="panel pgp" data-pt="0"><span class="lbl">Parole</span>
   <div class="mbar"><i style="width:${M.strong/mt*100}%;background:#2fb857"></i><i style="width:${M.mid/mt*100}%;background:#ffc933"></i><i style="width:${M.weak/mt*100}%;background:#ff5c8a"></i></div>
   <div class="muted" style="font-size:15px">🟢 <b>${M.strong}</b> sicure · 🟡 <b>${M.mid}</b> in consolidamento · 🔴 <b>${M.weak}</b> da rinforzare · <b>${Object.keys(S.learned).length}</b> viste in tutto su ${ALLWORDS.length}.</div>
@@ -3197,6 +3213,76 @@ function testDone(){const tr=G.tr;let sc=0;const a=tr.map(([o,n])=>n?o/n:null);a
   <div class="say" style="max-width:420px"><span class="who">CIAPIN</span>Bravissim${pgG()}! Hai fatto tutto il test. Ogni volta che giochi diventi più forte!</div>
   <button class="btn" id="cont">OK ▶</button></div>`;
  $("#cont").onclick=()=>{SCR="";title()}}
+
+/* ================= BRIEFING DELLA MISSIONE — prima di ogni mondo =================
+   4 schede brevi: dove sei · cosa imparerai (parole, frase chiave, "alla fine saprai") · cosa farai (percorso + boss) · riscaldamento.
+   La frase chiave: tra [quadre] la parte da evidenziare. Le cose "saper fare" tornano alla vittoria sul boss e nell'Area genitori. */
+const GOALS=[
+ {k:["[Can I have] the ball, [please]?","Posso avere la palla, per favore?"],c:["nominare le cose di scuola, i colori e i giocattoli","contare fino a 10","chiedere qualcosa con «Can I have…, please?»"]},
+ {k:["She [has got] long hair.","Lei ha i capelli lunghi."],c:["presentare la famiglia: «This is my grandma»","descrivere il corpo e i vestiti di una persona","usare «has got» e «his / her»"]},
+ {k:["A fish [can] swim, but a cat [can't].","Un pesce sa nuotare, ma un gatto no."],c:["nominare animali, insetti e natura","dire cosa si sa fare: «can / can't»","dire cosa c'è: «There is a frog…»"]},
+ {k:["I [like] apples, but I [don't like] fish.","Mi piacciono le mele, ma non il pesce."],c:["dire cosa ti piace e cosa no","contare da 11 a 20","chiedere quanti e quanto costa: «How many…? How much…?»"]},
+ {k:["The dolphin [is jumping] out of the water!","Il delfino salta fuori dall'acqua!"],c:["dire cosa sta succedendo adesso: «is …ing»","dire che tempo fa: «It's windy»","nominare gli animali del mare e le cose della spiaggia"]},
+ {k:["She [brushes] her teeth [every day].","Lei si lava i denti ogni giorno."],c:["raccontare la tua giornata","dire l'ora: «It's half past eight»","dire quanto spesso: «always, usually, never»"]},
+ {k:["An elephant is [bigger than] a lion.","Un elefante è più grande di un leone."],c:["confrontare animali e cose: «bigger than, the tallest»","dire come ti senti: «I'm tired, I'm scared»","nominare gli animali selvatici"]},
+ {k:["[Turn left] at the traffic lights.","Gira a sinistra al semaforo."],c:["chiedere e dare indicazioni per strada","dire con che mezzo vai: «by bus, the underground»","dire cosa vuoi fare da grande: «I want to be…»"]},
+ {k:["Yesterday we [climbed] the mountain and [saw] an eagle.","Ieri abbiamo scalato la montagna e visto un'aquila."],c:["raccontare cosa hai fatto ieri (past simple)","usare i verbi irregolari più comuni: «went, saw, ate…»","fare domande sul passato: «Did you…?»"]},
+ {k:["You [should] drink a lot of water.","Dovresti bere molta acqua."],c:["dare un consiglio: «You should…»","dire di cosa è fatto: «made of wood»","dire l'ora con «quarter» e «half»"]},
+ {k:["[Have] you [ever seen] a comet?","Hai mai visto una cometa?"],c:["parlare del futuro: «will» e «going to»","raccontare esperienze: «Have you ever…?»","nominare i mesi e le parole della tecnologia"]},
+ {k:["[They are] big horses.","Sono cavalli grandi."],c:["nominare gli animali della fattoria","fare il plurale: «cats, foxes, geese»","usare «a» e «an»: «an egg, a goat»"]},
+ {k:["[David's] birthday is [in] March.","Il compleanno di David è a marzo."],c:["dire i mesi e le stagioni","chiedere e dire quando è il compleanno","usare il genitivo: «David's book»"]},
+ {k:["I [am wearing] a warm scarf.","Indosso una sciarpa calda."],c:["dire cosa indossi: «I'm wearing…»","descrivere i vestiti: «warm, wet, striped»","nominare le meraviglie dell'Islanda"]},
+ {k:["[Is it] raining? No, [it's] sunny!","Piove? No, c'è il sole!"],c:["chiedere e dire che tempo fa","usare «It is / It isn't»","nominare le cose di Parigi"]},
+ {k:["The zebra [has got] black and white stripes.","La zebra ha le strisce bianche e nere."],c:["nominare le parti del corpo","descrivere con «has got / hasn't got»","seguire i comandi: «Clap your hands!»"]},
+ {k:["The maths lesson is [at] ten o'clock [on] Monday.","La lezione di matematica è alle dieci, il lunedì."],c:["nominare le materie di scuola","dire l'ora: «It's two o'clock»","dire quando: «at ten o'clock, on Monday»"]},
+ {k:["[Let's] sing a song!","Cantiamo una canzone!"],c:["fare gli auguri: «Merry Christmas!»","proporre di fare qualcosa: «Let's dance!»","nominare le cose della festa e del Carnevale"]},
+ {k:["[Once upon a time] there was a boy called Jack.","C'era una volta un ragazzo di nome Jack."],c:["raccontare una storia: «once upon a time, then, suddenly, finally»","seguire una storia in inglese","nominare animali e cose del Perù"]},
+ {k:["[Don't be] scared, it's only a cat!","Non avere paura, è solo un gatto!"],c:["descrivere: «scary, friendly, dark, quiet»","dire di non fare qualcosa: «Don't…!»","nominare le parole di Halloween"]},
+ {k:["[If] I [were] a fairy, I [would] fly.","Se fossi una fata, volerei."],c:["immaginare: «If I were…, I would…»","non confondere le parole trappola: «their / there, too / to»","scrivere le parole con le lettere mute: «knee, write»"]},
+ {k:["Six [plus] four [equals] ten.","Sei più quattro fa dieci."],c:["fare i conti in inglese: «plus, minus, times»","nominare forme e solidi","raccontare il passato degli antichi Greci"]},
+ {k:["The Romans [built] a long aqueduct.","I Romani costruirono un lungo acquedotto."],c:["spiegare come funzionano arco, leva e carrucola","raccontare il passato con i verbi irregolari","nominare i mestieri del Medioevo"]},
+ {k:["[When] water [gets] hot, it [becomes] steam.","Quando l'acqua si scalda, diventa vapore."],c:["spiegare come cresce una pianta","raccontare il ciclo dell'acqua","dire cosa succede sempre: «When…, …»"]},
+ {k:["Fireworks [were invented] in China.","I fuochi d'artificio furono inventati in Cina."],c:["dire chi ha inventato cosa: «was invented»","spiegare forze e calamite: «push, pull, attract»","confrontare i materiali: «softer, the strongest»"]}];
+const gKey=w=>(GOALS[w]||{}).k||["",""];
+const gPlain=s=>s.replace(/[\[\]]/g,"");
+const gHi=s=>esc(s).replace(/\[([^\]]+)\]/g,'<mark>$1</mark>');
+const LV_IC={topic:"📘",spell:"🐝",sent:"🧩",trans:"🔁",mix:"🌀",boss:"⚔️"};
+function briefing(w,done){const W=WORLDS[w],Gd=GOALS[w]||{k:["",""],c:[]};let step=0;const N=4;
+ const sents=W.intro.match(/[^!.?]+[!.?]+/g)||[W.intro];const hook=(sents[0].length<40&&sents[1]?sents[0]+sents[1]:sents[0]).trim();
+ const tw=W.topics.map(t=>({t,ws:shuffle(t.words.filter(x=>x.e)).slice(0,3)}));
+ /* riscaldamento: 2 parole del primo argomento, 3 figure */
+ const wpool=W.topics[0].words.filter(x=>x.e),wq=shuffle(wpool).slice(0,2).map(a=>({a,o:shuffle([a,...shuffle(wpool.filter(x=>x!==a)).slice(0,2)])}));let wi=0,wok=0;
+ const page=()=>{
+  if(step===0)return `<div class="bfart">${worldArt(w)}</div><div class="guide" style="margin:0">${ciapImg(56,"wave","talk")}<div class="say" style="text-align:left"><b>${esc(W.n)}</b><br>${T(hook)}</div></div>
+   <button class="bfkey" data-sayk>🔊 <span>${gHi(Gd.k[0])}</span><small>${esc(Gd.k[1])}</small></button>`;
+  if(step===1)return `<h3 class="bfh">Cosa imparerai</h3>
+   <div class="bfsec"><span class="lbl">🖼️ Le parole · tocca per sentirle</span><div class="bftop">${tw.map(({t,ws})=>`<div><b>${esc(t.it)}</b><div class="bfw">${ws.map(x=>`<button data-say="${esc(x.en)}" title="${esc(x.en)}"><img src="${pixURL(x.e)}" alt=""><small>${esc(x.en)}</small></button>`).join("")}</div></div>`).join("")}</div></div>
+   <div class="bfsec"><span class="lbl">🧩 La frase chiave</span><button class="bfkey" data-sayk>🔊 <span>${gHi(Gd.k[0])}</span><small>${esc(Gd.k[1])}</small></button></div>
+   <div class="bfsec"><span class="lbl">⭐ Alla fine saprai…</span><ul class="bfcan">${Gd.c.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></div>`;
+  if(step===2)return `<h3 class="bfh">Cosa farai</h3><div class="bfpath">${LEVEL_PLAN.map((P,l)=>{const [en,it]=levelName(w,l),st=starsOf(w,l);return `<div class="${P.k==="boss"?"boss":""} ${l===5?"jr":""} ${st?"done":""}"><i>${st?"✅":l===5?"🛡️":LV_IC[P.k]}</i><span><b>${l+1}</b> ${esc(l===5?"Sfida al piccolo boss":P.k==="boss"?"Boss finale":it)}</span></div>`}).join("")}</div>
+   <div class="peekboss">${bossImg(w,60,"wait",[-.7,.3])}<div class="bsay"><b>${esc(W.boss[0])}</b>${T(BOSS_INFO[w].story)}</div></div>
+   <div class="pgnote" style="text-align:left">📘 parole nuove · 🐝 gara di spelling · 🧩 frasi · 🔁 traduttore · 🌀 ripasso · ⚔️ boss. Ogni livello dura 3-5 minuti.</div>`;
+  if(wi>=wq.length)return `<h3 class="bfh">Pront${S.gender==="f"?"a":"o"}!</h3><div class="duo">${avatarImg(S.av,96,"m-happy")}${ciapImg(96,"happy")}</div><div class="say">${wok===wq.length?"Perfetto, 2 su 2! Sei già un passo avanti.":"Brav"+(S.gender==="f"?"a":"o")+"! Le parole nuove le impariamo insieme, livello dopo livello."}</div>`;
+  const q=wq[wi];return `<h3 class="bfh">Riscaldamento ${wi+1}/${wq.length}</h3><div class="pgnote">Ascolta e tocca la figura giusta (non conta per le stelle).</div><button class="spk bfspk" data-sayq>🔊</button>
+   <div class="bfopts">${q.o.map((o,i)=>`<button data-o="${i}"><img src="${pixURL(o.e)}" alt=""></button>`).join("")}</div>`};
+ const render=m=>{const box=m.querySelector(".brief");box.innerHTML=`<div class="bfdots">${[...Array(N)].map((_,i)=>`<i class="${i<step?"d":i===step?"c":""}"></i>`).join("")}</div>${T(page())}
+   <div class="row bfnav">${step<N-1?`<button class="btn w sm" id="bfskip">Salta</button><button class="btn" id="bfnext">Avanti ▶</button>`:wi>=wq.length?`<button class="btn" id="bfgo">ANDIAMO! ▶</button>`:`<button class="btn w sm" id="bfgo">Salta ▶</button>`}</div>`;
+  box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>{say(b.dataset.say);b.classList.add("hit")});
+  box.querySelectorAll("[data-sayk]").forEach(b=>b.onclick=()=>say(gPlain(Gd.k[0])));
+  const nx=box.querySelector("#bfnext");if(nx)nx.onclick=()=>{step++;SFX.tap&&SFX.tap();render(m);if(step===3&&wq[0])setTimeout(()=>say(wq[0].a.en),350)};
+  const sk=box.querySelector("#bfskip");if(sk)sk.onclick=finish;const go=box.querySelector("#bfgo");if(go)go.onclick=finish;
+  const sq=box.querySelector("[data-sayq]");if(sq)sq.onclick=()=>say(wq[wi].a.en);
+  box.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{const q=wq[wi],o=q.o[+b.dataset.o];if(o===q.a){b.classList.add("ok");SFX.ok&&SFX.ok();if(!q.miss)wok++;say(q.a.en);setTimeout(()=>{wi++;render(m);if(wq[wi])setTimeout(()=>say(wq[wi].a.en),300)},800)}else{b.classList.add("no");q.miss=1;SFX.no&&SFX.no()}})};
+ const finish=()=>{closeModal();SFX.unlock&&SFX.unlock();say("Let's go!");done&&done()};
+ modal(`<button class="pkx" id="bfx" aria-label="Chiudi">✕</button><div class="brief"></div>`,m=>{m.classList.add("bfmodal");m.querySelector("#bfx").onclick=finish;render(m);setTimeout(()=>say(gPlain(Gd.k[0])),500)})}
+/* alla vittoria sul boss: cosa sa fare adesso */
+function goalsDone(w){const Gd=GOALS[w];if(!Gd)return "";return `<div class="panel bfdone"><span class="lbl">🎓 Ora sai…</span><ul class="bfcan ok">${Gd.c.map(c=>`<li>${esc(c)}</li>`).join("")}</ul><button class="bfkey" data-say="${esc(gPlain(Gd.k[0]))}">🔊 <span>${gHi(Gd.k[0])}</span><small>Dillo ad alta voce!</small></button></div>`}
+/* per i genitori: competenze raggiunte mondo per mondo */
+function goalsParentHTML(){const nm=esc(S.name||"");const done=WORLD_ORDER.filter(w=>GOALS[w]&&starsOf(w,9)>0),cur=WORLD_ORDER.find(w=>GOALS[w]&&worldOpen(w)&&!starsOf(w,9)&&[...Array(10).keys()].some(l=>starsOf(w,l)));
+ return `<div class="panel pgp" data-pt="0"><span class="lbl">Cosa sa fare ${nm} in inglese</span>
+  ${done.length?done.slice(-6).reverse().map(w=>`<div class="pgcan"><b>✅ ${esc(WORLDS[w].n)}</b><small>${GOALS[w].c.map(esc).join(" · ")}</small></div>`).join(""):`<div class="pgnote">Qui compaiono le competenze di ogni mondo completato (boss battuto): per esempio «sa confrontare animali e cose», «sa raccontare cosa ha fatto ieri».</div>`}
+  ${done.length>6?`<div class="pgnote">…e altri ${done.length-6} mondi completati.</div>`:""}
+  ${cur!=null?`<div class="pgcan cur"><b>⏳ In corso: ${esc(WORLDS[cur].n)}</b><small>${GOALS[cur].c.map(esc).join(" · ")}</small></div>`:""}</div>`}
 
 /* ================= SCINTILLE PIXEL ================= */
 function burst(){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;const el=document.querySelector(".opt.ok,.slots,.build,.match,#said")||document.querySelector(".stage");if(!el)return;const r=el.getBoundingClientRect();
@@ -3521,7 +3607,7 @@ function worldPeek(w){const W=WORLDS[w],st=S.started,open=st&&worldOpen(w),s=STA
   <div class="row pksub" style="justify-content:center;gap:8px"><span class="stagepill" style="background:${s.c}">${s.n}</span><span class="muted">${W.p} · ${s.age}</span></div>
   <h3 style="margin:2px 0 0;font-family:var(--title);font-size:24px;text-align:center">${W.n}</h3>
   <div class="guide" style="margin:0">${ciapImg(46,"n","talk")}<div class="say" style="text-align:left">${W.intro}</div></div>
-  <div class="twt big">${W.topics.map(t=>`<span>${t.it}</span>`).join("")}</div>
+  <div class="twt big">${W.topics.map(t=>`<span>${t.it}</span>`).join("")}</div>${GOALS[w]?`<div class="bfmini"><span class="lbl">⭐ Alla fine saprai</span><ul class="bfcan">${GOALS[w].c.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></div>`:""}
   <div class="peekboss">${bossImg(w,60,st&&worldDone(w)?"happy":"wait",[-.7,.3])}<div class="bsay"><b>Boss finale: ${W.boss[0]} · ${BOSS_INFO[w].ep}</b>${T(BOSS_INFO[w].story)}<br>${st&&worldDone(w)?BOSS_LINES[w][1]:BOSS_LINES[w][0]}</div></div>
   <div class="row pkbar" style="justify-content:center">${open?`<button class="btn" id="pk">▶ Vai al mondo</button>`:st?`<button class="btn" disabled>🔒 Prima batti ${esc((WORLDS[wprev(w)]||WORLDS[0]).n)}</button>`:`<button class="btn" id="pk">▶ Inizia l'avventura</button>`}</div></div>`,
   m=>{const b=m.querySelector("#pk");if(b)b.onclick=()=>{closeModal();SFX.unlock();if(open)worldMap(w);else{say("Hello! Let's play!");chooseGender()}}});}
@@ -10044,7 +10130,7 @@ function open2(wi){G0();S.h3d=(S.h3d||0)+1;const run=++RUN;const W=WORLDS[wi];S.
  const cur=[...Array(10).keys()].find(l=>levelOpen(wi,l)&&!starsOf(wi,l));
  app.innerHTML=`<div class="screen w3d"><div class="w3dwrap" id="w3w"></div>
   <div class="w3hud"><button class="iconbtn" id="back" aria-label="Mondi">◀</button><div class="w3t"><small>MONDO ${wpos(wi)+1} · ${STAGES[W.st].n}</small><b>${esc(W.n)}</b></div><div class="grow"></div><div class="w3st"><img src="${starURL()}" width="22" alt="">${worldStars(wi)}/30</div>
-   <div class="w3btns"><button id="w3cam" aria-label="Camera">🎥</button><button id="w3rec" aria-label="Ricentra">🎯</button><button id="w3top" aria-label="Vista dall'alto">🗺️</button><button id="w3two" aria-label="Mappa 2D">2D</button></div></div>
+   <div class="w3btns"><button id="w3goal" aria-label="Obiettivi del mondo">🎯</button><button id="w3cam" aria-label="Camera">🎥</button><button id="w3rec" aria-label="Ricentra">🎯</button><button id="w3top" aria-label="Vista dall'alto">🗺️</button><button id="w3two" aria-label="Mappa 2D">2D</button></div></div>
   <div class="w3load" id="w3load"><div>${ciapImg(80,"wave","talk")}</div><b>Sto costruendo ${esc(W.n)}…</b></div>
   ${(S.h3d||0)<3?`<div class="w3hint" id="w3hint">Trascina per girare · due dita per lo zoom · tocca un livello</div>`:""}
   <div class="w3bub" id="w3bub"></div><div class="w3vig"></div>
@@ -10143,7 +10229,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
  function bubble(t,at,ms){const b=bub();if(!b)return;b.innerHTML=`<span>${t}</span>`;b.classList.add("on");bubAt=at;clearTimeout(bubble.t);bubble.t=setTimeout(()=>{const bb=bub();bb&&bb.classList.remove("on");bubAt=null},ms)}
  function hint(v){const h=$("#w3hint");if(h&&!v)h.classList.add("off")}
  $("#w3rec").onclick=()=>{goal.yaw=st.head+Math.PI+(TP()?.15:.35);Object.assign(goal,TP()?TPD:{pitch:.42,dist:14.5});userT=-99;SFX.tap()};
- $("#w3cam").classList.toggle("on",TP());$("#w3cam").onclick=()=>{S.cam3p=!TP();save();$("#w3cam").classList.toggle("on",TP());$("#w3rec").onclick();tell(TP()?"Camera <b>alle spalle</b>: ti seguo come in un videogioco!":"Camera <b>libera</b>: girati come vuoi!","happy")};$("#w3top").onclick=()=>{const hi=goal.dist>35;goal.pitch=hi?.42:1.05;goal.dist=hi?14.5:48;userT=performance.now()/1000;SFX.tap()};
+ $("#w3goal").onclick=()=>briefing(wi);$("#w3cam").classList.toggle("on",TP());$("#w3cam").onclick=()=>{S.cam3p=!TP();save();$("#w3cam").classList.toggle("on",TP());$("#w3rec").onclick();tell(TP()?"Camera <b>alle spalle</b>: ti seguo come in un videogioco!":"Camera <b>libera</b>: girati come vuoi!","happy")};$("#w3top").onclick=()=>{const hi=goal.dist>35;goal.pitch=hi?.42:1.05;goal.dist=hi?14.5:48;userT=performance.now()/1000;SFX.tap()};
  const step=d=>{let i=st.node+d;while(i>=0&&i<10&&!levelOpen(wi,i))i+=d;if(i<0||i>9){SFX.no();return}goTo(i)};
  /* tieni premuto ◀ ▶ per correre; un tocco = un livello */
  let holdT=0,swallow=0;const nextOpen=d=>{let i=st.node;while(i+d>=0&&i+d<10&&levelOpen(wi,i+d))i+=d;return i};
@@ -10154,7 +10240,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
  $("#w3prev").onclick=()=>{if(swallow){swallow=0;return}step(-1)};$("#w3next").onclick=()=>{if(swallow){swallow=0;return}if(st.node<9&&!levelOpen(wi,st.node+1)){SFX.no();tell("Prima completa il livello "+(st.node+1)+"!","sad");return}step(1)};
  const key=e=>{if(run!==RUN||!document.body.contains(CV)){removeEventListener("keydown",key);return}if($(".modal"))return;if(cine){cineEnd();return}if(e.key==="ArrowRight")$("#w3next").click();else if(e.key==="ArrowLeft")$("#w3prev").click();else if(e.key==="Enter"&&!st.walk)askLevel(wi,st.node)};addEventListener("keydown",key);
  /* prima visita: presentazione di Ciapin */
- if(!S.seen[wi]){S.seen[wi]=1;save();const intro=()=>{if(run===RUN&&!$(".modal"))modal(`${ciapImg(96,"wave")}<h2 style="font-size:22px">${W.n}</h2><div class="say" style="text-align:left">${W.intro}</div><button class="btn" data-close>ANDIAMO! ▶</button>`)};
+ if(!S.seen[wi]){S.seen[wi]=1;save();const intro=()=>{if(run===RUN&&!$(".modal"))briefing(wi)};
   if(bIntro){let fired=0;const f=()=>{if(fired)return;fired=1;setTimeout(intro,1400)};bIntro.done=f;afterCine(f,window.__lockQ?90000:16000,1)}else afterCine(intro,2300)}
  else if(false){setTimeout(()=>{if(run===RUN)modal(`${ciapImg(96,"wave")}<h2 style="font-size:22px">${W.n}</h2><div class="say" style="text-align:left">${W.intro}</div><button class="btn" data-close>ANDIAMO! ▶</button>`)},2300)}
  else afterCine(()=>run===RUN&&!st.walk&&panel(st.node),2200);
