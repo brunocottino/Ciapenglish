@@ -1724,7 +1724,7 @@ function roadArt(k,S,R){{const r2=typeof roadArt2==="function"?roadArt2(k,S,R):n
   case"city":return sh+body(S,"#565b70","#c9cbd4",1.42)+`<path d="${line(S,1.2)}" stroke="#9fa3b3" stroke-width="1" fill="none"/><path d="${line(S,-1.2)}" stroke="#9fa3b3" stroke-width="1" fill="none"/><path d="${line(S,0)}" stroke="#f4f0dc" stroke-width="1.6" stroke-dasharray="7 7" fill="none"/>`;
   case"snow":return `<path d="${ribbon(S,1.2)}" fill="#8aa0c4" opacity=".35" transform="translate(2 4)"/>`+body(S,"#fbfdff","#c7d6ee",1.15)+dotsAlong(S,4,(p,i)=>{const o=i%2?.28:-.28,cx=p.x+p.nx*p.hw*o,cy=p.y+p.ny*p.hw*o;return `<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="1.5" ry="2.4" transform="rotate(${f1(Math.atan2(p.ty,p.tx)*57.3+90)} ${f1(cx)} ${f1(cy)})" fill="#a8bad8"/>`});
   case"desert":return sh+body(S,"#f3dca6","#d8b474",1.12)+dotsAlong(S,4,(p,i)=>`<ellipse cx="${f1(p.x+p.nx*p.hw*(i%2?.3:-.3))}" cy="${f1(p.y+p.ny*p.hw*(i%2?.3:-.3))}" rx="1.6" ry="2.2" fill="#d2ad6a"/>`);
-  case"space":return `<path d="${line(S,0)}" fill="none" stroke="#7a6bff" stroke-opacity=".25" stroke-width="16" stroke-linecap="round"/><path d="${line(S,0)}" fill="none" stroke="#b9b0ff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/><path class="mv-dash" d="${line(S,0)}" fill="none" stroke="#e8fbff" stroke-width="2.2" stroke-dasharray="4 8" stroke-linecap="round"/>`;
+  case"space":return "";/* niente linea: solo i pianeti */
   default:return sh+body(S,"#fff1fb","#d9a6e8")+dotsAlong(S,3,(p,i)=>`<circle cx="${f1(p.x+p.nx*p.hw*(i%2?.45:-.45))}" cy="${f1(p.y+p.ny*p.hw*(i%2?.45:-.45))}" r="1.6" fill="${["#ffb3e6","#b3e9ff","#fff2a8"][i%3]}"/>`)}}
 
 /* ---------- le 12 scene ---------- */
@@ -2314,6 +2314,8 @@ async function initCloud(){try{if(!window.claude?.use)return;const [db,user]=awa
 window.claude?.hot?.snapshot?.(()=>({S}));
 
 const today=()=>new Date().toISOString().slice(0,10);
+/* nello Spazio il personaggio ha sempre casco spaziale e jetpack */
+const avW=w=>WORLDS[w]&&WORLDS[w].th==="space"?{...S.av,acc:"helmet",wing:"jetpack"}:S.av;
 const starsOf=(w,l)=>S.stars[w+"-"+l]||0;
 const worldStars=w=>{let t=0;for(let l=0;l<10;l++)t+=starsOf(w,l);return t};
 const totalStars=()=>Object.values(S.stars).reduce((a,b)=>a+b,0);
@@ -2560,7 +2562,7 @@ function worldMap2D(w){G=null;const W=WORLDS[w];const cur=[...Array(10).keys()].
     return `<button class="lvnode ${boss?"boss":""} ${st?"done":""} ${open?"":"lock"} ${l===cur?"cur":""}" style="left:${x/MW*100}%;top:${y/MH*100}%" data-l="${l}" aria-label="Livello ${l+1}: ${esc(levelName(w,l)[1])}${st?", "+st+" stelle":""}">
      ${boss?`<img class="bi" src="${pixURL(open?(st?"🏆":"⚔️"):"🔒")}" alt="">`:(open?l+1:`<span class="lk">🔒</span>`)}
      ${st?`<span class="st">${[1,2,3].map(i=>`<img src="${starURL(i<=st)}" alt="">`).join("")}</span>`:""}
-     ${l===cur?`<span class="mepair">${avatarImg(S.av,54,"me")}${starsOf(w,5)&&!starsOf(w,9)?bossImg(w,40,"wait",[0,-.5],"mejr",true):""}</span>`:""}${l===5&&!st&&open?`<span class="nodejr">${bossImg(w,74,"wait",[.7,.6],"",true)}</span>`:""}</button>`}).join("")}${mapBoss(w,cur)}</div>
+     ${l===cur?`<span class="mepair">${avatarImg(avW(w),54,"me")}${starsOf(w,5)&&!starsOf(w,9)?bossImg(w,40,"wait",[0,-.5],"mejr",true):""}</span>`:""}${l===5&&!st&&open?`<span class="nodejr">${bossImg(w,74,"wait",[.7,.6],"",true)}</span>`:""}</button>`}).join("")}${mapBoss(w,cur)}</div>
   <div class="guide">${ciapImg(70,"n","talk")}<div class="say" id="tip"><span class="who">CIAPIN</span>${cur===undefined?"Hai finito questo mondo! Rigioca i livelli per avere 3 stelle ovunque.":`Prossimo: <b>${esc(levelName(w,cur)[1])}</b>. Tocca il cerchio che brilla!`}</div></div>
  </div>`;
 
@@ -2812,7 +2814,7 @@ function renderQ(){const ad=liveAdapt();const q=G.Q[G.i];q.done=false;q.fixing=f
   case"lsent":body=`<div class="card"><button class="spk" id="spk" aria-label="Ascolta">🔊</button><button class="mini" id="slow">🐢 piano</button></div><div class="opts one">${q.vs.map(v=>`<button class="opt" style="font-size:19px" data-a="${esc(v.a)}">${esc(v.txt)}</button>`).join("")}</div>`;break;
  }
  const QP=QPAL[G.w]||QPAL[0];app.innerHTML=`<div class="screen lv qbg" style="--qa:${QP[0]};--qb:${QP[1]}">
-  <div class="lvtop"><button class="iconbtn" id="quit" aria-label="Esci">✕</button><div class="track"><div class="segs">${segs()}</div><div class="runner" style="left:${(G.i/G.Q.length*100).toFixed(1)}%">${avatarImg(S.av,30)}</div></div>${foodTotal()?`<button class="iconbtn foodb" id="food" aria-label="Snack: aiuto gratis">🎒<b>${foodTotal()}</b></button>`:""}<button class="iconbtn hintb" id="hint" aria-label="Aiuto">💡</button><div class="combo" id="combo"></div></div>
+  <div class="lvtop"><button class="iconbtn" id="quit" aria-label="Esci">✕</button><div class="track"><div class="segs">${segs()}</div><div class="runner" style="left:${(G.i/G.Q.length*100).toFixed(1)}%">${avatarImg(G.w!=null&&!G.review?avW(G.w):S.av,30)}</div></div>${foodTotal()?`<button class="iconbtn foodb" id="food" aria-label="Snack: aiuto gratis">🎒<b>${foodTotal()}</b></button>`:""}<button class="iconbtn hintb" id="hint" aria-label="Aiuto">💡</button><div class="combo" id="combo"></div></div>
   ${G.boss||G.jr?`<div class="bossbar ${G.jr?"jrbar":""}"><div id="bossimg">${bossImg(G.w,74,"wait",[0,.5],"",G.jr)}</div><div class="btaunt" id="btaunt"></div><div class="grow"><div class="bn">${esc(G.jr?JR[G.w][0]:G.W.boss[0])}${G.jr?` <small>· boss intermedio</small>`:""}</div><div class="hp"><i id="hp" style="width:${G.hp/G.Q.length*100}%"></i></div></div>${G.boss&&starsOf(G.w,5)?`<div class="ally" title="${esc(JR[G.w][0])}">${bossImg(G.w,52,G.shield?"happy":"wait",[-.8,0],"",true)}<span>${G.shield?"🛡️":""}</span></div>`:""}</div>`:""}
   <div class="guide">${ciapImg(58,"n","talk")}<div class="say" id="gb"><span class="who">CIAPIN</span>${q.retry?`<span class="qtag r">🔁 Riproviamo</span> `:q.rev?`<span class="qtag v">⏰ Ripasso</span> `:q.why==="new"?`<span class="qtag n">✨ Parola nuova</span> `:""}${ad==="down"?"Un passo più facile, poi risaliamo! ":ad==="up"?`<span class="qtag u">🚀 Sfida</span> `:""}${GUIDE[q.t]}</div></div>
   <div class="stage">${body}</div>
@@ -2924,8 +2926,8 @@ function finish(){if(G.test)return testDone();const n=G.Q.filter(q=>!q.retry).le
  save();SFX.win();confetti();
  const all=G.w===CIAPW&&G.l===9;const LP=lvProg();
  app.innerHTML=`<div class="screen center res" style="gap:16px"><div class="resA">
-  ${G.jr?`<div class="party">${avatarImg(S.av,100,"m-happy")}${bossImg(G.w,110,"happy",[0,0],"partyboss",true)}${ciapImg(100,"happy")}</div><div class="bsay win"><b>${esc(JR[G.w][0])}</b>${JR[G.w][2]}<br><small>🛡️ Ti accompagnerà e ti proteggerà da un errore nella sfida finale!</small></div>`:""}
-  ${G.boss?`<div class="party">${avatarImg(S.av,100,"m-happy")}${bossImg(G.w,130,"happy",[0,0],"partyboss")}${starsOf(G.w,5)?bossImg(G.w,84,"happy",[0,0],"partyboss",true):""}${ciapImg(100,"happy")}</div><div class="bsay win"><b>${esc(G.W.boss[0])}</b>${BOSS_LINES[G.w][1]}</div>${G.ko?`<div class="kotag">K.O. prima della fine! +10 🪙</div>`:""}<div class="lesson"><span class="lbl">📚 La lezione di ${esc(G.W.boss[0].replace(/^(Il |Lo |La |L')/,""))}</span><b data-say="${esc(BOSS_INFO[G.w].lesson[0])}">${esc(BOSS_INFO[G.w].lesson[0])} 🔊</b><small>${esc(BOSS_INFO[G.w].lesson[1])}</small></div>`:G.jr?"":`<div class="duo">${avatarImg(S.av,110,"m-happy")}${ciapImg(110,"happy")}</div>`}
+  ${G.jr?`<div class="party">${avatarImg(avW(G.w),100,"m-happy")}${bossImg(G.w,110,"happy",[0,0],"partyboss",true)}${ciapImg(100,"happy")}</div><div class="bsay win"><b>${esc(JR[G.w][0])}</b>${JR[G.w][2]}<br><small>🛡️ Ti accompagnerà e ti proteggerà da un errore nella sfida finale!</small></div>`:""}
+  ${G.boss?`<div class="party">${avatarImg(avW(G.w),100,"m-happy")}${bossImg(G.w,130,"happy",[0,0],"partyboss")}${starsOf(G.w,5)?bossImg(G.w,84,"happy",[0,0],"partyboss",true):""}${ciapImg(100,"happy")}</div><div class="bsay win"><b>${esc(G.W.boss[0])}</b>${BOSS_LINES[G.w][1]}</div>${G.ko?`<div class="kotag">K.O. prima della fine! +10 🪙</div>`:""}<div class="lesson"><span class="lbl">📚 La lezione di ${esc(G.W.boss[0].replace(/^(Il |Lo |La |L')/,""))}</span><b data-say="${esc(BOSS_INFO[G.w].lesson[0])}">${esc(BOSS_INFO[G.w].lesson[0])} 🔊</b><small>${esc(BOSS_INFO[G.w].lesson[1])}</small></div>`:G.jr?"":`<div class="duo">${avatarImg(S.av,110,"m-happy")}${ciapImg(110,"happy")}</div>`}
   <h1 style="font-size:36px;color:var(--sun);text-shadow:0 4px 0 var(--berry-d),0 8px 0 var(--ink)">${G.review?"RIPASSO FATTO!":st===3?"PERFECT!":st===2?"GREAT JOB!":"WELL DONE!"}</h1>
   ${G.review?"":`<div class="bigstars">${[1,2,3].map(i=>`<img src="${starURL(i<=st)}" class="${i<=st?"pop":"off"}" style="animation-delay:${i*.3}s" alt="">`).join("")}</div>`}
   </div><div class="resB">
@@ -4836,7 +4838,7 @@ function makeAvatar(av){const PR=PRHQ;av=Object.assign({skin:"#ffdcc4",hair:"#6b
  if(A==="headphones"){/* archetto sopra la testa, da un orecchio all'altro (prima girava davanti alla faccia) */hat(PR.torus(.66,.06,24,6).map(t=>t.map(q=>[q[0],q[2],q[1]])).filter(t=>t.every(q=>q[1]>-.08)),"#8a5cf6",T([0,.55,0]));[-1,1].forEach(sx=>hat(PR.cyl(.17,.17,.16,12),"#8a5cf6",T([.62*sx,.52,0],[0,0,TAU/4])))}
  if(A==="pirate"){hat(PR.sphere(.7,16,8).filter(t=>t.every(q=>q[1]>-.02)),"#2b2b3a",T([0,.82,0],0,[1.25,.5,.9]));hat(PR.ico(.08,0),"#ffffff",T([0,1.06,.5]))}
  if(A==="halo"){const h=new N3(part(PR.torus(.42,.05,22,6),"#ffd23f"),{p:[0,1.5,0],emis:.6,toon:1});head.add(h)}
- if(A==="helmet")head.add(new N3(part(PR.sphere(.95,20,14),"#cfefff",T([0,.55,0])),{alpha:.28,noShadow:1}));
+ if(A==="helmet"){head.add(new N3(part(PR.sphere(.95,20,14),"#cfefff",T([0,.55,0])),{alpha:.34,emis:.2,noShadow:1}));head.add(new N3(part(PR.torus(.82,.09,24,8),"#f4f6fb",T([0,-.08,0])),{toon:1,out:.03,emis:.35}));head.add(new N3(part(PR.cyl(.025,.025,.3,6),"#c8ccdc",T([.35,1.38,0])),O));head.add(new N3(part(PR.sphere(.07,8,6),"#e5484d",T([.35,1.7,0])),{emis:.8}))}
  /* tutti gli altri cappelli del negozio */
  const GOLD="#ffd23f";
  if(A==="beret")hat(PR.sphere(.62,18,8),"#e5484d",T([-.12,1.05,0],[0,0,.25],[1,.32,1]));
@@ -6098,11 +6100,7 @@ function spaceBuild(){const n=C.nodes,P=C.pts,ph=C.ph;
   C.sprites.push({t:gt,c:[-160,70,-200],w:120,h:120,a:.85});C.sprites.push({t:gt,c:[200,-40,160],w:70,h:70,a:.6})}
  /* il telescopio spaziale */{const g=new Geo();g.add(PR.cyl(1.4,1.4,6,16),T([0,-3,0],[TAU/4,0,0]),"#d8dce4");g.add(PR.cyl(1.5,1.5,.3,16),T([0,0,3.1],[TAU/4,0,0]),"#3a3a44");for(const sd of [-1,1])g.add(PR.box(5,.08,2,true),T([sd*4,0,-.5]),"#1d3c8f");const ts=new N3(R.mesh(g),{toon:1,out:.04,noShadow:1});C.dyn.push(ts);C.upd.push(t=>{const a=t*.05+2;ts.p=[Math.cos(a)*52,18+Math.sin(t*.3)*2,Math.sin(a)*40-10];ts.r=[.2,-a,.1]})}
  /* polvere di stelle che passa vicino (senso di velocità) */particles("spark",60,{size:.3,fall:.15,drift:.6,area:70,top:30,tw:1})}
-function starTrail(){/* la scia di stelle che collega le tappe: perle luminose + una linea sottile, niente pavimento */const P=C.pts,ph=C.ph;const g=new Geo();
- for(let i=0;i<P.length-1;i+=1){const a=P[i],b=P[i+1];beam(g,[a[0],ph[i]+.1,a[1]],[b[0],ph[i+1]+.1,b[1]],.07,"#9ff4ff")}
- C.items.push({m:R.mesh(g),M:M4.id(),emis:1.3,noShadow:1});
- const dots=new Geo();for(let i=0;i<P.length;i+=3){const y=ph[i]+.12;dots.add(PR.sphere(.16,8,6),T([P[i][0],y,P[i][1]]),i%6?"#ffffff":"#ffd860")}C.items.push({m:R.mesh(dots),M:M4.id(),emis:1.6,noShadow:1});
- for(let i=0;i<P.length;i+=6){const s={t:tx("glow"),c:[P[i][0],ph[i]+.2,P[i][1]],w:1.4,h:1.4,a:.5,tint:i%12?[.6,.9,1]:[1,.9,.5]};C.sprites.push(s);C.upd.push(t=>{s.a=.35+Math.sin(t*3+i*.3)*.2})}}
+function starTrail(){/* nello Spazio niente linea tra le tappe: solo i pianeti, Ciapin vola libero dall'uno all'altro */}
 /* --- REGNO DI CIAPIN --- */
 function mushHouse(x,z,rot,cap){const y=Y(x,z)-.1,m=T([x,y,z],[0,rot,0]);const P=(p,r,s)=>M4.mul(m,T(p,r,s));const g=GG();
  g.add(PR.cyl(1.5,1.8,3.2,14),P([0,0,0]),"#fbf2e2");g.add(PR.sphere(3,18,10).filter(t=>t.some(q=>q[1]>-.2)),P([0,3,0],0,[1,.72,1]),cap,{smooth:true});
@@ -10269,7 +10267,8 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
   /* da ferma guarda avanti; dopo un po' si gira a salutarti */
   const wantF=st.walk?st.head:(st.node===9?Math.atan2(BP[0]-ps.x,BP[1]-ps.z):(!TP()||st.idleT>5||st.wave>0)?Math.atan2(cam.eye[0]-ps.x,cam.eye[2]-ps.z):st.head);
   let df=((wantF-st.face+Math.PI)%TAU+TAU)%TAU-Math.PI;const turn=df*Math.min(1,dt*(st.walk?9:4));st.face+=turn;st.turn+=((turn/Math.max(dt,1e-3))*.12-st.turn)*Math.min(1,dt*6);
-  A.root.p=[ps.x,ps.y+(SPC?.55+Math.sin(t*1.6)*.25:0),ps.z];A.root.r=[SPC?Math.min(.35,(st.speed||0)*.05):0,st.face,0];animAvatar(A,st,t,dt);
+  let arc=0;if(SPC){let k=0;while(k<NS.length-2&&st.s>NS[k+1])k++;const L=NS[k+1]-NS[k]||1,f=Math.max(0,Math.min(1,(st.s-NS[k])/L));arc=Math.sin(f*Math.PI)*Math.min(4,L*.35)}
+  A.root.p=[ps.x,ps.y+(SPC?.55+Math.sin(t*1.6)*.25+arc:0),ps.z];A.root.r=[SPC?Math.min(.35,(st.speed||0)*.05):0,st.face,0];animAvatar(A,st,t,dt);
   if(SPC){const bx=-Math.sin(st.face)*.75,bz=-Math.cos(st.face)*.75,py=A.root.p[1];JF.forEach((s,i)=>{const sd=i%2?1:-1,k=((t*2.2+i*.37)%1),px=Math.cos(st.face)*.45*sd,pz=-Math.sin(st.face)*.45*sd;
    if(i<4){s.c=[ps.x+bx+px,py+1.1-k*.3,ps.z+bz+pz];s.w=s.h=.7+Math.sin(t*20+i)*.15+(st.speed||0)*.04;s.a=.9}else{s.c=[ps.x+bx+px,py+1-k*2.4,ps.z+bz+pz];s.w=s.h=.35*(1-k);s.a=1-k}})}
   /* il compagno segue Lea */
