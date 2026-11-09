@@ -2555,7 +2555,7 @@ function askLevel(w,l){const W=WORLDS[w];if(!levelOpen(w,l)){SFX.no();tell("Prim
 function worldMap2D(w){G=null;const W=WORLDS[w];const cur=[...Array(10).keys()].find(l=>levelOpen(w,l)&&!starsOf(w,l));
  app.innerHTML=`<div class="screen wm">
   <div class="hud"><button class="iconbtn" id="back" aria-label="Mondi">◀</button><div class="grow"><div class="lbl" style="color:#cfc6ff">Mondo ${wpos(w)+1} · ${STAGES[W.st].n}</div><h2 class="white" style="font-size:20px">${W.n}</h2></div>
-   <div class="hudbox" style="padding-left:10px"><img src="${starURL()}" width="26" alt="">${worldStars(w)}/30</div>${typeof W3D!=="undefined"&&W3D.ok()&&!W3D.broken?`<button class="iconbtn" id="to3d" aria-label="Mappa 3D" style="font-weight:900;font-size:15px">3D</button>`:""}<button class="iconbtn" id="goal" aria-label="Obiettivi del mondo">🎯</button></div>
+   <div class="hudbox" style="padding-left:10px"><img src="${starURL()}" width="26" alt="">${worldStars(w)}/30</div>${typeof W3D!=="undefined"&&W3D.ok()&&!W3D.broken?`<button class="iconbtn" id="to3d" aria-label="Mappa 3D" style="font-weight:900;font-size:15px">3D</button>`:""}<button class="iconbtn" id="goal" aria-label="Obiettivi del mondo">📋</button></div>
   <div class="mapbox">${mapSVG(w)}${NODES.map(([x,y],l)=>{const open=levelOpen(w,l),st=starsOf(w,l),boss=l===9;
     return `<button class="lvnode ${boss?"boss":""} ${st?"done":""} ${open?"":"lock"} ${l===cur?"cur":""}" style="left:${x/MW*100}%;top:${y/MH*100}%" data-l="${l}" aria-label="Livello ${l+1}: ${esc(levelName(w,l)[1])}${st?", "+st+" stelle":""}">
      ${boss?`<img class="bi" src="${pixURL(open?(st?"🏆":"⚔️"):"🔒")}" alt="">`:(open?l+1:`<span class="lk">🔒</span>`)}
@@ -2569,7 +2569,7 @@ function worldMap2D(w){G=null;const W=WORLDS[w];const cur=[...Array(10).keys()].
  app.querySelectorAll(".lvnode").forEach(b=>b.onclick=()=>askLevel(w,+b.dataset.l));
  const target=()=>app.querySelector(`.lvnode[data-l="${cur??9}"]`);
  scrollTo(0,0);
- if(!S.seen[w]){S.seen[w]=1;save();setTimeout(()=>briefing(w,()=>glideTo(target(),250)),200)}
+ if(!S.seen[w]){S.seen[w]=1;save();setTimeout(()=>glideTo(target(),250),200)}
  else glideTo(target(),700);
 }
 
@@ -3275,6 +3275,8 @@ function briefing(w,done){const W=WORLDS[w],Gd=GOALS[w]||{k:["",""],c:[]};let st
   box.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{const q=wq[wi],o=q.o[+b.dataset.o];if(o===q.a){b.classList.add("ok");SFX.ok&&SFX.ok();if(!q.miss)wok++;say(q.a.en);setTimeout(()=>{wi++;render(m);if(wq[wi])setTimeout(()=>say(wq[wi].a.en),300)},800)}else{b.classList.add("no");q.miss=1;SFX.no&&SFX.no()}})};
  const finish=()=>{closeModal();SFX.unlock&&SFX.unlock();say("Let's go!");done&&done()};
  modal(`<button class="pkx" id="bfx" aria-label="Chiudi">✕</button><div class="brief"></div>`,m=>{m.classList.add("bfmodal");m.querySelector("#bfx").onclick=finish;render(m);setTimeout(()=>say(gPlain(Gd.k[0])),500)})}
+/* prima di entrare in un mondo non ancora completato: il briefing, una volta sola per mondo */
+(function(){const WM0=worldMap;worldMap=function(w){try{if(S.started&&GOALS[w]&&!(S.brf&&S.brf[w])&&!starsOf(w,9)&&!$(".brief")){S.brf=S.brf||{};return briefing(w,()=>{S.brf[w]=1;save();WM0(w)})}}catch(e){console.error(e)}return WM0.apply(this,arguments)}})();
 /* alla vittoria sul boss: cosa sa fare adesso */
 function goalsDone(w){const Gd=GOALS[w];if(!Gd)return "";return `<div class="panel bfdone"><span class="lbl">🎓 Ora sai…</span><ul class="bfcan ok">${Gd.c.map(c=>`<li>${esc(c)}</li>`).join("")}</ul><button class="bfkey" data-say="${esc(gPlain(Gd.k[0]))}">🔊 <span>${gHi(Gd.k[0])}</span><small>Dillo ad alta voce!</small></button></div>`}
 /* per i genitori: competenze raggiunte mondo per mondo */
@@ -10130,7 +10132,7 @@ function open2(wi){G0();S.h3d=(S.h3d||0)+1;const run=++RUN;const W=WORLDS[wi];S.
  const cur=[...Array(10).keys()].find(l=>levelOpen(wi,l)&&!starsOf(wi,l));
  app.innerHTML=`<div class="screen w3d"><div class="w3dwrap" id="w3w"></div>
   <div class="w3hud"><button class="iconbtn" id="back" aria-label="Mondi">◀</button><div class="w3t"><small>MONDO ${wpos(wi)+1} · ${STAGES[W.st].n}</small><b>${esc(W.n)}</b></div><div class="grow"></div><div class="w3st"><img src="${starURL()}" width="22" alt="">${worldStars(wi)}/30</div>
-   <div class="w3btns"><button id="w3goal" aria-label="Obiettivi del mondo">🎯</button><button id="w3cam" aria-label="Camera">🎥</button><button id="w3rec" aria-label="Ricentra">🎯</button><button id="w3top" aria-label="Vista dall'alto">🗺️</button><button id="w3two" aria-label="Mappa 2D">2D</button></div></div>
+   <div class="w3btns"><button id="w3goal" aria-label="Obiettivi del mondo">📋</button><button id="w3cam" aria-label="Camera">🎥</button><button id="w3rec" aria-label="Ricentra">🎯</button><button id="w3top" aria-label="Vista dall'alto">🗺️</button><button id="w3two" aria-label="Mappa 2D">2D</button></div></div>
   <div class="w3load" id="w3load"><div>${ciapImg(80,"wave","talk")}</div><b>Sto costruendo ${esc(W.n)}…</b></div>
   ${(S.h3d||0)<3?`<div class="w3hint" id="w3hint">Trascina per girare · due dita per lo zoom · tocca un livello</div>`:""}
   <div class="w3bub" id="w3bub"></div><div class="w3vig"></div>
@@ -10240,7 +10242,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
  $("#w3prev").onclick=()=>{if(swallow){swallow=0;return}step(-1)};$("#w3next").onclick=()=>{if(swallow){swallow=0;return}if(st.node<9&&!levelOpen(wi,st.node+1)){SFX.no();tell("Prima completa il livello "+(st.node+1)+"!","sad");return}step(1)};
  const key=e=>{if(run!==RUN||!document.body.contains(CV)){removeEventListener("keydown",key);return}if($(".modal"))return;if(cine){cineEnd();return}if(e.key==="ArrowRight")$("#w3next").click();else if(e.key==="ArrowLeft")$("#w3prev").click();else if(e.key==="Enter"&&!st.walk)askLevel(wi,st.node)};addEventListener("keydown",key);
  /* prima visita: presentazione di Ciapin */
- if(!S.seen[wi]){S.seen[wi]=1;save();const intro=()=>{if(run===RUN&&!$(".modal"))briefing(wi)};
+ if(!S.seen[wi]){S.seen[wi]=1;save();const intro=()=>{};
   if(bIntro){let fired=0;const f=()=>{if(fired)return;fired=1;setTimeout(intro,1400)};bIntro.done=f;afterCine(f,window.__lockQ?90000:16000,1)}else afterCine(intro,2300)}
  else if(false){setTimeout(()=>{if(run===RUN)modal(`${ciapImg(96,"wave")}<h2 style="font-size:22px">${W.n}</h2><div class="say" style="text-align:left">${W.intro}</div><button class="btn" data-close>ANDIAMO! ▶</button>`)},2300)}
  else afterCine(()=>run===RUN&&!st.walk&&panel(st.node),2200);
