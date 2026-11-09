@@ -11068,7 +11068,7 @@ function immDecorate(){const sc=app.querySelector(".screen.lv,.screen.tturn");if
 (function(){
  const R0=renderQ;renderQ=function(){const r=R0.apply(this,arguments);try{
    document.body.classList.toggle("dsa",dsaOn());immDecorate();
-   const q=G&&G.Q[G.i];if(q&&q.s&&GR_SENT.includes(q.t)){const rule=gRule(q.s);if(rule){q.rule=rule.id;
+   const q=G&&G.Q[G.i];if(q&&q.s&&GR_SENT.includes(q.t)){const rule=gRule(q.s);/* nelle frasi da completare la regola compare solo se riguarda la parola che manca */if(rule&&(gRule.k||q.t==="order")){q.rule=rule.id;
      const tools=app.querySelector(".stage .card")||app.querySelector(".stage");
      if(tools&&!app.querySelector("#gpill")){tools.insertAdjacentHTML("beforeend",`<button class="gpill" id="gpill">📘 <span>Regola:</span> <b>${esc(rule.t)}</b></button>`);$("#gpill").onclick=()=>gPill(rule,q.s)}
      if(rule.hard||(dsaOn()&&(gRule.k||q.t==="order"))){const gb=$("#gb");if(gb&&!gb.querySelector(".ghint"))gb.insertAdjacentHTML("beforeend",`<span class="ghint">💡 ${esc(rule.tip)} — tocca <b>📘</b> se ti serve la regola.</span>`)}}}}catch(e){}return r};
