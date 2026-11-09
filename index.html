@@ -836,7 +836,7 @@ img.wthumb{object-fit:cover;width:100%;height:100%;display:block}.twc.lock img.w
 /* apertura da cinema dei mondi 3D: bande nere, titolo, interfaccia nascosta finché la camera non arriva */
 .w3cine{position:absolute;inset:0;pointer-events:none;z-index:5}
 .w3cine i{position:absolute;left:0;right:0;height:11.5%;background:#050308;transition:transform 1.3s cubic-bezier(.65,0,.3,1);animation:w3barIn 1s cubic-bezier(.3,0,.2,1) both}
-.w3cine i:first-child{top:0;--o:-101%}.w3cine i:nth-child(2){bottom:0;--o:101%}
+.w3cine i:nth-of-type(1){top:0;--o:-101%}.w3cine i:nth-of-type(2){bottom:0;--o:101%}
 .w3cine.off i{transform:translateY(var(--o))}
 @keyframes w3barIn{from{transform:translateY(var(--o))}to{transform:none}}
 .w3ctit{position:absolute;left:0;right:0;bottom:calc(11.5% + 18px);text-align:center;color:#fff8ec;text-shadow:0 2px 20px rgba(40,16,0,.75),0 0 2px rgba(0,0,0,.5);opacity:0;animation:w3tit 6.6s ease .9s forwards}
@@ -850,6 +850,34 @@ img.wthumb{object-fit:cover;width:100%;height:100%;display:block}.twc.lock img.w
 @media (prefers-reduced-motion:reduce){.w3cine i,.w3ctit{animation-duration:.01s}}
 body:has(.w3cine:not(.off)) .w3hint{opacity:0!important}
 .whytip{display:block;margin-top:6px;font-size:14px;line-height:1.35;font-weight:600;opacity:.92}.whybox{line-height:1.4}
+/* ===== CINEMA SUPER: dissolvenza dal nero, titolo a tappe, luce che passa, grana di pellicola, lampo di luce, pulsante Salta ===== */
+.w3cine .w3fade{position:absolute;inset:0;background:#000;animation:w3fade 1.6s ease .1s both}
+@keyframes w3fade{from{opacity:1}to{opacity:0}}
+.w3cine .w3grain{position:absolute;inset:-50%;opacity:.07;mix-blend-mode:overlay;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");animation:w3grain .5s steps(4) infinite}
+@keyframes w3grain{0%{transform:translate(0,0)}25%{transform:translate(-4%,3%)}50%{transform:translate(3%,-5%)}75%{transform:translate(-2%,-2%)}100%{transform:translate(0,0)}}
+.w3cine .w3flare{position:absolute;right:-20%;top:-25%;width:80%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,214,150,.55),rgba(255,170,90,.18) 40%,transparent 70%);mix-blend-mode:screen;opacity:0;animation:w3flare 11s ease .6s forwards}
+.w3cine.night .w3flare{background:radial-gradient(circle,rgba(150,190,255,.45),rgba(110,90,220,.16) 40%,transparent 70%)}
+@keyframes w3flare{0%{opacity:0;transform:translate(10%,-6%) scale(.9)}25%{opacity:1}70%{opacity:.7}100%{opacity:0;transform:translate(-14%,8%) scale(1.15)}}
+.w3ctit2{position:absolute;left:0;right:0;bottom:calc(11.5% + 16px);text-align:center;color:#fff8ec;text-shadow:0 2px 22px rgba(30,10,0,.8),0 0 2px rgba(0,0,0,.6);animation:w3out .9s ease 9.4s forwards;padding:0 16px}
+.w3cine.off .w3ctit2{animation:none;opacity:0;transition:opacity .5s}
+@keyframes w3out{to{opacity:0;transform:translateY(-8px);filter:blur(3px)}}
+.w3ctit2 .w3chap{display:flex;align-items:center;justify-content:center;gap:10px;font:800 10px/1 system-ui,sans-serif;letter-spacing:.38em;text-transform:uppercase;color:#ffd98a;opacity:0;animation:w3up .8s ease 1.3s forwards}
+.w3ctit2 .w3chap:before,.w3ctit2 .w3chap:after{content:"";height:1px;width:36px;background:linear-gradient(90deg,transparent,#ffd98a)}.w3ctit2 .w3chap:after{transform:scaleX(-1)}
+.w3ctit2 small{display:block;margin-top:8px;font:700 11px/1.4 system-ui,sans-serif;letter-spacing:.4em;text-transform:uppercase;opacity:0;animation:w3up .8s ease 1.6s forwards}
+.w3ctit2 b{position:relative;display:inline-block;margin:6px 0 2px;font:400 clamp(30px,7vw,64px)/1.05 Georgia,"Times New Roman",serif;letter-spacing:.14em;text-transform:uppercase;overflow:hidden;padding:0 .1em}
+.w3ctit2 b .ww{display:inline-block;white-space:nowrap}.w3ctit2 b .ww span{display:inline-block;opacity:0;transform:translateY(.45em);filter:blur(6px);animation:w3let .7s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(1.9s + var(--i)*.055s)}
+@keyframes w3let{to{opacity:1;transform:none;filter:none}}
+.w3ctit2 b:after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,240,200,.75) 50%,transparent 70%);transform:translateX(-120%);animation:w3sweep 1.4s ease 3.3s forwards;mix-blend-mode:overlay}
+@keyframes w3sweep{to{transform:translateX(120%)}}
+.w3ctit2 .w3line{display:block;height:2px;width:min(320px,60%);margin:6px auto 8px;background:linear-gradient(90deg,transparent,#ffd98a 20%,#fff2c8 50%,#ffd98a 80%,transparent);transform:scaleX(0);animation:w3line 1.1s ease 2.9s forwards}
+@keyframes w3line{to{transform:scaleX(1)}}
+.w3ctit2 em{display:block;font:italic 400 clamp(14px,2.5vw,20px)/1.3 Georgia,serif;opacity:0;animation:w3up .9s ease 3.4s forwards}
+.w3ctit2 .w3tag{display:inline-block;margin-top:10px;font:800 clamp(13px,2.2vw,17px)/1.2 system-ui,sans-serif;color:#231d4f;background:#ffd98a;border-radius:999px;padding:6px 14px;box-shadow:0 3px 0 rgba(0,0,0,.35);opacity:0;transform:scale(.8);animation:w3pop .5s cubic-bezier(.3,1.6,.5,1) 4.3s forwards}
+@keyframes w3up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes w3pop{to{opacity:1;transform:none}}
+.w3cine .w3skip{position:absolute;right:12px;bottom:calc(11.5% * .5 - 15px);pointer-events:auto;font:800 13px/1 system-ui,sans-serif;color:#fff;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4);border-radius:999px;padding:8px 14px;cursor:pointer;opacity:0;animation:w3up .6s ease 1.2s forwards;letter-spacing:.06em}
+.w3cine.off .w3skip,.w3cine.off .w3grain,.w3cine.off .w3flare{opacity:0!important;transition:opacity .4s}
+@media (prefers-reduced-motion:reduce){.w3cine .w3grain{animation:none}.w3ctit2 b span{animation-delay:1s}}
 /* vignettatura da cinema sui mondi 3D: un gradiente fisso, costo quasi zero */
 .w3dwrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 120% 95% at 50% 45%,transparent 58%,rgba(20,10,30,.32) 100%)}
 .w3nav{position:absolute;bottom:calc(200px + env(safe-area-inset-bottom));touch-action:none;user-select:none;-webkit-user-select:none;width:58px;height:58px;border-radius:50%;border:3px solid var(--ink,#2a1535);background:linear-gradient(#fff,#ffe8f2);box-shadow:0 5px 0 var(--ink,#2a1535);font-size:22px;font-weight:900;color:var(--ink,#2a1535);z-index:3;cursor:pointer;display:grid;place-items:center}
@@ -10120,10 +10148,28 @@ function cineUp(th){if(!th||th._cu)return;const k=Object.keys(TH).find(n=>TH[n]=
  if(th.env&&A[3]){const L0=th.env.L||[.7,.62,.35];th.env=Object.assign({},th.env,{haze:th.env.haze||A[3],sunF:th.env.sunF||[.26*A[3],.15*A[3],.04*A[3]],
   /* anche durante il gioco: sole più basso e caldo = ombre lunghe e luce da film */Lraw:1,L:[Math.abs(L0[0])+.2,.42,.3],/* sole caldo da tardo pomeriggio anche dove il mondo aveva già un sole bianco */sun:mixc(th.env.sun||"#fff4dc","#ffcf96",.4).map(v=>v*1.08),hor:mixc(th.env.hor,"#ffd8b0",.3),fog:mixc(th.env.fog||th.env.hor,"#ffd8b0",.3)})}
  if(!th.cine)th.autoCine={kicker:A[0],title:A[1],sub:A[2],high:A[4]}}
-function autoCineKeys(posAt,NS){const p=i=>posAt(NS[Math.max(0,Math.min(NS.length-1,i))]),L=p(NS.length-1),M=p(5),F=p(1);
+/* yaw "srotolati": tra un'inquadratura e l'altra la camera non fa mai giri inutili */
+function unwrapYaw(K){for(let i=1;i<K.length;i++){let d=K[i].yaw-K[i-1].yaw;while(d>Math.PI){K[i].yaw-=TAU;d-=TAU}while(d<-Math.PI){K[i].yaw+=TAU;d+=TAU}}return K}
+/* CINEMA SUPER — 6 inquadrature: panoramica altissima, discesa sul monumento del mondo (dove aspetta il boss), giro intorno,
+   planata lungo il sentiero, la partenza, e la vista d'insieme da cui parte il gioco */
+function autoCineKeys(posAt,NS){const p=i=>posAt(NS[Math.max(0,Math.min(NS.length-1,i))]),L=p(NS.length-1),Q=p(7),F=p(1);
  const yw=q=>Math.atan2(-(q.dx||0),-(q.dz||1));let cx=0,cz=0;NS.forEach((_,i)=>{const q=p(i);cx+=q.x;cz+=q.z});cx/=NS.length;cz/=NS.length;
- return [{t:0,at:[L.x,L.y+3,L.z],yaw:yw(L)+.5,pitch:.2,dist:16,fov:.78},{t:3.3,at:[M.x,M.y+2.5,M.z],yaw:yw(M)-.6,pitch:.5,dist:28,fov:.85},
-  {t:6.2,at:[F.x,F.y+3,F.z],yaw:yw(F)+.9,pitch:.55,dist:38,fov:.92},{t:8.8,at:[cx,2,cz],yaw:.3,pitch:.62,dist:92,fov:1.05}]}
+ const out=q=>Math.atan2(q.x-cx,q.z-cz)||0;/* la camera si mette dalla parte "esterna" e guarda verso il centro del mondo */
+ return unwrapYaw([{t:0,at:[cx,4,cz],yaw:out(L)+2.4,pitch:.72,dist:150,fov:.9},
+  {t:2.9,at:[L.x,L.y+8,L.z],yaw:out(L)+1,pitch:.44,dist:66,fov:.8},
+  {t:5.5,at:[L.x,L.y+7,L.z],yaw:out(L)-.35,pitch:.38,dist:56,fov:.78},
+  {t:7.9,at:[Q.x,Q.y+3,Q.z],yaw:yw(Q)+.45,pitch:.56,dist:38,fov:.84},
+  {t:10.1,at:[F.x,F.y+3,F.z],yaw:yw(F)+.9,pitch:.6,dist:42,fov:.9},
+  {t:12.5,at:[cx,2,cz],yaw:.3,pitch:.62,dist:92,fov:1.05}])}
+/* prologo per i voli scritti a mano: si parte da molto in alto e si scende sulla prima inquadratura */
+function cinePrologue(K){if(K._pro)return K;const k0=K[0],T0=2.8;const out=[{t:0,at:k0.at.slice(),yaw:k0.yaw-.95,pitch:.7,dist:Math.max(120,k0.dist*3),fov:.9},...K.map(k=>Object.assign({},k,{t:k.t+T0}))];out._pro=1;return unwrapYaw(out)}
+/* musica dell'apertura: accordi morbidi che salgono e una campanella quando compare il titolo */
+function cineScore(night){if(!S.sfx)return null;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();const n=AC.currentTime,out=AC.createGain();
+ out.gain.setValueAtTime(0,n);out.gain.linearRampToValueAtTime(.055,n+1.6);out.gain.setValueAtTime(.055,n+9.5);out.gain.linearRampToValueAtTime(0,n+13);out.connect(AC.destination);
+ const CH=night?[[220,261.6,329.6],[174.6,220,261.6],[196,246.9,293.7],[164.8,207.7,246.9]]:[[261.6,329.6,392],[220,261.6,329.6],[174.6,220,261.6],[196,246.9,293.7]];
+ CH.forEach((c,i)=>c.concat([c[0]/2]).forEach((f,j)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=j===3?"sine":"triangle";o.frequency.value=f;o.detune.value=(j-1)*4;const t0=n+i*3.1,t1=t0+3.9;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(j===3?.35:.2,t0+.9);g.gain.linearRampToValueAtTime(0,t1);o.connect(g).connect(out);o.start(t0);o.stop(t1+.05)}));
+ [[1568,0],[2093,.13],[2637,.26],[3136,.39]].forEach(([f,d])=>{const o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=f;const t0=n+2+d;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.16,t0+.02);g.gain.exponentialRampToValueAtTime(.001,t0+1.6);o.connect(g).connect(out);o.start(t0);o.stop(t0+1.7)});
+ return {stop:()=>{try{const t=AC.currentTime;out.gain.cancelScheduledValues(t);out.gain.setValueAtTime(out.gain.value,t);out.gain.linearRampToValueAtTime(0,t+.7)}catch(e){}}}}catch(e){return null}}
 function open(wi){try{ensure();return open2(wi)}catch(err){console.error("3D",err);BROKEN=true;worldMap2D(wi)}}
 function open2(wi){G0();S.h3d=(S.h3d||0)+1;const run=++RUN;const W=WORLDS[wi];S.world=wi;cineUp(TH[W.th]);
  const from=(typeof G!=="undefined"&&G&&G.w===wi)?G.l:null;G=null;SCR="";
@@ -10195,9 +10241,12 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
   /* visuale di partenza con logica: guarda il sentiero davanti e, in fondo, il posto del boss (il monumento del mondo) */const la=posAt(Math.min(PD[PD.length-1],st.s+14)),bp=posAt(PD[PD.length-1]);const vx=(la.x-p0.x)*.55+(bp.x-p0.x)*.45,vz=(la.z-p0.z)*.55+(bp.z-p0.z)*.45;
   startYaw=Math.atan2(vx,vz)+Math.PI;goal.yaw=TP()?startYaw:st.face+Math.PI+.35;if(TP())Object.assign(goal,{dist:TPD.dist+7,pitch:TPD.pitch+.08})}
  /* apertura "da cinema" (th.cine): bande nere, titolo e un volo di camera scritto per il mondo; la prima volta per sessione, un tocco la salta */
- if(!th.cine&&th.autoCine){const K=autoCineKeys(posAt,NS);if(th.autoCine.high){const F=K[2];F.pitch=.75;F.dist*=1.6;/* tutto il volo inquadra la casa da fuori, girandole intorno */K[0]=Object.assign({},F,{t:0,yaw:F.yaw-1.2,dist:F.dist*1.25});K[1]=Object.assign({},F,{t:3.3,yaw:F.yaw-.6,dist:F.dist*1.1})}th.cine=Object.assign({keys:K},th.autoCine)}let cine=null,hadCine=false;if(th.cine&&from==null&&!CINE_DONE[wi]&&!window.__noCine){CINE_DONE[wi]=1;hadCine=true;const K=th.cine.keys;cine={t:-.3,K,dur:K[K.length-1].t,out:1.9};const scr=document.querySelector(".w3d");
-  if(scr){scr.classList.add("cine");const d=document.createElement("div");d.className="w3cine";d.innerHTML=`<i></i><i></i><div class="w3ctit"><small>${th.cine.kicker||""}</small><b>${th.cine.title||esc(W.n)}</b><em>${th.cine.sub||""}</em></div>`;scr.appendChild(d);cine.el=d;cine.scr=scr}}
- const cineEnd=()=>{if(cine&&cine.t<cine.dur)cine.t=cine.dur};
+ if(!th.cine&&th.autoCine){const K=autoCineKeys(posAt,NS);if(th.autoCine.high){K.forEach((k,i)=>{if(i<K.length-1){k.pitch=Math.max(k.pitch,.72);k.dist=Math.max(k.dist*1.4,64)}});/* niente planata sul sentiero (la casa è alta e ci sta davanti): giro intorno alla casa dall'alto */const c=K[K.length-1].at;K[3]=Object.assign({},K[3],{at:c.slice(),pitch:.74,dist:82,yaw:K[2].yaw-.9});K[4]=Object.assign({},K[4],{at:c.slice(),pitch:.7,dist:86,yaw:K[3].yaw-.9});unwrapYaw(K)}/* tutto il volo inquadra la casa da fuori */th.cine=Object.assign({keys:K,auto:1},th.autoCine)}let cine=null,hadCine=false;if(th.cine&&from==null&&!CINE_DONE[wi]&&!window.__noCine){CINE_DONE[wi]=1;hadCine=true;const K=th.cine.auto?th.cine.keys:cinePrologue(th.cine.keys);cine={t:-.3,K,dur:K[K.length-1].t,out:1.9};const scr=document.querySelector(".w3d");
+  const night=!!(R.env.stars>0||R.env.aur>0),ttl=String(th.cine.title||W.n),tag=`Welcome to ${String(WORLD_EN[wi]||W.n).replace(/^the /,"the ")}!`.replace(/^Welcome to (\w)/,(m,c)=>"Welcome to "+c);
+  if(scr){scr.classList.add("cine");const d=document.createElement("div");d.className="w3cine"+(night?" night":"");
+   d.innerHTML=`<div class="w3flare"></div><div class="w3grain"></div><i></i><i></i><div class="w3ctit2"><div class="w3chap">Mondo ${wpos(wi)+1} · ${STAGES[W.st].n}</div><small>${esc(th.cine.kicker||"")}</small><b>${(()=>{let i=0;return ttl.split(" ").map(w=>`<span class="ww">${[...w].map(ch=>`<span style="--i:${i++}">${esc(ch)}</span>`).join("")}</span>`).join(" ")})()}</b><span class="w3line"></span><em>${esc(th.cine.sub||"")}</em><span class="w3tag">🔊 ${esc(tag)}</span></div><div class="w3fade"></div><button class="w3skip" aria-label="Salta l'apertura">Salta ▸▸</button>`;
+   scr.appendChild(d);cine.el=d;cine.scr=scr;cine.snd=cineScore(night);const c0=cine;setTimeout(()=>{if(run===RUN&&!c0.off&&c0.t<c0.dur-2)say(tag)},4500)}}
+ const cineEnd=()=>{if(cine&&cine.t<cine.dur){cine.t=cine.dur;cine.snd&&cine.snd.stop();try{speechSynthesis.cancel()}catch(e){}}};if(cine&&cine.el){const sk=cine.el.querySelector(".w3skip");if(sk){sk.onpointerdown=e=>e.stopPropagation();sk.onclick=e=>{e.stopPropagation();cineEnd()}}}
  const afterCine=(fn,ms,keep)=>{const w=()=>{if(run!==RUN)return;if(cine)return setTimeout(w,200);setTimeout(fn,hadCine&&!keep?Math.min(ms,900):ms)};w()};
  /* direzione "in avanti" lungo il sentiero (per la camera alle spalle) */
  const fwd=s=>{const L=PD[PD.length-1];const a=posAt(Math.min(s,L-1.2)),b=posAt(Math.min(L,Math.min(s,L-1.2)+1.2));return Math.atan2(b.x-a.x,b.z-a.z)};
@@ -10311,7 +10360,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
    camPull+=(fa-camPull)*Math.min(1,dt*(fa<camPull?10:1.5));if(camPull<.999)cam.eye=V3.add(cam.at,V3.sc(V3.sub(cam.eye,cam.at),camPull))}
   const gy=Math.max(ctx.H(cam.eye[0],cam.eye[2]),th.water??-99,th.floorAt?(th.floorAt(cam.eye[0],cam.eye[2])??-99):-99)+2.2;if(cam.eye[1]<gy)cam.eye[1]+=(gy-cam.eye[1])*Math.min(1,dt*12);
   list.length=0;for(const i of items)list.push(i);for(const d of dyn)d.collect(M4.id(),list);
-  if(cine){cine.t=window.__cineT??cine.t+dt;const c=cineCam(cine),b=ss(cine.dur,cine.dur+cine.out,cine.t);const e0=cam.eye,a0=cam.at,f0=cam.fov;cam.eye=V3.lerp(c.eye,e0,b);cam.at=V3.lerp(c.at,a0,b);cam.fov=c.fov+(f0-c.fov)*b;
+  if(cine){cine.t=window.__cineT??cine.t+dt;const c=cineCam(cine);{const gh=ctx.H(c.eye[0],c.eye[2]);if(gh>-50&&c.eye[1]<gh+5)c.eye[1]=gh+5}const b=ss(cine.dur,cine.dur+cine.out,cine.t);const e0=cam.eye,a0=cam.at,f0=cam.fov;cam.eye=V3.lerp(c.eye,e0,b);cam.at=V3.lerp(c.at,a0,b);cam.fov=c.fov+(f0-c.fov)*b;
    R.draw(cam,list,sprites,t);cam.eye=e0;cam.at=a0;cam.fov=f0;
    if(cine.t>cine.dur-.9&&cine.el&&!cine.off){cine.off=1;const C0=cine;C0.el.classList.add("off");C0.scr.classList.remove("cine");C0.scr.classList.add("cineout");setTimeout(()=>{C0.el.remove();C0.scr.classList.remove("cineout")},1500)}
    if(b>=1)cine=null}
