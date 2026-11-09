@@ -4157,7 +4157,9 @@ void main(){vec3 p=aP+aS*uOut;vec4 w=uM*vec4(p,1.);
  if(uSway>0.){w.x+=sin(uTime*1.5+w.x*.21+w.z*.17)*.13*uSway;w.z+=cos(uTime*1.2+w.z*.23)*.09*uSway;}
  if(uWave>0.){w.y+=sin(w.x*.33+uTime*1.3)*.14+cos(w.z*.27+uTime*1.05)*.12;}
  vW=w.xyz;vN=mat3(uM)*aN;vC=aC;vLS=uLVP*(w+vec4(normalize(vN)*.07,0.));gl_Position=uVP*w;}`;
-const FS=`precision highp float;uniform vec3 uL,uSun,uSky,uGround,uFog,uCam,uTint,uSunF;uniform float uToon,uOut,uAlpha,uEmis,uFogN,uFogF,uWave,uTime,uShOn,uShSz,uDbg;uniform sampler2D uShM;${SH_COMMON}varying vec3 vN,vC,vW;
+const FS=`precision highp float;uniform vec3 uL,uSun,uSky,uGround,uFog,uCam,uTint,uSunF;uniform float uToon,uOut,uAlpha,uEmis,uFogN,uFogF,uWave,uTime,uShOn,uShSz,uDbg;uniform vec3 uFall;uniform sampler2D uShM;${SH_COMMON}varying vec3 vN,vC,vW;
+float fh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float fn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(fh(i),fh(i+vec2(1.,0.)),f.x),mix(fh(i+vec2(0.,1.)),fh(i+vec2(1.,1.)),f.x),f.y);}
 vec3 grade(vec3 c){float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.22);c=(c-.5)*1.07+.5;c*=vec3(1.03,1.0,.97);return clamp(c,0.,1.);}
 float unpack(vec4 c){return dot(c,vec4(1.,1./255.,1./65025.,1./16581375.));}
 float shadowAt(){if(uShOn<.5)return 1.;vec3 s=vLS.xyz/vLS.w*.5+.5;if(s.x<0.||s.x>1.||s.y<0.||s.y>1.||s.z>1.)return 1.;float b=.0025,r=0.,t=1./uShSz;
@@ -4170,10 +4172,19 @@ void main(){float fd=length(uCam-vW);float f0=clamp((fd-uFogN)/(uFogF-uFogN),0.,
  if(uToon>0.)d=smoothstep(.08,.16,d)*.45+smoothstep(.45,.55,d)*.55;
  d*=mix(.35,1.,sh);
  vec3 amb=mix(uGround,uSky,n.y*.5+.5);
- vec3 col=vC*uTint*(amb*.6+d*uSun*.78)+vC*uEmis;
+ vec3 bc=vC;float fa=1.;
+ if(uFall.x>0.){float u=vC.x,y=vC.y,q=vC.z,sp=uFall.x,t=uTime*sp;
+  float a1=fn(vec2(u*1.3,(y-t)*.09)),a2=fn(vec2(u*3.7+7.,(y-t*1.2)*.22)),a3=fn(vec2(u*9.+3.,(y-t*1.45)*.55));float st=a1*.5+a2*.32+a3*.18;
+  float wh=smoothstep(.38,.78,st);
+  if(uFall.z<.5){float e=min(u,uFall.y-u);float ef=smoothstep(0.,.55,e+(a2-.5)*.5);
+   wh=max(wh,smoothstep(.55,1.,q)*(.55+.45*a3));wh=max(wh,smoothstep(.06,0.,q)*.3);
+   bc=mix(vec3(.30,.52,.58),vec3(.97,.99,1.),wh*.88+.08);fa=ef*(.62+.38*wh)*smoothstep(1.,.9,q);}
+  else{float rf=1.-q;wh=max(wh*rf,smoothstep(.45,0.,q));bc=mix(vec3(.55,.75,.8),vec3(.98,1.,1.),wh);fa=wh*rf*rf*.95;}
+  amb=mix(uGround,uSky,.75);d=max(d,.35);}
+ vec3 col=bc*uTint*(amb*.6+d*uSun*.78)+bc*uEmis;
  if(uToon>0.){float r=1.-max(dot(n,v),0.);col+=pow(r,3.)*.2*uSky;vec3 hh=normalize(uL+v);col+=smoothstep(.93,.975,dot(n,hh))*.16*sh*uSun;}
  if(uWave>0.){float fr=pow(1.-max(dot(n,v),0.),3.);col=mix(col,uSky*1.05,fr*.55);vec3 h=normalize(uL+v);col+=pow(max(dot(n,h),0.),90.)*1.2*sh*uSun;}
- vec3 fc=uFog+uSunF*pow(max(dot(-v,uL),0.),5.);col=mix(grade(col),fc,f0*f0);gl_FragColor=vec4(col,uAlpha);if(uDbg>0.){vec3 q=vLS.xyz/vLS.w*.5+.5;gl_FragColor=vec4(sh,q.z,unpack(texture2D(uShM,q.xy)),1.);}}`;
+ vec3 fc=uFog+uSunF*pow(max(dot(-v,uL),0.),5.);col=mix(grade(col),fc,f0*f0);gl_FragColor=vec4(col,uAlpha*fa);if(uDbg>0.){vec3 q=vLS.xyz/vLS.w*.5+.5;gl_FragColor=vec4(sh,q.z,unpack(texture2D(uShM,q.xy)),1.);}}`;
 const DVS=`attribute vec3 aP;uniform mat4 uM,uLVP;uniform float uTime,uSway,uWave;varying float vZ;void main(){vec4 w=uM*vec4(aP,1.);if(uSway>0.){w.x+=sin(uTime*1.5+w.x*.21+w.z*.17)*.13*uSway;w.z+=cos(uTime*1.2+w.z*.23)*.09*uSway;}vec4 p=uLVP*w;vZ=p.z/p.w*.5+.5;gl_Position=p;}`;
 const DFS=`precision highp float;varying float vZ;vec4 pack(float d){vec4 e=fract(vec4(1.,255.,65025.,16581375.)*d);e-=e.yzww*vec4(1./255.,1./255.,1./255.,0.);return e;}void main(){gl_FragColor=pack(vZ);}`;
 const SKVS=`attribute vec2 aQ;varying vec2 vQ;void main(){vQ=aQ;gl_Position=vec4(aQ,.9999,1.);}`;
@@ -4262,8 +4273,8 @@ class R3{
   gl.uniformMatrix4fv(u.uVP,false,VP);gl.uniformMatrix4fv(u.uLVP,false,LVP);gl.uniform3fv(u.uL,E.L);gl.uniform3fv(u.uSun,E.sun);gl.uniform3fv(u.uSky,E.sky);gl.uniform3fv(u.uGround,E.ground);gl.uniform3fv(u.uFog,E.fog);gl.uniform3fv(u.uCam,cam.eye);gl.uniform1f(u.uFogN,E.fogN);gl.uniform1f(u.uFogF,E.fogF);gl.uniform1f(u.uTime,time);gl.uniform3fv(u.uSunF,E.sunF||Z3);
   gl.uniform1f(u.uShOn,shOn?1:0);gl.uniform1f(u.uDbg,window.__dbgSh?1:0);gl.uniform1f(u.uShSz,this.shSz);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.shT);gl.uniform1i(u.uShM,0);
   /* uniform in cache: si inviano alla GPU solo i valori che cambiano da un oggetto all'altro */
-  const uc=this._uc||(this._uc={});uc.o=uc.to=uc.a=uc.e=uc.w=uc.s=uc.t0=uc.t1=uc.t2=NaN;uc.M=null;const U1=(k,loc,v)=>{if(uc[k]!==v){uc[k]=v;gl.uniform1f(loc,v)}};
-  const one=(it,outline)=>{this.bindMesh(P,it.m,true);if(uc.M!==it.M){uc.M=it.M;gl.uniformMatrix4fv(u.uM,false,it.M)}U1("o",u.uOut,outline?it.out:0);U1("to",u.uToon,it.toon?1:0);U1("a",u.uAlpha,it.alpha??1);const ti=it.tint;const t0=ti?ti[0]:1,t1=ti?ti[1]:1,t2=ti?ti[2]:1;if(t0!==uc.t0||t1!==uc.t1||t2!==uc.t2){uc.t0=t0;uc.t1=t1;uc.t2=t2;gl.uniform3f(u.uTint,t0,t1,t2)}U1("e",u.uEmis,it.emis||0);U1("w",u.uWave,it.wave?1:0);U1("s",u.uSway,it.sway||0);gl.drawArrays(gl.TRIANGLES,0,it.m.n)};
+  const uc=this._uc||(this._uc={});uc.o=uc.to=uc.a=uc.e=uc.w=uc.s=uc.t0=uc.t1=uc.t2=uc.f0=uc.f1=uc.f2=NaN;uc.M=null;const U1=(k,loc,v)=>{if(uc[k]!==v){uc[k]=v;gl.uniform1f(loc,v)}};
+  const one=(it,outline)=>{this.bindMesh(P,it.m,true);if(uc.M!==it.M){uc.M=it.M;gl.uniformMatrix4fv(u.uM,false,it.M)}U1("o",u.uOut,outline?it.out:0);U1("to",u.uToon,it.toon?1:0);U1("a",u.uAlpha,it.alpha??1);const ti=it.tint;const t0=ti?ti[0]:1,t1=ti?ti[1]:1,t2=ti?ti[2]:1;if(t0!==uc.t0||t1!==uc.t1||t2!==uc.t2){uc.t0=t0;uc.t1=t1;uc.t2=t2;gl.uniform3f(u.uTint,t0,t1,t2)}U1("e",u.uEmis,it.emis||0);U1("w",u.uWave,it.wave?1:0);U1("s",u.uSway,it.sway||0);{const f=it.fall;const f0=f?f[0]:0;if(f0!==uc.f0||(f&&(f[1]!==uc.f1||f[2]!==uc.f2))){uc.f0=f0;uc.f1=f?f[1]:0;uc.f2=f?f[2]:0;gl.uniform3f(u.uFall,uc.f0,uc.f1,uc.f2)}}gl.drawArrays(gl.TRIANGLES,0,it.m.n)};
   const op=this._op||(this._op=[]),tr=this._tr||(this._tr=[]),fa=this._fa||(this._fa=[]);op.length=tr.length=fa.length=0;for(const i of vis){if((i.alpha??1)<1)tr.push(i);else if(i.far)fa.push(i);else op.push(i)}for(const i of fa)op.push(i);
   gl.disable(gl.BLEND);gl.depthMask(true);
   let cu=-1;const CU=v=>{if(v!==cu){cu=v;if(v)gl.enable(gl.CULL_FACE);else gl.disable(gl.CULL_FACE)}};gl.cullFace(gl.BACK);const olQ=this.quality>.47;
@@ -4285,7 +4296,7 @@ class N3{constructor(mesh,o){this.mesh=mesh;this.p=[0,0,0];this.r=[0,0,0];this.s
  collect(parent,out){if(this.hide)return out;
   /* stesso nodo due volte nello stesso elenco (raro): allora oggetti nuovi, altrimenti si riusano quelli del fotogramma prima */const dup=this._o===out&&this._ol<out.length&&out[this._ol]===this._it;
   const L=dup?(this._L2||(this._L2=new Array(16))):(this._L||(this._L=new Array(16)));M4.trsTo(L,this.p,this.r,this.s);const M=dup?new Array(16):(this._M||(this._M=new Array(16)));M4.mulTo(M,parent,L);this.M=M;
-  if(this.mesh){let it=dup?{}:this._it;if(!it)it=this._it={};it.m=this.mesh;it.M=M;it.toon=this.toon;it.out=this.out;it.alpha=this.alpha;it.tint=this.tint;it.emis=this.emis;it.noCull=this.noCull;it.sway=this.sway;it.noShadow=this.noShadow;if(!dup){this._o=out;this._ol=out.length}out.push(it)}
+  if(this.mesh){let it=dup?{}:this._it;if(!it)it=this._it={};it.m=this.mesh;it.M=M;it.toon=this.toon;it.out=this.out;it.alpha=this.alpha;it.tint=this.tint;it.emis=this.emis;it.noCull=this.noCull;it.sway=this.sway;it.noShadow=this.noShadow;it.fall=this.fall;if(!dup){this._o=out;this._ol=out.length}out.push(it)}
   const K=this.kids;for(let i=0;i<K.length;i++)K[i].collect(M,out);return out}}
 return {TAU,V3,M4,PR,Geo,R3,N3,hex,mixc}})();
 
@@ -4340,10 +4351,12 @@ function makeFar(){const th=C.th,tr=th.terrain;if(!tr)return;const NA=96,NR=34,r
  for(let j=0;j<NR;j++)for(let i=0;i<NA;i++){P(i,j);P(i+1,j+1);P(i+1,j);P(i,j);P(i,j+1);P(i+1,j+1)}
  C.items.push({m:R.mesh(new Geo().raw(p,n,c)),M:M4.id(),noShadow:1,far:1,noCull:1})}
 function makeWater(){const w=C.th.water;if(w==null)return;const N=60,S=C.th.waterS||380,p=[],n=[],c=[];const deep=hex(C.th.deep||"#1f6fb8"),sh=hex(C.th.shallow||"#4fd0e0"),fo=[.92,.97,1];
- const col=(x,z)=>{const d=w-C.rawH(x,z);if(d<.3)return fo;const t=ss(.3,6,d);return [sh[0]+(deep[0]-sh[0])*t,sh[1]+(deep[1]-sh[1])*t,sh[2]+(deep[2]-sh[2])*t]};
+ const col=(x,z)=>{const d=w-C.rawH(x,z);if(d<.12)return fo;if(d<.4){const f=ss(.12,.4,d);return [fo[0]+(sh[0]-fo[0])*f,fo[1]+(sh[1]-fo[1])*f,fo[2]+(sh[2]-fo[2])*f]}const t=ss(.4,5,d);return [sh[0]+(deep[0]-sh[0])*t,sh[1]+(deep[1]-sh[1])*t,sh[2]+(deep[2]-sh[2])*t]};
  const V=(x,z)=>{p.push(x,w,z);n.push(0,1,0);const k=col(x,z);c.push(k[0],k[1],k[2])};const st=S/N;
- for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=-S/2+i*st,z=-S/2+j*st-10;V(x,z);V(x+st,z+st);V(x+st,z);V(x,z);V(x,z+st);V(x+st,z+st)}
- C.items.push({m:R.mesh(new Geo().raw(p,n,c)),M:M4.id(),alpha:.85,wave:1,noShadow:1});
+ /* nella zona di gioco le celle sono divise 4×4: rive, schiuma e laghetti piccoli vengono netti (non più "lattiginosi") */
+ const fine=(x,z)=>x>=-74&&x+st<=74&&z>=-90&&z+st<=68&&!C.th.waterCoarse;
+ for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=-S/2+i*st,z=-S/2+j*st-10;if(fine(x,z)){const q=st/4;for(let b=0;b<4;b++)for(let a=0;a<4;a++){const u=x+a*q,v=z+b*q;V(u,v);V(u+q,v+q);V(u+q,v);V(u,v);V(u,v+q);V(u+q,v+q)}}else{V(x,z);V(x+st,z+st);V(x+st,z);V(x,z);V(x,z+st);V(x+st,z+st)}}
+ pushGeo(new Geo().raw(p,n,c),{alpha:.85,wave:1,noShadow:1},40);
  {const p2=[],n2=[],c2=[];const NA=72,rr0=185,rr1=1400;const P2=(r,a)=>{p2.push(Math.cos(a)*r,w,Math.sin(a)*r-10);n2.push(0,1,0);c2.push(deep[0],deep[1],deep[2])};
   for(let j=0;j<6;j++){const ra=rr0*Math.pow(rr1/rr0,j/6),rb=rr0*Math.pow(rr1/rr0,(j+1)/6);for(let i=0;i<NA;i++){const a0=i/NA*TAU,a1=(i+1)/NA*TAU;P2(ra,a0);P2(rb,a1);P2(ra,a1);P2(ra,a0);P2(rb,a0);P2(rb,a1)}}
   C.items.push({m:R.mesh(new Geo().raw(p2,n2,c2)),M:M4.id(),alpha:.92,wave:1,noShadow:1})}}
@@ -5844,8 +5857,9 @@ TH.magic.build=function(){
  scatter(46,(x,z,i)=>tree(x,z,rr(1.2,1.7),i%3?"cherry":undefined),{clear:3.6,ok:(x,z)=>!C.occ.some(o=>Math.hypot(x-o[0],z-o[1])<o[2]+2.4)});flowers(110,["#ffffff","#ffe066","#9ff4ff","#ffb3e6"]);
  /* isole volanti con cascata */for(let i=0;i<4;i++){const isl=new N3(null);const g=new Geo();g.add(PR.cyl(3.4,.5,3.4,10),T([0,-3.4,0]),"#9a6e4a");g.add(PR.cyl(3.4,3.4,.6,12),T([0,-.3,0]),"#8ad07a");g.add(PR.sphere(1.6,10,8),T([.6,1.6,0]),"#ff9fe0",{smooth:true});g.add(PR.cyl(.18,.24,1.6,6),T([.6,0,0]),"#8a5a3a");
   isl.add(new N3(R.mesh(g),{toon:1,out:.05}));const p=[[-44,-34],[44,-24],[-42,26],[46,34]][i];C.dyn.push(isl);
+  /* la cascata che cade dal bordo e si sfrangia nel vuoto */{const sh=fallSheet(-2.2,2.6,1.3,-.1,-10,.8,{noPush:1,speed:5,alpha:.9,emis:.5,lip:.6,spread:1.4});isl.add(new N3(sh.m,{alpha:.9,emis:.5,noShadow:1,noCull:1,fall:sh.fall}))}
   const fall=[];for(let k=0;k<6;k++){const s={t:tx("puff"),c:[0,0,0],w:1.4,h:1.4,a:.7,tint:[.75,.95,1]};C.sprites.push(s);fall.push(s)}
-  C.upd.push(t=>{const yy=18+Math.sin(t*.8+i)*1.2;isl.p=[p[0],yy,p[1]];fall.forEach((s,k)=>{const q=((t*.5+k/6)%1);s.c=[p[0]-2.6,yy-.6-q*14,p[1]+.4];s.w=s.h=1.2+q*1.8;s.a=(1-q)*.7})})}
+  C.upd.push(t=>{const yy=18+Math.sin(t*.8+i)*1.2;isl.p=[p[0],yy,p[1]];fall.forEach((s,k)=>{const q=((t*.4+k/6)%1);s.c=[p[0]-2.2,yy-8-q*5,p[1]+3.6];s.w=s.h=2+q*3;s.a=Math.min(1,q*4)*(1-q)*.5})})}
  /* mongolfiere, fuochi d'artificio, unicorni-cavallini, scintille */
  balloon(-30,30,-20,"#ff7ad9","#ffffff",0);balloon(32,34,-30,"#ffd23f","#8a5ae0",1);
  fireworks();herd("horse",3,-30,24,6,.8);
@@ -6759,7 +6773,7 @@ const nsRidge=(x,z)=>1-Math.abs(2*fbm(x,z)-1);
 const nsLake=(x,z)=>Math.hypot((x+56)/1.35,z+42);
 function nsMesa(x,z){const c=Math.cos(-.22),sn=Math.sin(-.22),dx=x,dz=z+64;const u=dx*c-dz*sn,v=dx*sn+dz*c;const d=Math.hypot(u*11/30,v);return 13.5*ss(15.5,11,d)+5.5*ss(28,14,d)+fbm(x*.3,z*.3)*1.2*ss(16,12,d)}
 function nsRaw(x,z){let h=.5+hills(x,z,1.6,.05)+nsMesa(x,z)+cone(x,z,47,-76,30,26,1.15)+cone(x,z,-44,-20,10,4.2,1.6);
- /* la gola della Pöllat */const gz=ss(-48,-60,z)*(1-ss(-74,-80,z));if(gz>0){const gx=Math.exp(-Math.pow((x-40)/3.4,2));h=Math.max(1.2,h-gx*gz*22)}
+ /* la gola della Pöllat */const gz=ss(-48,-60,z)*(1-ss(-77.6,-79.6,z));if(gz>0){const gx=Math.exp(-Math.pow((x-40)/3.4,2));h=Math.max(1.2,h-gx*gz*22)}
  /* le Alpi: lontane, dietro i boschi (non più un canyon di ghiaccio ai lati della mappa) */const A=Math.max(ss(-84,-130,z),ss(82,150,Math.abs(x))*.9);if(A>0)h+=A*(18+nsRidge(x*.018+3,z*.018)*58+fbm(x*.07,z*.07)*8);
  /* l'Alpsee */const l=nsLake(x,z);if(l<17)h=-1.7+ss(12,17,l)*(h+1.7);return h}
 function nsCol(x,z,h,sl){if(h<-.2)return "#c8d4dc";if(h>22){const r=fbm(x*.045+7,z*.045)+(h>60?-.15:0);return r>.56?"#6e7688":r>.5?"#9aa2b2":"#f6faff"}if(z<-76&&h>3){const f=fbm(x*.06+2,z*.06);return h<16?(f>.42?"#3e5a4c":"#dfe8f2"):(f>.55?"#4a6658":f>.48?"#7a8294":"#eef3fa")}if(sl>1.1)return fbm(x*.3,z*.3)>.5?"#8a92a2":"#a0a8b6";
@@ -6824,13 +6838,10 @@ function nsSwan(cx,cz,r,ph,wl){const n=new N3(null),gg=new Geo();gg.add(PR.spher
  n.add(new N3(R.mesh(gg),{toon:1,out:.035}));C.dyn.push(n);C.upd.push(t=>{const a=t*.12+ph;n.p=[cx+Math.cos(a)*r,wl+Math.sin(t*1.3+ph)*.05,cz+Math.sin(a)*r*.7];n.r=[0,-a,0]})}
 
 /* la gola con la cascata della Pöllat e il ponte di Maria */
-function pollat(){const gx=40,zt=-81,yT=C.rawH(gx,zt),yB=C.rawH(gx,-62);const fall=new Geo();
- for(let i=0;i<5;i++){const z0=zt+3+i*.08,w=2.6-i*.25;fall.add(PR.box(w,yT-yB,.1,true),T([gx+(i-2)*.25,yB,z0+i*.1]),i%2?"#e8f6ff":"#bfe4f8")}
- C.items.push({m:R.mesh(fall),M:M4.id(),alpha:.8,noShadow:1,emis:.25});
- for(let i=0;i<14;i++){const s={t:tx("puff"),c:[gx,yB,zt+3],w:2,h:2,a:.6};C.sprites.push(s);C.upd.push(t=>{const k=(t*.5+i/14)%1;s.c=[gx+Math.sin(i*2.3)*1.2,yB+.5+k*3,zt+4+Math.cos(i*1.7)*1.2];s.w=s.h=1.5+k*2.5;s.a=(1-k)*.55})}
- for(let i=0;i<10;i++){const s={t:tx("spark"),c:[gx,yT,zt+3],w:.5,h:.5,a:.8};C.sprites.push(s);C.upd.push(t=>{const k=(t*.35+i/10)%1;s.c=[gx+(i%5-2)*.4,yT-k*(yT-yB),zt+3.6];s.a=.8*(1-k*.5)})}
- /* torrente nel fondo della gola */const g=GG();for(let z=-62;z>-81;z-=2)GN().add(PR.box(2.2,.1,2.1,true),T([gx,C.rawH(gx,z)+.05,z]),"#9ad0ec");
- /* Marienbrücke: ponte in ferro sulla gola, con travatura reticolare */const zb=-70,xa=gx-8,xb=gx+8,yb=Math.max(C.rawH(xa,zb),C.rawH(xb,zb),yB+10)+.3;
+function pollat(){const gx=40,zt=-81,yT=C.rawH(gx,zt),yB=C.rawH(gx,-62);
+ /* la cascata vera (velo che scorre, pozza, nebbia) e il torrente che corre giù per la gola */{const fz=-78.6,fb=yB+.05;isFall(gx,fz,2.4,C.rawH(gx,-80.2)+.05,fb,2.4,0,{pool:2.4});
+  const pts=[];for(let z=fz+3.6;z<=-61;z+=1)pts.push([gx+Math.sin(z*.6)*.4,z]);fallStream(pts,2,(x,z)=>C.rawH(x,z)+.05,{speed:3.2})}
+ const g=GG();/* Marienbrücke: ponte in ferro sulla gola, con travatura reticolare */const zb=-70,xa=gx-8,xb=gx+8,yb=Math.max(C.rawH(xa,zb),C.rawH(xb,zb),yB+10)+.3;
  g.add(PR.box(xb-xa,.3,2.2,true),T([gx,yb,zb],[0,TAU/4*0,0]),"#6a5a4a");for(const s of [-1,1]){g.add(PR.box(xb-xa,.12,.1,true),T([gx,yb+1.2,zb+s*1.05]),"#3a4252");for(let i=0;i<=16;i++){const xx=xa+i*(xb-xa)/16;g.add(PR.box(.08,1.2,.08,true),T([xx,yb,zb+s*1.05]),"#3a4252")}}
  for(let i=0;i<8;i++){const x0=xa+i*(xb-xa)/8,x1=x0+(xb-xa)/8;beam(g,[x0,yb,zb],[x1,yb-1.6,zb],.12,"#3a4252");beam(g,[x1,yb-1.6,zb],[x1,yb,zb],.1,"#3a4252")}
  for(const xx of [xa,xb]){beam(g,[xx,yb,zb],[xx,C.rawH(xx,zb)-1,zb],.35,"#8a8f98")}}
@@ -7030,17 +7041,37 @@ function isCol(x,z,h,sl){const d=z-isCliffZ(x),k=isGla(x);
  const n=fbm(x*.09,z*.09),m=fbm(x*.33+5,z*.33);if(m>.76&&n<.45)return "#4a5a3a";/* lava coperta di muschio */
  return n>.62?"#a8bc6a":n>.45?"#7fa458":n>.32?"#64884a":"#55753e"}
 
-/* cascata: velo che scorre davvero (strisce che scendono), schiuma, nebbia e arcobaleno */
-let IS_STREAK=null;
-function isFall(cx,cz,w,top,bot,lean,rainbow){if(!IS_STREAK)IS_STREAK=texC(32,128,x=>{const g=x.createLinearGradient(0,0,0,128);g.addColorStop(0,"rgba(255,255,255,0)");g.addColorStop(.3,"rgba(255,255,255,.95)");g.addColorStop(1,"rgba(220,240,255,0)");x.fillStyle=g;x.fillRect(10,0,12,128)});
- const H=top-bot,wg=new Geo(),n=Math.max(3,Math.round(w/1.1));
- for(let i=0;i<n;i++){const x0=cx-w/2+i*w/n;wg.add(gridTris(1,10,(u,v)=>[x0+u*w/n*1.04,top-H*v,cz+lean*Math.pow(v,1.6)+Math.sin(i*1.7)*.12]),null,i%3===1?"#ffffff":i%3?"#d8f0fc":"#bfe2f6",{fix:false})}
- C.items.push({m:R.mesh(wg),M:M4.id(),alpha:.8,emis:.45,noShadow:1,noCull:1});
- const ns=Math.round(10+w*2.2);for(let i=0;i<ns;i++){const s={t:IS_STREAK,c:[cx,top,cz],w:.5+rnd()*.5,h:H*.28,a:.9};C.sprites.push(s);const ox=rr(-w/2,w/2),ph=rnd(),sp=rr(.55,.8);
-  C.upd.push(t=>{const k=(t*sp+ph)%1;s.c=[cx+ox,top-k*H,cz+lean*Math.pow(k,1.6)+.25];s.a=.85*Math.min(1,(1-k)*4)})}
- for(let i=0;i<12;i++){const s={t:tx("puff"),c:[cx,bot,cz],w:4,h:3,a:.5};C.sprites.push(s);const ox=rr(-w/2-1,w/2+1),ph=i/12;C.upd.push(t=>{const k=(t*.28+ph)%1;s.c=[cx+ox+Math.sin(i)*.8,bot+.2+k*(3+w*.25),cz+lean+1.2+k*2];s.w=3+k*(4+w*.3);s.h=s.w*.75;s.a=(1-k)*.5})}
- const fo=new Geo();for(let i=0;i<8;i++)fo.add(PR.ico(rr(.6,1.1)+w*.04,1),T([cx+rr(-w/2,w/2),bot-.1,cz+lean+rr(.5,2.2)],0,[1.4,.45,1.2]),"#ffffff");C.items.push({m:R.mesh(fo),M:M4.id(),emis:.4,noShadow:1,alpha:.9});
- if(rainbow){const rb=new Geo();["#ff6a7a","#ffa64a","#ffe066","#6ad08a","#5ab8f0","#9a7af0"].forEach((c,i)=>rb.add(PR.torus(rainbow-i*.32,.17,40,4).filter(t=>t.every(q=>q[1]>0)),T([cx,bot,cz+lean+6]),c));C.items.push({m:R.mesh(rb),M:M4.id(),alpha:.38,emis:.7,noShadow:1})}}
+/* cascata 2.0: velo d'acqua disegnato dallo shader dell'acqua che scorre (strisce che scendono, bordi sfrangiati, schiuma in basso),
+   il labbro d'acqua sul ciglio, due strati (dietro più scuro e lento, davanti più chiaro e veloce), la pozza con la schiuma
+   che si allarga, gli spruzzi, la nebbia che sale e l'arcobaleno */
+function fallSheet(cx,cz,w,top,bot,lean,o){o=o||{};const H=Math.max(.6,top-bot),Lp=o.lip??Math.min(1.2,.35+w*.1),NU=Math.max(4,Math.round(w/.4)),NV=Math.max(12,Math.round(H/.7)+5),L=Lp+H,sp=o.spread??.18;
+ const p=[],n=[],c=[];const P=(i,j)=>{const u=i/NU,s=j/NV*L;let x,y,z,ny,nz;
+  if(s<Lp){const f=s/Lp;x=cx-w/2+u*w;y=top+.1*(1-f*f)-f*f*.12;z=cz-Lp+s;ny=1-f*.7;nz=.2+f*.8}
+  else{const v=(s-Lp)/H,ww=w*(1+v*sp);x=cx-ww/2+u*ww+Math.sin(v*6+u*8)*.07*Math.min(1,w);y=top-.12-(H-.12)*v;z=cz+lean*Math.pow(v,1.6)+Math.sin(u*9+v*4)*.04;ny=lean*1.6*Math.pow(Math.max(v,.02),.6)/H;nz=1}
+  const l=Math.hypot(ny,nz);p.push(x,y,z+(o.dz||0));n.push(0,ny/l,nz/l);c.push(u*w,s,s/L)};
+ for(let i=0;i<NU;i++)for(let j=0;j<NV;j++){P(i,j);P(i+1,j);P(i+1,j+1);P(i,j);P(i+1,j+1);P(i,j+1)}
+ const it={m:R.mesh(new Geo().raw(p,n,c)),M:M4.id(),alpha:o.alpha??.96,emis:o.emis??.3,noShadow:1,noCull:1,fall:[o.speed??7,w,0]};if(!o.noPush)C.items.push(it);return it}
+function fallPool(cx,cz,r,y,o){o=o||{};const NA=26,NR=10,a0=o.a0??-.35,a1=o.a1??Math.PI+.35,p=[],n=[],c=[];
+ const P=(i,j)=>{const a=a0+(a1-a0)*i/NA,rr0=r*j/NR;p.push(cx+Math.cos(a)*rr0,y,cz+Math.sin(a)*rr0*(o.sq??1));n.push(0,1,0);c.push(a*r*.6,rr0,j/NR)};
+ for(let i=0;i<NA;i++)for(let j=0;j<NR;j++){P(i,j);P(i+1,j);P(i+1,j+1);P(i,j);P(i+1,j+1);P(i,j+1)}
+ C.items.push({m:R.mesh(new Geo().raw(p,n,c)),M:M4.id(),alpha:.97,emis:.35,noShadow:1,noCull:1,fall:[o.speed??1.6,r,1]})}
+/* torrente che corre: un nastro d'acqua con lo stesso shader, che segue una linea */
+function fallStream(pts,w,yf,o){o=o||{};const p=[],n=[],c=[];let acc=0;const S=[];for(let i=0;i<pts.length;i++){if(i)acc+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);S.push(acc)}
+ const E=i=>{const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz)||1;return [-dz/l,dx/l]};
+ const V=(i,k)=>{const [nx,nz]=E(i),q=pts[i],ww=(typeof w==="function"?w(i/(pts.length-1)):w),x=q[0]+nx*ww*(k-.5),z=q[1]+nz*ww*(k-.5);p.push(x,yf(x,z,i)+.02,z);n.push(0,1,0);c.push(k*ww,S[i],.3)};
+ for(let i=0;i<pts.length-1;i++){V(i,0);V(i+1,1);V(i,1);V(i,0);V(i+1,0);V(i+1,1)}
+ C.items.push({m:R.mesh(new Geo().raw(p,n,c)),M:M4.id(),alpha:o.alpha??.9,emis:.3,noShadow:1,noCull:1,fall:[o.speed??2.4,typeof w==="function"?w(.5):w,0]})}
+function isFall(cx,cz,w,top,bot,lean,rainbow,o){o=o||{};const H=top-bot,big=Math.min(1.6,.5+w*.15+H*.02)*Math.min(1,.35+H/10);
+ /* due veli: dietro più lento, davanti più veloce e sfrangiato */
+ fallSheet(cx,cz,w,top,bot,lean,{dz:-.14,speed:5.5+H*.08,alpha:.97,emis:.22});fallSheet(cx,cz,w*.9,top+.04,bot,lean,{dz:.1,speed:7.5+H*.12,alpha:.82,emis:.36});
+ /* la pozza che schiuma e si allarga */const pr=o.pool??(1.6+w*.75);fallPool(cx,cz+lean*.7,pr,bot+.06,{speed:1.2+w*.08});
+ /* nebbia che sale dalla base */const nm=Math.round((10+w*1.6)*Math.min(1,.4+H/12));for(let i=0;i<nm;i++){const s={t:tx("puff"),c:[cx,bot,cz],w:4,h:3,a:.5};C.sprites.push(s);const ox=rr(-w/2-1,w/2+1),ph=i/nm,sp=rr(.18,.3);
+  C.upd.push(t=>{const k=(t*sp+ph)%1;s.c=[cx+ox+Math.sin(t*.4+i)*.8*big,bot+.1+k*(2.5+w*.35+H*.06)*big,cz+lean+.8*big+k*(2+H*.04)];s.w=(2.5+k*(4+w*.35))*big;s.h=s.w*.7;s.a=Math.min(1,k*5)*(1-k)*.62})}
+ /* spruzzi: goccioline che schizzano dalla base */for(let i=0;i<Math.round(8+w*2);i++){const s={t:tx("snow"),c:[cx,bot,cz],w:.3,h:.3,a:0};C.sprites.push(s);const ox=rr(-w/2,w/2),vx=rr(-1.6,1.6),vz=rr(1,3),vy=rr(2.5,4.5),ph=rnd(),T0=rr(.7,1.1);
+  C.upd.push(t=>{const e=((t/T0+ph)%1)*T0;const yy=vy*e-4.9*e*e;s.c=[cx+ox+vx*e,bot+.1+Math.max(0,yy),cz+lean+.2+vz*e];s.a=yy>0?.9:0})}
+ /* nuvola bianca che ribolle alla base */const ch=[];for(let i=0;i<6;i++){const s={t:tx("puff"),c:[cx,bot,cz],w:2,h:2,a:.7};C.sprites.push(s);ch.push(s)}
+ C.upd.push(t=>{ch.forEach((s,i)=>{const k=(t*.7+i/6)%1;s.c=[cx+(i/5-.5)*w*.9,bot+.3+k*.8,cz+lean+.3];s.w=s.h=(1.4+k*1.6)*big;s.a=(1-k)*.8})});
+ if(rainbow){const rb=new Geo();["#ff6a7a","#ffa64a","#ffe066","#6ad08a","#5ab8f0","#9a7af0"].forEach((c,i)=>rb.add(PR.torus(rainbow-i*.3,.15,48,4).filter(t=>t.every(q=>q[1]>0)),T([cx,bot,cz+lean+5]),c));C.items.push({m:R.mesh(rb),M:M4.id(),alpha:.26,emis:.8,noShadow:1})}}
 
 /* il geyser Strokkur: la bolla turchese si gonfia e poi esplode in una colonna altissima */
 function strokkur(x,z){const y=C.H(x,z),gn=GN();gn.add(PR.cyl(2.4,2.8,.18,24),T([x,y-.05,z]),"#e8e4d4");gn.add(PR.cyl(1.7,1.7,.22,24),T([x,y-.05,z]),"#2ab8d8");gn.add(PR.cyl(.8,.8,.24,16),T([x,y-.05,z]),"#1a7aa8");
@@ -7301,28 +7332,28 @@ Object.assign(TH.city,{farH:0,farBlend:1,deep:"#2a4a68",shallow:"#4a7a98",env:sk
   [[-12,48],[30,-48]].forEach(([x,z])=>{const s=flatSpot([[x,z]],1,1);if(s&&nearPath(s[0],s[1])[0]>4)ukFlag(s[0],s[1],7)});
   herd("pigeon",6,0,20,14,1.2);flock(4,0,-24,30,18,"#ffffff");clouds(6,44)}});
 
-/* ================= GIUNGLA 3.0 — Amazzonia =================
+/* ================= GIUNGLA 3.0 — Amazzonia (rifatta in Giungla 4.0 più sotto) =================
    Foresta a più piani: alberi giganti (kapok) con radici a tavola, liane e piattaforme sugli alberi collegate da ponti di corda;
    palme, banani, foglie enormi, felci ed eliconie. In fondo i tepui, montagne a tavola, con la cascata altissima (tipo Salto Angel)
    che scende nella pozza; da lì un ruscello va alla laguna con le ninfee giganti e i fenicotteri. A destra il grande fiume
    con la canoa e l'elefante che fa il bagno. Al centro il tempio perduto coperto di liane con l'idolo d'oro.
    Animali: scimmie, tucani, are, bradipo, giaguaro, tigre, rane, farfalle morpho blu e lucciole. */
 TH.jungleV54=Object.assign({},TH.jungle);
-const JG_RV=z=>40+Math.sin(z*.05+1)*6,JG_ST=[[-34,-74],[-30,-58],[-36,-40],[-44,-24],[-46,-8],[-50,8],[-56,22]],JG_LG=[-46,-14],JG_TP=[6,-62];
+const JG_RV=z=>40+Math.sin(z*.05+1)*6,JG_ST=[[-34,-74],[-31,-62],[-30,-56],[-36,-40],[-44,-24],[-46,-8],[-50,8],[-56,22]],JG_LG=[-46,-14],JG_TP=[6,-62];
 function jgSegD(x,z,P){let best=1e9;for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i],dx=b[0]-a[0],dz=b[1]-a[1],L2=dx*dx+dz*dz;let t=((x-a[0])*dx+(z-a[1])*dz)/L2;t=Math.max(0,Math.min(1,t));best=Math.min(best,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t))}return best}
 function jgTep(x,z,cx,cz,rx,rz,H){const d=Math.hypot((x-cx)/rx,(z-cz)/rz);return d>1.15?0:H*ss(1.15,.95,d)+(d<1?(fbm(x*.15,z*.15)-.5)*3:0)}
 function jgRaw(x,z){let h=1+hills(x,z,2.2,.05)+(fbm(x*.3,z*.3)-.5)*.6;
- h+=jgTep(x,z,-36,-98,26,15,40)+jgTep(x,z,34,-104,30,16,36)+jgTep(x,z,-80,-60,14,22,34)+jgTep(x,z,80,-70,16,20,36);
+ /* i piedi dei tepui (le pareti sono modelli a parte) */for(const t of JG_TEP)h+=jgTep(x,z,t[0],t[1],t[2]*1.45,t[3]*1.45,4);
  {const l=Math.hypot(x-JG_TP[0],z-JG_TP[1]);if(l<14)h=h+(1.4-h)*ss(14,9,l)}
  /* pozza della cascata, ruscello, laguna, fiume */
  const ds=jgSegD(x,z,JG_ST);if(ds<4)h=Math.min(h,-1.5+ss(1.8,4,ds)*(h+1.5));
- {const l=Math.hypot(x+34,z+74);if(l<8)h=Math.min(h,-1.6+ss(5,8,l)*(h+1.6))}
+ {const l=Math.hypot(x+34,z+77);if(l<9)h=Math.min(h,-1.6+ss(6,9,l)*(h+1.6))}
  {const l=Math.hypot((x-JG_LG[0])/1.3,z-JG_LG[1]);if(l<9)h=Math.min(h,-1.6+ss(6,9,l)*(h+1.6))}
  {const d=Math.abs(x-JG_RV(z));if(d<10)h=Math.min(h,-2+ss(6,10,d)*(h+2))}
  return h}
 function jgCol(x,z,h,sl){if(h<-.1)return "#5a4a30";if(h<.5)return "#7a6a42";
- if(h>=31)return fbm(x*.2,z*.2)>.5?"#2f6a34":"#3f7a3a";if(h>7&&(sl>.8||z<-76||Math.abs(x)>66))return Math.floor(h/2.2+fbm(x*.2,z*.2)*2)%2?"#9a5a44":"#b46e50";
- const n=fbm(x*.12,z*.12),m=fbm(x*.5+3,z*.5);if(m>.7)return "#6a5a32";return n>.6?"#2c7a36":n>.45?"#24682e":n>.32?"#348a3c":"#1f5e2a"}
+ if(h>2.2&&(z<-76||Math.abs(x)>64))return fbm(x*.2,z*.2)>.5?"#24582a":"#2c6430";
+ /* sottobosco: muschio, lettiera di foglie, radure più chiare */const n=fbm(x*.12,z*.12),m=fbm(x*.5+3,z*.5),q=fbm(x*1.3,z*1.3+7);if(m>.72)return q>.5?"#6a5430":"#5a4a2a";if(q>.78)return "#7a6a3a";return n>.62?"#2f7a36":n>.48?"#266a2e":n>.34?"#3a8a3c":"#1f5a2a"}
 
 /* albero gigante (kapok) con radici a tavola, rami larghi, chioma a ombrello e liane */
 function kapok(x,z,s){const y=C.H(x,z)-.3,g=GG(),gs=GS(),TR="#8a7a62",TR2="#7a6a52";g.add(PR.cyl(.9*s,1.4*s,18*s,12),T([x,y,z]),TR);
@@ -7357,29 +7388,87 @@ function treeHouse(p,rot){const g=GG(),[x,y,z]=p;g.add(PR.cyl(2.6,2.6,.3,10),T([
 function ropeBridge(a,b){const g=GG(),L=Math.hypot(b[0]-a[0],b[2]-a[2]),n=Math.round(L/.6);for(let i=0;i<n;i++){const f=(i+.5)/n,sag=Math.sin(f*Math.PI)*1.6;const p=[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f-sag,a[2]+(b[2]-a[2])*f];g.add(PR.box(.4,.08,1.3,true),T(p,[0,-Math.atan2(b[2]-a[2],b[0]-a[0]),0]),i%2?"#a07848":"#8a6438")}
  for(const s of [-.7,.7]){let prev=null;for(let i=0;i<=12;i++){const f=i/12,sag=Math.sin(f*Math.PI)*1.6;const dx=b[0]-a[0],dz=b[2]-a[2],L2=Math.hypot(dx,dz),nx=-dz/L2*s,nz=dx/L2*s;const p=[a[0]+dx*f+nx,a[1]+(b[1]-a[1])*f-sag+1.1,a[2]+dz*f+nz];if(prev)beam(g,prev,p,.04,"#c8a878");prev=p}}}
 
-Object.assign(TH.jungle,{env:sky("#3a8ac8","#d8f0d8","#2a5a3a",{fogN:70,fogF:300,sun:"#fff4d0",L:[.55,.75,.35],sky:hex("#9ad0c0"),ground:hex("#2a4a2a")}),
- water:-.45,deep:"#1e5a4a",shallow:"#4a9a7a",farH:.3,farRaw:1,snowCap:false,
+/* ---- Giungla 4.0 ----
+   I tepui sono montagne vere: pareti verticali a strati di arenaria (rossiccia, grigia, con le colature scure e il muschio sulle cenge),
+   cima piatta verde, ai piedi il pendio coperto di foresta e la nebbia che gira a metà parete. Dal tepui grande scende il Salto Angel,
+   altissimo, e da quello a destra una cascata più sottile. La foresta è a piani: alberi emergenti con la chioma a ombrello (alcuni fioriti,
+   gialli e rosa), palme açaí sottili, kapok con le radici a tavola, liane da un albero all'altro, bromelie e orchidee sui tronchi,
+   sottobosco di foglie enormi; raggi di sole che filtrano tra le chiome. */
+const JG_TEP=[[-36,-101,26,14,44,1.3],[36,-108,28,15,38,4.1],[-86,-62,14,22,34,7.7],[86,-74,16,20,36,2.9],[2,-150,42,14,56,5.5]];
+let JG_SHAFT=null;
+function jgTepui(cx,cz,rx,rz,H,seed,fx){const y0=-3,N=60,g=GG(),gn=GN(),gs=GS();
+ const rad=a=>1+(vn(Math.cos(a)*1.6+seed*3,Math.sin(a)*1.6+seed)-.5)*.42+(vn(Math.cos(a)*5+seed,Math.sin(a)*5)-.5)*.1;
+ const O=[];for(let i=0;i<N;i++){const a=i/N*TAU,r=rad(a)*(i%2?1.025:.985);O.push([Math.cos(a)*rx*r,Math.sin(a)*rz*r])}
+ const at=(i,s,y)=>[cx+O[i%N][0]*s,y,cz+O[i%N][1]*s];
+ /* colori a colonne verticali (le colature scendono dalla cima), appena variati da uno strato all'altro */
+ const WALL=["#6e5448","#7a5c4c","#65504a","#84644f","#5c4a44","#8a6a54","#72584a"],B=8,sc=f=>1-f*.07,cc=[];
+ for(let i=0;i<N;i++){const v=vn(i*.45+seed*2,seed);cc.push(v>.74?"#3c3230":v>.66?"#4c3e38":v<.18?"#9a7a5e":WALL[(i*3+(seed|0))%WALL.length])}
+ for(let b=0;b<B;b++){const f0=b/B,f1=(b+1)/B,ya=y0+H*f0,yb=y0+H*f1,o=(b%2)*.014,s0=sc(f0)+o,s1=sc(f1)+o,k=.9+((b*5+3)%4)*.05;
+  for(let i=0;i<N;i++){const dk=cc[i]==="#3c3230"||cc[i]==="#4c3e38";const col=dk&&b<B*(.15+vn(i*1.3,seed)*.55)?WALL[(i*3+(seed|0))%WALL.length]:cc[i];const h=hex(col);
+   const A=at(i,s0,ya),Bq=at(i+1,s0,ya),Cq=at(i+1,s1,yb),D=at(i,s1,yb);g.add([[A,Cq,Bq],[A,D,Cq]],null,[h[0]*k,h[1]*k,h[2]*k],{fix:false})}
+ /* cengia con il muschio tra uno strato e l'altro */if(b<B-1){const s2=sc(f1)+((b+1)%2)*.014;if(Math.abs(s2-s1)>.001){const lo=Math.min(s1,s2),hi=Math.max(s1,s2);for(let i=0;i<N;i++)gn.add([[at(i,lo,yb),at(i+1,lo,yb),at(i+1,hi,yb)],[at(i,lo,yb),at(i+1,hi,yb),at(i,hi,yb)]],null,(i+b)%3?"#4a6a34":"#3a5a2e",{up:true})}}}
+ /* cima piatta: prato e cespugli */const yt=y0+H,st=sc(1)+((B-1)%2)*.014;const top=[];for(let i=0;i<N;i++)top.push([[cx,yt+.6,cz],at(i,st,yt),at(i+1,st,yt)]);gn.add(top,null,"#4f8a3e",{up:true});
+ for(let i=0;i<N;i++){const p=at(i,st*.97,yt);gs.add(PR.ico(rr(1.2,2.2),1),T([p[0],yt+.6,p[2]],0,[1.3,.6,1.3]),i%3?"#2f6a34":"#3c7a3a",{smooth:true})}
+ for(let k=0;k<Math.round(rx*rz/30);k++){const a=rnd()*TAU,d=Math.sqrt(rnd())*.8;gs.add(PR.ico(rr(1,2),1),T([cx+Math.cos(a)*rx*d,yt+.5,cz+Math.sin(a)*rz*d],0,[1,.7,1]),["#2f6a34","#3f7a3a","#5a8a44"][k%3],{smooth:true})}
+ /* ai piedi: pendio di detriti coperto dalla foresta */const sk=[],y1=y0+H*.2;for(let i=0;i<N;i++){const A=at(i,1.5,y0-1.5),Bq=at(i+1,1.5,y0-1.5),Cq=at(i+1,sc(.2),y1),D=at(i,sc(.2),y1);sk.push([A,Cq,Bq],[A,D,Cq])}gn.add(sk,null,"#2c5e30",{fix:false});
+ for(let k=0;k<N*3;k++){const i=(rnd()*N)|0,t=rnd(),s=1.5+(sc(.2)-1.5)*t*.9,p=at(i,s,y0-1.5+(y1-y0+1.5)*t*.9);gn.add(PR.ico(rr(1.6,3),0),T([p[0],p[1]+.8,p[2]],[0,rnd()*3,0],[1,.75,1]),["#24582a","#2f6a34","#3a7a38","#2a6430"][k%4])}
+ /* nebbia che gira a metà parete */for(let k=0;k<6;k++){const a0=rnd()*TAU,hy=y0+H*rr(.35,.75),s={t:tx("puff"),c:[cx,hy,cz],w:22,h:7,a:.3};C.sprites.push(s);C.upd.push(t=>{const a=a0+t*.012;s.c=[cx+Math.cos(a)*rx*1.08,hy+Math.sin(t*.2+k)*.8,cz+Math.sin(a)*rz*1.1]})}
+ /* il punto della parete davanti, al centro: da qui scendono le cascate */let bi=-1;for(let i=0;i<N;i++){const q=O[i];if(q[1]<=0)continue;if(bi<0||Math.abs(cx+q[0]-(fx??cx))<Math.abs(cx+O[bi][0]-(fx??cx)))bi=i}
+ return {front:at(bi,1,0),edge:at(bi,st,yt),top:yt,y0,H}}
+/* albero emergente della foresta pluviale: tronco alto e sottile, rami aperti, chioma a ombrello a più cuscini (a volte fiorita) */
+function jgTree(x,z,s,flower){const y=C.H(x,z)-.2,g=GG(),gs=GS(),h=rr(7,10)*s,lean=rr(-.12,.12),TR=pick(["#8a7a62","#7a6a56","#9a8a70"]);
+ g.add(PR.cyl(.22*s,.38*s,h,8),T([x,y,z],[0,0,lean]),TR);const tx0=x-Math.sin(lean)*h,ty=y+h*Math.cos(lean);
+ for(let k=0;k<3;k++){const a=k/3*TAU+rnd();g.add(PR.prism(1.2*s,1.4*s,.14*s),T([x+Math.cos(a)*.45*s,y,z+Math.sin(a)*.45*s],[0,-a,0]),TR)}
+ const pal=["#2a6a2e","#357a34","#2f7032","#43883c","#3a7a30"],fl=flower===1?["#f2c62a","#e8b020"]:["#e878b0","#d8609e"];
+ const n=5+((rnd()*3)|0);for(let k=0;k<n;k++){const a=k/n*TAU+rnd()*.5,L=rr(1.4,2.6)*s,p=[tx0+Math.cos(a)*L,ty+rr(.3,1.5)*s,z+Math.sin(a)*L];beam(g,[tx0,ty-1.4*s,z],p,.12*s,TR);
+  const r=rr(1.1,1.7)*s;gs.add(PR.ico(r,1),T([p[0],p[1]+.5*s,p[2]],[0,rnd()*3,0],[1.2,.68,1.2]),pal[Math.abs(k+((x*7)|0))%pal.length],{smooth:true});
+  if(flower&&k%2===0)gs.add(PR.ico(r*.7,1),T([p[0],p[1]+.5*s+r*.4,p[2]],[0,rnd()*3,0],[1.1,.55,1.1]),fl[k%2],{smooth:true})}
+ gs.add(PR.ico(1.7*s,1),T([tx0,ty+1.4*s,z],0,[1.3,.65,1.3]),flower?fl[0]:"#3a8038",{smooth:true});
+ /* liane e bromelie */for(let j=0;j<3;j++){const lx=tx0+rr(-2.5,2.5)*s,lz=z+rr(-2.5,2.5)*s,ll=rr(3,6)*s;GN().add(PR.cyl(.05,.05,ll,4),T([lx,ty+.4*s-ll,lz]),"#4a6a2a")}
+ for(let j=0;j<2;j++){const yy=y+rr(2,h*.7),a=rnd()*TAU;GN().add(PR.cyl(0,.35,.5,5),T([x+Math.cos(a)*.42*s-Math.sin(lean)*(yy-y),yy,z+Math.sin(a)*.42*s]),"#5a9a3a");GN().add(PR.ico(.13,0),T([x+Math.cos(a)*.42*s-Math.sin(lean)*(yy-y),yy+.45,z+Math.sin(a)*.42*s]),pick(["#e5383a","#ff7ab0","#c86af0"]))}
+ occ(x,z,1.5*s);return [tx0,ty,z]}
+/* palma açaí: tronchi sottilissimi a ciuffo, chiome piumose */
+function acai(x,z,s){const y=C.H(x,z)-.1,g=GG(),gs=GS();for(let k=0;k<3;k++){const a=k*2.1+rnd(),h=rr(6,9)*s,bx=x+Math.cos(a)*.35,bz=z+Math.sin(a)*.35,l=rr(.04,.12);g.add(PR.cyl(.07*s,.1*s,h,5),T([bx,y,bz],[Math.sin(a)*l,0,-Math.cos(a)*l]),"#8a8466");
+  const tp=[bx+Math.cos(a)*l*h,y+h,bz+Math.sin(a)*l*h];for(let i=0;i<7;i++){const b=i/7*TAU+rnd()*.4,L=1.9*s;gs.add([[[0,0,-.12*s],[L,-.7*s,0],[0,0,.12*s]],[[0,0,-.12*s],[L*.5,.2*s,-.25*s],[L,-.7*s,0]],[[0,0,.12*s],[L,-.7*s,0],[L*.5,.2*s,.25*s]]],T(tp,[0,b,0]),i%2?"#3a8a3a":"#2f7a34",{fix:false})}}}
+/* raggi di sole tra le chiome */
+function jgShafts(n){if(!JG_SHAFT)JG_SHAFT=texC(32,128,x=>{const g=x.createLinearGradient(0,0,0,128);g.addColorStop(0,"rgba(255,248,210,.9)");g.addColorStop(.7,"rgba(255,244,200,.4)");g.addColorStop(1,"rgba(255,240,190,0)");x.fillStyle=g;const h=x.createLinearGradient(0,0,32,0);x.fillRect(0,0,32,128);x.globalCompositeOperation="destination-in";h.addColorStop(0,"rgba(0,0,0,0)");h.addColorStop(.5,"rgba(0,0,0,1)");h.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=h;x.fillRect(0,0,32,128)});
+ for(let i=0;i<n;i++){const x=rr(-50,50),z=rr(-60,48);const s={t:JG_SHAFT,c:[x,C.H(x,z)-.5,z],w:rr(1.6,3),h:rr(12,18),a:.0};C.sprites.push(s);const ph=rnd()*9;C.upd.push(t=>{s.a=.12+.08*Math.sin(t*.25+ph)})}}
+
+Object.assign(TH.jungle,{env:sky("#3a8ac8","#e4f0d4","#2a5a3a",{fogN:60,fogF:320,sun:"#fff0c8",L:[.5,.72,.42],sky:hex("#a8d4b8"),ground:hex("#2e4a2a")}),
+ water:-.45,deep:"#1c4a3c",shallow:"#3e6a48",farH:.3,farRaw:1,snowCap:false,
  terrain:{h:jgRaw,col:jgCol},
  build(){
-  /* il Salto Angel dal tepui, la pozza e il ruscello */{const fx=-34,fz=-83.2,top=Math.max(C.rawH(fx,fz-3),C.rawH(fx,fz-6))+.1;isFall(fx,fz,5,top,-.4,4.5,12);occ(-34,-74,8)}
-  {const fx=26,fz=-88,top=C.rawH(fx,fz-4)+.1;if(top>8)isFall(fx,fz,2,top,C.rawH(fx,fz+3)-.2,3,0)}
+  /* i tepui, il Salto Angel e le altre cascate */
+  const TP=JG_TEP.map(([x,z,rx,rz,H,sd],i)=>jgTepui(x,z,rx,rz,H,sd,[-34,28,-80,80,6][i]));
+  {const t=TP[0],e=t.edge,fz=e[2]+.25,lean=Math.max(5,-78-fz);isFall(e[0],fz,4.6,t.top+.05,-.4,lean,13,{pool:6.5});occ(-34,-77,8)}
+  {const t=TP[1],e=t.edge,fz=e[2]+.25,lean=5,bz=fz+lean,bot=Math.max(-.4,C.rawH(e[0],bz))+.05;isFall(e[0],fz,2.2,t.top+.05,bot,lean,0,{pool:3.5})}
+  for(const k of [2,3]){const t=TP[k],e=t.edge,sz=e[2]+.25;isFall(e[0],sz,1.3,t.top+.05,Math.max(-.4,C.rawH(e[0],sz+4))+.05,4,0,{pool:2})}
   lostTemple(JG_TP[0],JG_TP[1]);
-  /* alberi giganti, case sugli alberi e ponte di corda */
+  /* kapok giganti, case sugli alberi e ponti di corda */
   const K=[];for(const [x,z,s] of [[-30,30,1],[28,24,1.1],[-28,-30,1.05],[26,-30,1],[-16,52,.9],[22,52,.95]]){const q=flatSpot([[x,z]],4,2.5);if(q&&nearPath(q[0],q[1])[0]>7)K.push(kapok(q[0],q[1],s))}
-  if(K.length>=2){const a=treeHouse(K[0],.3),b=treeHouse(K[1]||K[0],.1);if(K.length>=4){const c=treeHouse(K[2],.2),d=treeHouse(K[3],0);ropeBridge(c,d)}if(K[4]&&K[5]){const e=treeHouse(K[4],0),f=treeHouse(K[5],.4);ropeBridge(e,f)}}
+  if(K.length>=2){treeHouse(K[0],.3);treeHouse(K[1]||K[0],.1);if(K.length>=4){const c=treeHouse(K[2],.2),d=treeHouse(K[3],0);ropeBridge(c,d)}if(K[4]&&K[5]){const e=treeHouse(K[4],0),f=treeHouse(K[5],.4);ropeBridge(e,f)}}
   if(K[2])sloth([K[2][0]+3.5,K[2][1]+2.5,K[2][2]]);
-  /* la laguna con le ninfee giganti e i fenicotteri; ninfee anche nella pozza */lilyPads(JG_LG[0],JG_LG[1],9,26);lilyPads(-34,-74,6,8);for(let i=0;i<5;i++)flamingo(JG_LG[0]+rr(-6,6),JG_LG[1]+rr(-4,4),i);occ(JG_LG[0],JG_LG[1],10);
+  /* il ruscello che corre dalla pozza alla laguna */fallStream([[-33.5,-70.5],[-31,-62],[-30,-56],[-36,-40],[-41,-29]],i=>2.4+i*.8,(x,z)=>-.15,{speed:2.2,alpha:.5});fallStream([[-49,-4],[-50,8],[-56,22]],3.4,(x,z)=>-.15,{speed:1.6,alpha:.4});
+  /* la laguna con le ninfee giganti e i fenicotteri */lilyPads(JG_LG[0],JG_LG[1],9,26);for(let i=0;i<5;i++)flamingo(JG_LG[0]+rr(-6,6),JG_LG[1]+rr(-4,4),i);occ(JG_LG[0],JG_LG[1],10);
   /* il grande fiume: canoa ed elefante che fa il bagno */{const cn=new N3(null);const g=new Geo();g.add(PR.sphere(1,12,8).filter(t=>t.some(q=>q[1]<.2)),T([0,.2,0],0,[.7,.5,3.4]),"#8a5a32");g.add(PR.sphere(.3,8,6),T([0,.9,.6]),"#e8b48a");g.add(PR.box(.5,.6,.4,true),T([0,.4,.6]),"#e5484d");g.add(PR.box(.08,.08,2.2,true),T([.4,.9,.6],[.6,0,.5]),"#6a4a2a");cn.add(new N3(R.mesh(g),{toon:1,out:.04}));C.dyn.push(cn);
    C.upd.push(t=>{const k=((t*.025)%2),u=k<1?k:2-k,z=-60+u*110;cn.p=[JG_RV(z),-.5+Math.sin(t*1.5)*.05,z];cn.r=[0,(k<1?0:Math.PI)+Math.cos(z*.05+1)*.3*(k<1?1:-1),0]})}
   {const el=ANIM.elephant();const ez=0,ex=JG_RV(ez)-5;el.p=[ex,-1.2,ez];el.r=[0,-.6,0];C.dyn.push(el);const sp=[];for(let i=0;i<8;i++){const s={t:tx("snow"),c:[ex,0,ez],w:.5,h:.5,a:.8};C.sprites.push(s);sp.push(s)}C.upd.push(t=>{sp.forEach((s,i)=>{const k=(t*.7+i/8)%1;s.c=[ex+1.6+k*1.6,2.4+Math.sin(k*Math.PI)*2.4,ez+1.2+Math.sin(i)*.6];s.a=.85*(1-k)})})}
   /* animali */bigCat(-14,-26,"jaguar",.6);{const s=flatSpot([[30,0],[-30,10]],2,1.5);if(s)bigCat(s[0],s[1],"tiger",-1.2)}herd("monkey",6,10,10,14,1.6);herd("toucan",5,-10,20,12,1.2);herd("parrot",4,14,-10,10,1.2);herd("frog",6,-40,-10,8,1.2);
-  macaws(8,0,-20,30);morphos(10,-6,10,14);morphos(8,12,-28,10);
-  /* sottobosco: palme, banani, foglie enormi, felci, eliconie, alberi */
-  scatter(70,(x,z,i)=>i%3===0?tree(x,z,rr(1.4,2),"palm"):i%3===1?banana(x,z,rr(.9,1.2)):tree(x,z,rr(1.8,2.6),"round"),{clear:3.4});
-  scatter(70,(x,z,i)=>i%3?bigLeaf(x,z,rr(.9,1.4)):fern(x,z),{clear:3.4});scatter(26,(x,z)=>heliconia(x,z),{clear:2});
-  /* foresta fitta sui tepui e dietro */for(let k=0;k<120;k++){const x=rr(-62,62),z=rr(-74,-60);if(free(x,z,2.5))tree(x,z,rr(2,3),k%3?"round":"palm")}
-  /* nebbia, lucciole, foglie che cadono */for(let i=0;i<14;i++){const cx=rr(-50,50),cz=rr(-60,45);const s={t:tx("puff"),c:[cx,2,cz],w:16,h:4,a:.16};C.sprites.push(s);C.upd.push(t=>{const x=cx+Math.sin(t*.06+i)*6;s.c=[x,C.H(x,cz)+1.6,cz]})}
-  particles("spark",30,{size:.18,fall:.25,area:34,top:8,tw:1});particles("leaf",14,{size:.4,fall:1,area:30});clouds(4,52,"#f4fff4")}});
+  macaws(10,0,-20,34);morphos(12,-6,10,14);morphos(8,12,-28,10);morphos(6,-34,-70,8);
+  /* la foresta a piani: emergenti (qualcuno fiorito), açaí, palme, banani */
+  const EM=[];scatter(34,(x,z,i)=>EM.push(jgTree(x,z,rr(.9,1.25),i%9===4?1:i%9===7?2:0)),{clear:5});
+  scatter(26,(x,z)=>acai(x,z,rr(.9,1.2)),{clear:3.6});
+  scatter(40,(x,z,i)=>i%2?tree(x,z,rr(1.4,2),"palm"):banana(x,z,rr(.9,1.25)),{clear:3.4});
+  /* liane tese tra le chiome vicine */for(let i=0;i<EM.length;i++)for(let j=i+1;j<EM.length;j++){const a=EM[i],b=EM[j],d=Math.hypot(a[0]-b[0],a[2]-b[2]);if(d>5&&d<11&&(i+j)%2===0){const g=GN();let prev=null;for(let k=0;k<=10;k++){const f=k/10,p=[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f-Math.sin(f*Math.PI)*2.4-.6,a[2]+(b[2]-a[2])*f];if(prev)beam(g,prev,p,.06,"#4a5a2a");prev=p}}}
+  /* sottobosco: foglie enormi, felci, eliconie; le felci anche lungo il sentiero */
+  scatter(80,(x,z,i)=>i%3?bigLeaf(x,z,rr(.9,1.5)):fern(x,z),{clear:3});scatter(30,(x,z)=>heliconia(x,z),{clear:2.2});
+  scatter(40,(x,z,i)=>i%2?fern(x,z):bigLeaf(x,z,rr(.7,1)),{clear:2.3,ok:(x,z)=>nearPath(x,z)[0]<4.5});
+  /* la foresta dietro, fitta, fino ai piedi dei tepui; e ai lati */
+  for(let k=0;k<70;k++){const x=rr(-62,62),z=rr(-74,-58);if(free(x,z,2.5)){if(k%3===0)jgTree(x,z,rr(1,1.3),k%11===0?1:0);else tree(x,z,rr(2,3),k%3===1?"palm":"round")}}
+  {const gn=GN();for(let k=0;k<420;k++){const x=rr(-110,110),z=rr(-125,-60);if(z>-76&&Math.abs(x)<64)continue;let inT=false;for(const [cx,cz,rx,rz] of JG_TEP)if(Math.hypot((x-cx)/rx,(z-cz)/rz)<1.05)inT=true;if(inT||Math.hypot(x+34,z+78)<9)continue;const y=C.rawH(x,z);if(y<-.2)continue;const r=rr(2.2,3.6);gn.add(PR.ico(r,0),T([x,y+r*.9+rr(2,5),z],[0,rnd()*3,0],[1.2,.7,1.2]),["#24582a","#2f6a34","#3a7a38","#2a6430","#3f8a3c"][k%5]);if(k%7===0)gn.add(PR.ico(r*.8,0),T([x+1,y+r*.9+6,z],0,[1.2,.6,1.2]),k%14===0?"#e8b020":"#2f7032")}}
+  /* luce: raggi di sole tra le chiome, nebbiolina, lucciole, foglie che cadono */jgShafts(16);
+  for(let i=0;i<16;i++){const cx=rr(-50,50),cz=rr(-62,45);const s={t:tx("puff"),c:[cx,2,cz],w:16,h:4,a:.16};C.sprites.push(s);C.upd.push(t=>{const x=cx+Math.sin(t*.06+i)*6;s.c=[x,C.H(x,cz)+1.6,cz]})}
+  particles("spark",30,{size:.18,fall:.25,area:34,top:8,tw:1});particles("leaf",18,{size:.4,fall:1,area:30});clouds(4,62,"#f4fff4")}});
 
 /* ================= IL MERCATO 3.0 — il mercato italiano più bello del mondo =================
    Una via lastricata tra case colorate con le persiane verdi, i balconi fioriti e i panni stesi da una parte all'altra;
