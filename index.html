@@ -355,6 +355,28 @@ h1,h2,h3{margin:0;font-family:var(--title);font-weight:400;line-height:1.15;text
 .pronbox{text-align:center;font-size:20px;background:#fff;border-radius:16px;padding:0 10px;border:0}.pronbox:not(:empty){padding:10px;border:3px solid var(--line)}
 .qtag{display:inline-block;font-size:12px;font-weight:900;padding:2px 8px;border-radius:999px;margin-right:4px;vertical-align:2px;color:#fff;background:#8a5cf6}.qtag.r{background:#ff9d2e}.qtag.v{background:#2a7de1}.qtag.n{background:#2fb857}.qtag.u{background:#e5484d}
 .segs i.r{outline:2px dashed #ff9d2e;outline-offset:-2px}
+/* progressi genitori */
+.pgp{gap:12px}.pghero .pglv{font-family:var(--title);font-size:22px;line-height:1.15;display:block}.pghero p{margin:6px 0 0;font-size:16px;line-height:1.4}
+.pgtag{display:inline-block;margin-top:6px;color:#fff;font-weight:900;font-size:14px;padding:4px 10px;border-radius:999px;border:2px solid var(--line)}
+.pgscale{padding:34px 10px 30px}.pgtrack{position:relative;height:14px;border:3px solid var(--line);border-radius:999px;background:linear-gradient(90deg,#e8f7ec 0 25%,#fff3dc 25% 50%,#f0e8ff 50% 75%,#ffe6ea 75%)}
+.pgtrack>i{position:absolute;top:16px;font-style:normal;transform:translateX(0);font-size:11px;line-height:1.1;white-space:nowrap}.pgtrack>i b{display:block;font-size:12px}.pgtrack>i small{color:var(--mute);font-weight:800}
+.pgtrack>i:before{content:"";position:absolute;left:0;top:-19px;height:14px;border-left:2px solid var(--line);opacity:.35}
+.pgfill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#2fb857,#1d8a3e);opacity:.85}
+.pgexp,.pgme{position:absolute;font-style:normal;transform:translateX(-50%);text-align:center;white-space:nowrap;font-weight:900}
+.pgexp{top:-30px;color:#6a6480;font-size:16px}.pgexp small,.pgme small{display:block;font-size:11px}.pgexp small{margin-top:-30px;margin-bottom:12px}
+.pgme{top:-9px;color:#c42a55;font-size:24px;line-height:1;text-shadow:0 0 0 #fff}.pgme small{color:var(--ink);margin-top:20px;font-size:12px}
+.pgnote{font-size:14px;color:var(--mute);line-height:1.4}.pgtrend{border:3px solid;border-radius:16px;padding:10px 12px;background:#fff;font-size:16px;line-height:1.45}
+.pgsvg{width:100%;max-width:560px;height:auto;align-self:center;background:#fff;border:2.5px solid var(--line);border-radius:14px}
+.pgleg{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--mute);font-weight:800}.pgleg i{display:inline-block;width:14px;height:6px;border-radius:3px;margin-right:5px;vertical-align:middle}.pgleg i.dash{border-top:2px dashed #8a8a9a;height:0}
+.pgweeks{display:flex;gap:6px;align-items:flex-end;height:100px}.pgweeks>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-variant-numeric:tabular-nums}.pgweeks i{display:block;width:100%;border:2px solid var(--line);border-radius:5px}
+.pgsk{display:flex;align-items:center;gap:10px}.pgski{font-size:24px;width:30px;text-align:center}.pgsk>div{flex:1;min-width:0}.pgsk small{display:block;font-size:13px;color:var(--mute);line-height:1.25}
+.pgbar{height:12px;border:2.5px solid var(--line);border-radius:999px;background:#eee;overflow:hidden;margin-top:4px}.pgbar i{display:block;height:100%}
+.pgskv{text-align:right;font-weight:900;font-size:17px;min-width:64px;font-variant-numeric:tabular-nums}.pgskv small{display:block;font-size:11px}
+.pgbadge{font-style:normal;font-size:11px;padding:2px 7px;border-radius:999px;color:#fff;vertical-align:middle}.pgbadge.g{background:#1d8a3e}.pgbadge.r{background:#c42a55}
+.pgst b{font-size:17px;line-height:1.2}.pgstg .pgstgh>span{white-space:nowrap;font-weight:900}.pgstg .pgstgh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.pgstg small{font-size:13px}
+.pgwords{display:flex;flex-wrap:wrap;gap:6px}.pgcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:300px}.pgcal i{aspect-ratio:1;border-radius:5px;border:1.5px solid rgba(35,29,79,.25)}
+.pgtips{display:flex;flex-direction:column;gap:8px}.pgtips>div{background:#fff;border:2.5px solid var(--line);border-radius:14px;padding:9px 12px;font-size:16px;line-height:1.4}
+.pgdet summary{font-weight:900;cursor:pointer}.pgdet div{font-size:14px;line-height:1.5;color:var(--mute);margin-top:6px}
 .mbar{display:flex;height:16px;border-radius:999px;overflow:hidden;border:3px solid var(--line);background:#eee;margin:6px 0}.mbar i{display:block;height:100%}
 .opt.reveal{animation:pop .5s 2}
 .opt[disabled]{opacity:.55}
@@ -2803,15 +2825,15 @@ function hint(q,free){if(q.done)return;if(!free)markMiss(q);
  const right=q.x?q.x.a:q.s?q.s.a:q.w.en;const wrong=[...app.querySelectorAll(".opt")].filter(b=>b.dataset.a!==right&&!b.disabled);if(wrong.length>1){const b=pick(wrong);b.disabled=true;b.style.opacity=.3}
  if(q.w&&["pic","listen","read"].includes(q.t))$("#gb").innerHTML=`<span class="who">CIAPIN</span>In italiano: <b>${esc(q.w.it)}</b>`;
 }
-function markMiss(q){if(!q.missed){q.missed=true;G.combo=0;haptic([40,40,40]);const cb=$("#combo");if(cb)cb.classList.remove("show");if(!q.retry)G.miss++;S.ko++;wmUpdate(q,false);requeue(q);G.missRun=(G.missRun||0)+1;G.okRun=0;if(q.w&&!(G.missW||(G.missW=[])).includes(q.w))G.missW.push(q.w);if(q.w&&["type","dict","tiles","spell","listen","pic","read"].includes(q.t)){srsWrong(wkey(q.w))}}}
+function markMiss(q){if(!q.missed){q.missed=true;G.combo=0;haptic([40,40,40]);const cb=$("#combo");if(cb)cb.classList.remove("show");if(!q.retry)G.miss++;trk(q,false);if(!G.test){S.ko++;wmUpdate(q,false)}requeue(q);G.missRun=(G.missRun||0)+1;G.okRun=0;if(q.w&&!(G.missW||(G.missW=[])).includes(q.w))G.missW.push(q.w);if(q.w&&!G.test&&["type","dict","tiles","spell","listen","pic","read"].includes(q.t)){srsWrong(wkey(q.w))}}}
 function bad(q,msg){SFX.no();if(G&&G.boss&&G.shield&&!q.missed){G.shield=0;msg=`🛡️ <b>${JR[G.w][0].split(",")[0]}</b> ti ha protett{a|o}! Questo errore non conta. Riprova!`;const al=app.querySelector(".ally");if(al)al.innerHTML=bossImg(G.w,52,"hit",[0,0],"",true)+"<span></span>"}else markMiss(q);if(G&&G.boss&&!q.missedRow){q.missedRow=1;G.missRow=(G.missRow||0)+1;if(G.missRow>=2){G.missRow=0;G.hp=Math.min(G.Q.length,G.hp+2);const h=$("#hp");if(h)h.style.width=(G.hp/G.Q.length*100)+"%";G.healed=1}}
  if(G&&(G.boss||G.jr)){bossMood("tease",1200);const bt=$("#btaunt");if(bt){bt.textContent=T(G.jr?"Ih ih! Sbagliato!":G.healed?`⚡ ${WORLDS[G.w].boss[0].replace(/^(Il |Lo |La |L')/,"")} ${BOSS_INFO[G.w].heal}! +2`:BOSS_LINES[G.w][2]);G.healed=0;bt.classList.remove("show");void bt.offsetWidth;bt.classList.add("show")}}let tip="";try{if(!msg&&q.s&&["fillc","fillt","lsent"].includes(q.t))tip=`<small class="whytip">💡 ${localWhy(q.s)}</small>`}catch(e){}$("#gb").innerHTML=T(`<span class="who">CIAPIN</span>${msg||pick(OOPS)}${tip}`);setMood(app.querySelector(".guide .ciap"),"sad",1100);const av=app.querySelector(".stage");if(av){av.classList.remove("shk");void av.offsetWidth;av.classList.add("shk")}}
-function good(q,msg){if(q.done)return;q.done=true;SFX.ok();haptic(25);if(!q.missed){S.ok++;wmUpdate(q,true);G.okRun=(G.okRun||0)+1;G.missRun=0;if(q.retry&&!msg)msg="Ora la sai! 💪";else if(q.rev&&!msg)msg="Te la ricordavi! ⏰"}
+function good(q,msg){if(q.done)return;q.done=true;SFX.ok();haptic(25);if(!q.missed){trk(q,true);if(!G.test){S.ok++;wmUpdate(q,true)}G.okRun=(G.okRun||0)+1;G.missRun=0;if(q.retry&&!msg)msg="Ora la sai! 💪";else if(q.rev&&!msg)msg="Te la ricordavi! ⏰"}
  if(!q.missed){G.combo=(G.combo||0)+1;G.best=Math.max(G.best||0,G.combo);const xp=10+Math.min(10,(G.combo-1)*2);G.xp=(G.xp||0)+xp;G.coins=(G.coins||0)+1;floatReward(`+${xp} XP`);questEv("ok");questEv("combo",G.combo,true);if(["type","dict","fillt"].includes(q.t))questEv("type");
   if(G.combo>=3){const cb=$("#combo");if(cb){cb.textContent=`🔥 ${G.combo} di fila!`;cb.classList.remove("show");void cb.offsetWidth;cb.classList.add("show")}tone([[523+G.combo*40,.06],[659+G.combo*40,.08]],"triangle",.06)}}
  if(q.t==="speak"||q.t==="speaks")questEv("speak");
- if(q.w&&!q.missed){if(!S.learned[q.w.en]){S.learned[q.w.en]=1;G.newW.push(q.w)}const k=wkey(q.w);if(G.review||q.rev)srsRight(k);else srsLearn(k)}
- if(q.ws&&!q.missed)q.ws.forEach(w=>{if(!S.learned[w.en]){S.learned[w.en]=1;G.newW.push(w)}});
+ if(q.w&&!q.missed&&!G.test){if(!S.learned[q.w.en]){S.learned[q.w.en]=1;G.newW.push(q.w)}const k=wkey(q.w);if(G.review||q.rev)srsRight(k);else srsLearn(k)}
+ if(q.ws&&!q.missed&&!G.test)q.ws.forEach(w=>{if(!S.learned[w.en]){S.learned[w.en]=1;G.newW.push(w)}});
  if(q.x&&!msg)msg=`${pick(PRAISE)} <small style="display:block;font-size:15px;color:#2a5a3a;font-weight:700">💡 ${esc(q.x.why)}</small>`;
  const speakTxt=q.x?q.x.a:q.s?q.s.en:q.w?q.w.en:"";if(speakTxt&&q.t!=="speak"&&q.t!=="speaks")setTimeout(()=>say(speakTxt),250);
  setMood(app.querySelector(".guide .ciap"),"happy");burst();
@@ -2866,11 +2888,11 @@ function checkOrder(q){const need=tokens(q.s.en);if(q.built.length<need.length)r
   if(q.wrongs>=2){setTimeout(()=>{if(q.done)return;q.chips.forEach(c=>c.u=false);q.built=[];need.forEach(x=>{const c=q.chips.find(y=>!y.u&&y.x===x);if(c){c.u=true;q.built.push(c)}});drawOrder(q);good(q,"Ecco la frase giusta. Leggila ad alta voce!")},900);return}setTimeout(()=>{q.chips.forEach(c=>c.u=false);q.built=[];drawOrder(q)},900)}}
 
 /* ================= FINE LIVELLO ================= */
-function finish(){const n=G.Q.filter(q=>!q.retry).length,m=G.miss,r=m/n;const st=r<=.1?3:r<=.3?2:1;
+function finish(){if(G.test)return testDone();const n=G.Q.filter(q=>!q.retry).length,m=G.miss,r=m/n;const st=r<=.1?3:r<=.3?2:1;
  let unlocked=null,newAcc=null;
  if(!G.review){const k=G.w+"-"+G.l;const wasDone=worldDone(G.w);G.prevSt=S.stars[k]||0;S.stars[k]=Math.max(G.prevSt,st);
   if(!wasDone&&worldDone(G.w)){{const nx=worldNext(G.w);if(nx!=null)unlocked=WORLDS[nx]}const acc=ACCS.find(a=>a[2]==="w:"+(G.w+1));if(acc)newAcc=acc[1]}}
- G.got=G.review?[]:itemAward(G.w,G.l,st,!G.prevSt);
+ G.got=G.review?[]:itemAward(G.w,G.l,st,!G.prevSt);snapDay();
  let note="";
  if(!G.review){const d=today();S.dayLv=S.dayLv||{};S.dayLv[d]=(S.dayLv[d]||0)+1;
   const y=new Date(Date.now()-864e5).toISOString().slice(0,10);S.streak=S.streak||{n:0,last:""};
@@ -2928,17 +2950,8 @@ function parentPanel(){SCR="par";const acc=S.ok+S.ko?Math.round(S.ok/(S.ok+S.ko)
  const dueK=srsDue(),badList=dueK.map(k=>k.split("|")[1]).slice(0,20);const boxes=[1,2,3,4,5].map(b=>Object.values(S.srs).filter(s=>s.b===b).length);
  app.innerHTML=`<div class="screen par">
   <div class="hud"><button class="iconbtn" id="back" aria-label="Indietro">◀</button><h2 class="white" style="font-size:20px">Area genitori</h2></div>
-  <div class="panel"><div class="stat">
-   <div><span class="lbl">Tempo oggi</span><b>${fmt(S.days[today()]||0)}</b></div><div><span class="lbl">Tempo totale</span><b>${fmt(S.time)}</b></div>
-   <div><span class="lbl">Livelli</span><b>${doneLevels()}/${WORLDS.length*10}</b></div><div><span class="lbl">Stelle</span><b>${totalStars()}/${WORLDS.length*30}</b></div>
-   <div><span class="lbl">Parole imparate</span><b>${Object.keys(S.learned).length}/${ALLWORDS.length}</b></div><div><span class="lbl">Precisione</span><b>${acc}%</b></div></div>
-   <span class="lbl">Minuti negli ultimi 7 giorni</span>
-   <div style="display:flex;gap:6px;align-items:flex-end;height:90px">${days.map(d=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><small style="font-variant-numeric:tabular-nums">${Math.round(d.v/60)}</small><div style="width:100%;background:var(--leaf);border:2px solid var(--line);height:${Math.max(2,d.v/mx*60)}px"></div><small>${d.l}</small></div>`).join("")}</div>
-  </div>
-  <div class="panel"><span class="lbl">Ripasso a intervalli: ${dueK.length} parole da ripassare oggi</span><div class="muted" style="font-size:15px">Come Babbel: ogni parola torna dopo 1, 3, 7 e 30 giorni; se la sbaglia, ricomincia da capo. Parole per scatola: ${boxes.map((n,i)=>`<b>${i+1}</b>: ${n}`).join(" · ")} (5 = imparata a lungo termine).</div><div class="list">${badList.length?badList.map(esc).join(" · "):"Nessuna, ottimo!"}</div></div>
-  ${(()=>{const M=masteryStats(),tot=M.strong+M.mid+M.weak||1;return `<div class="panel"><span class="lbl">Curva di apprendimento</span><div class="mbar"><i style="width:${M.strong/tot*100}%;background:#2fb857"></i><i style="width:${M.mid/tot*100}%;background:#ffc933"></i><i style="width:${M.weak/tot*100}%;background:#ff5c8a"></i></div>
-   <div class="muted" style="font-size:15px">🟢 <b>${M.strong}</b> parole sicure (le scrive da sola) · 🟡 <b>${M.mid}</b> in consolidamento · 🔴 <b>${M.weak}</b> da rinforzare.<br>Ogni parola segue la scala <b>riconoscere → ricordare → scrivere</b>: prima ascolto e immagini, poi lettere e spelling, infine scrittura e dettato. Le parole sbagliate tornano dopo 2-3 domande in forma più facile; in ogni livello tornano anche 1-2 parole viste giorni fa. Dopo 2 errori di fila l'esercizio diventa più facile, dopo 5 giuste di fila arriva una sfida.</div></div>`})()}
-  <div class="panel"><span class="lbl">Età e difficoltà</span>
+  ${progressHTML()}
+  <div class="panel" data-pt="1"><span class="lbl">Età e difficoltà</span>
    <div class="row">${[6,7,8,9,10,11,12].map(n=>`<button class="chip ${S.age===n?"on":""}" data-age="${n}">${n} anni</button>`).join("")}</div>
    <span class="lbl">Regola la difficoltà</span>
    <div class="row">${[[-2,"Molto più facile"],[-1,"Più facile"],[0,"Come l'età"],[1,"Più difficile"],[2,"Molto più difficile"]].map(([v,t])=>`<button class="chip ${(S.diffAdj||0)===v?"on":""}" data-adj="${v}">${t}</button>`).join("")}</div>
@@ -2946,19 +2959,19 @@ function parentPanel(){SCR="par";const acc=S.ok+S.ko?Math.round(S.ok/(S.ok+S.ko)
    <div class="muted" style="font-size:16px">Livello attuale: <b>${DIFF_NAMES[diffLevel()]}</b>${S.autoDiff&&S.autoOff?` (adattamento automatico ${S.autoOff>0?"+":""}${S.autoOff})`:""}. Mondi aperti dall'inizio: ${openFrom()}.<br>
    <b>Più facile</b>: 3 scelte invece di 4, lettere da comporre invece della tastiera, prima lettera suggerita, livelli più corti. <b>Più difficile</b>: scrittura libera senza lineette, più dettati, frasi con parole-trappola e 2 domande in più per livello.</div>
   </div>
-  <div class="panel"><span class="lbl">Voce inglese — scegli l'accento (solo voci umane)</span>
+  <div class="panel" data-pt="1"><span class="lbl">Voce inglese — scegli l'accento (solo voci umane)</span>
    ${window.speechSynthesis?`<div class="row">${voiceChoices().map(v=>`<button class="chip ${voice()&&voice().name===v.name?"on":""}" data-voice="${esc(v.name)}" title="${esc(vAcc(v)[2])}">${vAcc(v)[1]} ${esc(v.name.replace(/\(.*\)/,"").replace(/^(Microsoft|Google)\s+/,"").replace(/\s*-\s*English.*$/i,"").slice(0,20))}${vHQ(v)?" ⭐":""}</button>`).join("")||"<span class='muted'>Nessuna voce inglese trovata sul dispositivo.</span>"}</div>
    ${vHQ(voice())?`<div class="muted" style="font-size:15px">⭐ = voce naturale di alta qualità. Ottimo!</div>`:`<div class="say" style="font-size:15px;text-align:left"><b>La voce suona metallica?</b> Il gioco usa le voci installate sul dispositivo. Per una voce molto più naturale (gratis):<br>${/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)?"📱 <b>iPhone/iPad:</b> Impostazioni → Accessibilità → Contenuti letti ad alta voce → Voci → Inglese → scegli una voce con <b>“Avanzata”</b> o <b>“Premium”</b> (es. Serena, Ava, Zoe) e scaricala. Poi riapri il gioco e selezionala qui sopra (⭐).":/Android/.test(navigator.userAgent)?"📱 <b>Android:</b> Impostazioni → Sintesi vocale (Text-to-speech) → Motore Google → Installa dati vocali → Inglese (Regno Unito) → scarica una voce. Poi riapri il gioco.":"💻 <b>PC:</b> apri il gioco con <b>Microsoft Edge</b>: ha voci inglesi naturali (es. “Sonia”, “Libby”, “Aria”) già pronte, contrassegnate con ⭐."}</div>`}
    <div class="row"><span class="muted">Velocità:</span>${[[.8,"Lenta"],[.92,"Normale"],[1.02,"Veloce"]].map(([r,t])=>`<button class="chip ${(S.rate||.92)===r?"on":""}" data-rate="${r}">${t}</button>`).join("")}<button class="btn sm b" id="vtest">🔊 Prova</button></div>
    <div class="muted" style="font-size:15px">Non si sente niente? Togli il silenzioso e alza il volume. Alcune app non permettono la voce: in quel caso apri il gioco nel browser (Safari o Chrome). Su iPhone le voci migliori si scaricano da Impostazioni › Accessibilità › Contenuti letti › Voci › Inglese.</div>`
    :`<div class="muted">Questa app non permette la voce: apri il gioco nel browser (Safari o Chrome) per sentire l'inglese.</div>`}
   </div>
-  <div class="panel"><span class="lbl">Tempo di gioco al giorno</span>
+  <div class="panel" data-pt="1"><span class="lbl">Tempo di gioco al giorno</span>
    <div class="row">${[0,15,20,30,45,60,90,120].map(m=>`<button class="chip ${S.limit===m?"on":""}" data-lim="${m}">${m?m+" min":"Nessun limite"}</button>`).join("")}</div>
    <div class="muted" style="font-size:16px">${S.limit?`Oggi: <b>${Math.round((S.days[today()]||0)/60)} min</b> su ${S.limit+((S.bonus||{})[today()]||0)} min. Quando il tempo finisce, Ciapin saluta e il gioco si ferma fino a domani (il livello in corso si può finire). Conta solo il tempo di gioco attivo.`:"Nessun limite impostato: si può giocare quanto si vuole."}</div>
    ${S.limit?`<div class="row"><button class="btn sm b" id="plus10">+10 minuti solo per oggi</button><button class="btn sm w" id="zero">Azzera il tempo di oggi</button></div>`:""}
   </div>
-  <div class="panel">
+  <div class="panel" data-pt="2">
    <div class="toggle"><span>Sblocca tutti i livelli (gioco libero)</span><button class="btn sm ${S.unlockAll?"":"w"}" id="ua">${S.unlockAll?"SÌ":"NO"}</button></div>
    <div class="toggle"><span>Scrivi in STAMPATO MAIUSCOLO (per i più piccoli, come a scuola)</span><button class="btn sm ${S.caps?"":"w"}" id="caps">${S.caps?"SÌ":"NO"}</button></div>
    <span class="lbl">Vista</span>
@@ -2975,7 +2988,7 @@ function parentPanel(){SCR="par";const acc=S.ok+S.ko?Math.round(S.ok/(S.ok+S.ko)
    <div class="muted" style="font-size:15px">Percorso: ${WORLDS.length} mondi da 10 livelli (con il programma di terza: Sicilia, Germania, Islanda, Francia, Africa, Giappone, Brasile, Perù, Transilvania), in ordine di difficoltà secondo i livelli Cambridge Young Learners (Starters → Movers → Flyers) più 4 mondi Esperti (Grecia antica, Roma nel Medioevo, Cambogia, Cina imperiale) con inglese avanzato e domande STEM: scienze, ingegneria e matematica. Domande STEM anche in Everest, Piramidi e Spazio. Il Regno di Ciapin resta il gran finale.</div>
    ${window.claude?"":`<div class="row"><button class="btn sm b" id="bk1">💾 Salva copia dei progressi</button><label class="btn sm w" for="bk2" style="cursor:pointer">📂 Carica copia</label><input type="file" id="bk2" accept="application/json,.json" hidden></div><div class="muted" style="font-size:15px">I progressi restano su questo dispositivo: salva una copia per spostarli su un altro telefono o computer.</div>`}
    <button class="btn p sm" id="rs">Azzera tutti i progressi</button></div></div>`;
- $("#back").onclick=()=>{SCR="";title()};
+ $("#back").onclick=()=>{SCR="";title()};bindProgress();
  app.querySelectorAll("[data-voice]").forEach(b=>b.onclick=()=>{S.voice=b.dataset.voice;save();say("Hello! I'm Ciapin. Let's learn English together!");parentPanel()});
  app.querySelectorAll("[data-rate]").forEach(b=>b.onclick=()=>{S.rate=+b.dataset.rate;save();say("This is my new speed.");parentPanel()});
  $("#vtest")&&($("#vtest").onclick=()=>say("Hello "+S.name+"! Let's learn English together."));
@@ -2996,6 +3009,188 @@ function parentPanel(){SCR="par";const acc=S.ok+S.ko?Math.round(S.ok/(S.ok+S.ko)
   $("#bk2").onchange=ev=>{const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||typeof d!=="object"||!d.stars)throw 0;S=Object.assign(structuredClone(DEF),d);save();toastTop("✅ Progressi caricati!");parentPanel()}catch(e){toastTop("⚠️ Questo file non è una copia di Ciap-English.")}};r.readAsText(f)}}
  $("#rs").onclick=()=>modal(`${ciapImg(80,"sad")}<p style="margin:0;font-size:19px">Cancellare stelle, album e statistiche? Non si può annullare.</p><div class="row" style="justify-content:center"><button class="btn w" data-close>No</button><button class="btn p" id="y">Sì, azzera</button></div>`,m=>m.querySelector("#y").onclick=()=>{S=structuredClone(DEF);save();closeModal();title()});
 }
+
+/* ================= PROGRESSI PER I GENITORI =================
+   Diario giornaliero delle risposte (per abilità e per livello Cambridge), istantanea giornaliera del livello stimato,
+   test di livello ripetibile, confronto con l'età. Tutto resta nel salvataggio del profilo (S.hist, S.snap, S.tests). */
+const SKILLS=[["ascolto","👂","Ascolto","capire parole e frasi sentite",["listen","lsent"]],["lessico","📖","Lettura e vocabolario","riconoscere il significato delle parole scritte",["pic","read","match"]],
+ ["scrittura","✏️","Scrittura e spelling","scrivere le parole senza errori, anche sotto dettatura",["spell","tiles","type","dict"]],["frasi","🧩","Frasi e grammatica","completare e costruire frasi giuste",["fillc","fillt","order","trans"]],
+ ["parlato","🗣️","Pronuncia","dire le parole ad alta voce",["speak","speaks"]],["stem","🔬","Scienze in inglese","capire domande di scienze e matematica",["stem"]]];
+const SK_OF={};SKILLS.forEach(s=>s[4].forEach(t=>SK_OF[t]=s[0]));
+/* riferimento: percorso Cambridge Young Learners (le età indicate sui mondi) e quadro europeo CEFR */
+const PG_ST=[["Starters","Pre-A1"],["Movers","A1"],["Flyers","A2"],["Esperti","A2+ / B1"]];
+const PG_M=[[5.5,0],[9,1],[10,2],[11,3],[12,4]];/* età → livello atteso (fine di ogni tappa) */
+function pgInterp(P,x){if(x<=P[0][0])return P[0][1];for(let i=1;i<P.length;i++)if(x<=P[i][0]){const a=P[i-1],b=P[i];return a[1]+(b[1]-a[1])*(x-a[0])/(b[0]-a[0])}return P[P.length-1][1]}
+const pgExp=age=>pgInterp(PG_M,age);
+const pgEqAge=sc=>pgInterp(PG_M.map(([a,s])=>[s,a]),sc);
+const pgDay=(n)=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+const pgD=k=>{const [y,m,d]=k.split("-");return `${+d}/${+m}`};
+const pgG=()=>S.gender==="f"?"a":"o";
+function trk(q,right){try{if(G&&G.cls)return;/* lezione in classe: non è il percorso del bambino */if(G&&G.test){if(q.tst==null)return;const a=G.tr[q.tst];a[1]++;if(right)a[0]++;if(q.tlast&&a[0]/a[1]<.5)G.Q.length=Math.min(G.Q.length,G.i+1);return}
+ const sk=SK_OF[q.t];if(!sk)return;const d=today();S.hist=S.hist||{};const h=S.hist[d]||(S.hist[d]={n:0,ok:0,sk:{},sg:{}});h.n++;if(right)h.ok++;
+ const a=h.sk[sk]||(h.sk[sk]=[0,0]);a[1]++;if(right)a[0]++;
+ const wi=q.w?q.w.w:q.s&&q.s.w!=null?q.s.w:G?G.w:null,stg=wi!=null&&WORLDS[wi]?WORLDS[wi].st:null;if(stg!=null){const b=h.sg[stg]||(h.sg[stg]=[0,0]);b[1]++;if(right)b[0]++}}catch(e){}}
+/* quanto del programma di ogni tappa è stato dimostrato nel gioco */
+function stageStats(){const wm=S.wm||{},out=[0,1,2,3].map(()=>({N:0,sec:0,kn:0,mast:0,lv:0,lvN:0,worlds:[]}));
+ WORLDS.forEach((W,wi)=>{const o=out[W.st];if(!o)return;o.worlds.push(wi);o.lvN+=10;for(let l=0;l<10;l++)if(S.stars[wi+"-"+l])o.lv++});
+ ALLWORDS.forEach(w=>{const o=out[WORLDS[w.w].st];if(!o)return;o.N++;const r=wm[wkey(w)];const m=r?r.m:(S.learned[w.en]?1.5:0);if(m>=3.5)o.sec++;else if(m>=1.5)o.kn++;o.mast+=Math.min(1,m/3.5)});
+ out.forEach(o=>{o.mastP=o.N?o.mast/o.N:0;o.lvP=o.lvN?o.lv/o.lvN:0;o.comp=clamp((.65*o.mastP+.35*o.lvP)/.7,0,1)});return out}
+const gameScore=st=>(st||stageStats()).reduce((a,o)=>a+o.comp,0);
+function lastTest(){const t=S.tests||[];return t.length?t[t.length-1]:null}
+function pgEstimate(st){const g=gameScore(st),t=lastTest();return {g,t:t?t.sc:null,est:Math.max(g,t?t.sc:0)}}
+function snapDay(){try{const st=stageStats(),d=today();S.snap=S.snap||{};S.snap[d]={g:+gameScore(st).toFixed(3),s:st.reduce((a,o)=>a+o.sec,0),k:st.reduce((a,o)=>a+o.sec+o.kn,0)};
+ const ks=Object.keys(S.snap).sort();if(ks.length>420)ks.slice(0,ks.length-420).forEach(k=>delete S.snap[k]);
+ if(S.hist){const hk=Object.keys(S.hist).sort();if(hk.length>420)hk.slice(0,hk.length-420).forEach(k=>delete S.hist[k])}}catch(e){}}
+function lvlName(sc){if(sc>=3.97)return "Esperti completato · A2+ / B1";const i=Math.floor(sc),p=Math.round((sc-i)*100);return `${PG_ST[i][0]} ${p<15?"appena iniziato":p<70?"in corso":"quasi completato"} · ${PG_ST[i][1]}`}
+function ageTxt(a){if(a<6)return "meno di 6 anni";if(a>=12)return "12 anni o più";const y=Math.floor(a),f=a-y;return f<.25?`${y} anni`:f<.75?`${y} anni e mezzo`:`quasi ${y+1} anni`}
+function histSum(from,to){/* giorni [from,to) contati all'indietro da oggi */let n=0,ok=0,days=0;const sk={},sg={};for(let i=from;i<to;i++){const h=(S.hist||{})[pgDay(i)];if(!h)continue;days++;n+=h.n;ok+=h.ok;for(const k in h.sk){const a=sk[k]||(sk[k]=[0,0]);a[0]+=h.sk[k][0];a[1]+=h.sk[k][1]}for(const k in h.sg||{}){const a=sg[k]||(sg[k]=[0,0]);a[0]+=h.sg[k][0];a[1]+=h.sg[k][1]}}return {n,ok,days,sk,sg,acc:n?ok/n:null}}
+function snapAt(daysAgo){const ks=Object.keys(S.snap||{}).sort(),lim=pgDay(daysAgo);let best=null;for(const k of ks){if(k<=lim)best=k;else break}return best?{d:best,...S.snap[best]}:ks.length?{d:ks[0],...S.snap[ks[0]],first:1}:null}
+function playDays(from,to){let n=0;for(let i=from;i<to;i++)if((S.days[pgDay(i)]||0)>=60||(S.hist||{})[pgDay(i)])n++;return n}
+const pct=x=>x==null?"–":Math.round(x*100)+"%";
+const arrow=(d,th)=>d==null?"":d>th?`<b style="color:#1d8a3e">▲</b>`:d<-th?`<b style="color:#c42a55">▼</b>`:`<b style="color:#8a8a9a">●</b>`;
+
+/* grafico: livello stimato nel tempo e livello atteso per l'età */
+function pgChart(){const ks=Object.keys(S.snap||{}).sort();const tests=S.tests||[];if(ks.length<2&&tests.length<2)return `<div class="pgnote">📈 Il grafico dell'andamento si riempie giorno dopo giorno: ogni giorno di gioco aggiunge un punto. Monitoraggio iniziato il ${ks[0]?pgD(ks[0]):pgD(today())}.</div>`;
+ const t0=Date.parse((ks[0]<(tests[0]?.d||"9")?ks[0]:tests[0].d)),t1=Date.now(),span=Math.max(864e5*7,t1-t0),W=320,H=150,L=58,Rr=8,Tp=8,B=22,X=t=>L+(t-t0)/span*(W-L-Rr),Y=s=>Tp+(1-s/4)*(H-Tp-B);
+ let svg=`<svg viewBox="0 0 ${W} ${H}" class="pgsvg" role="img" aria-label="Andamento del livello">`;
+ const bc=["#e8f7ec","#fff3dc","#f0e8ff","#ffe6ea"];for(let s=0;s<4;s++)svg+=`<rect x="${L}" y="${Y(s+1)}" width="${W-L-Rr}" height="${Y(s)-Y(s+1)}" fill="${bc[s]}"/><text x="${L-4}" y="${(Y(s)+Y(s+1))/2+4}" text-anchor="end" font-size="10" font-weight="800" fill="#5a5470">${PG_ST[s][0]}</text>`;
+ /* atteso per l'età (sale col tempo) */const age=(S.age||8)+.5;let ep="";for(let k=0;k<=12;k++){const t=t0+span*k/12;ep+=(k?"L":"M")+X(t).toFixed(1)+" "+Y(Math.min(4,pgExp(age-(t1-t)/(365*864e5)))).toFixed(1)}
+ svg+=`<path d="${ep}" fill="none" stroke="#8a8a9a" stroke-width="2" stroke-dasharray="5 4"/>`;
+ /* livello stimato */const ti=d=>{let v=0;for(const x of tests)if(x.d<=d)v=Math.max(v,x.sc);return v};let lp="";ks.forEach((k,i)=>{lp+=(i?"L":"M")+X(Date.parse(k)).toFixed(1)+" "+Y(Math.max(S.snap[k].g,ti(k))).toFixed(1)});
+ if(ks.length>1)svg+=`<path d="${lp}" fill="none" stroke="#2fb857" stroke-width="3" stroke-linejoin="round"/>`;
+ tests.forEach(x=>{svg+=`<circle cx="${X(Date.parse(x.d)).toFixed(1)}" cy="${Y(x.sc).toFixed(1)}" r="4.5" fill="#8a5cf6" stroke="#231d4f" stroke-width="1.5"/>`});
+ svg+=`<text x="${L}" y="${H-6}" font-size="10" fill="#5a5470">${pgD(new Date(t0).toISOString().slice(0,10))}</text><text x="${W-Rr}" y="${H-6}" font-size="10" text-anchor="end" fill="#5a5470">oggi</text></svg>`;
+ return svg+`<div class="pgleg"><span><i style="background:#2fb857"></i>livello di ${esc(S.name)}</span><span><i class="dash"></i>atteso per l'età</span>${tests.length?`<span><i style="background:#8a5cf6;border-radius:50%"></i>test di livello</span>`:""}</div>`}
+/* precisione settimana per settimana */
+function pgWeeks(){const wk=[];for(let k=7;k>=0;k--){const h=histSum(k*7,k*7+7);wk.push(h)}const any=wk.some(h=>h.n);if(!any)return "";
+ return `<div class="pgweeks">${wk.map((h,i)=>`<div title="${h.n} risposte"><small>${h.n?pct(h.acc):""}</small><i style="height:${h.n?Math.max(4,h.acc*64):2}px;background:${h.n<15?"#cfc8e0":h.acc>=.85?"#2fb857":h.acc>=.7?"#ffc933":"#ff7a9a"}"></i><small>${i===7?"ora":"-"+(7-i)+"s"}</small></div>`).join("")}</div><div class="pgnote">Precisione al primo tentativo, settimana per settimana (in grigio: troppe poche risposte per giudicare).</div>`}
+/* calendario delle ultime 5 settimane */
+function pgCal(){let c="";for(let i=34;i>=0;i--){const k=pgDay(i),m=Math.round((S.days[k]||0)/60);c+=`<i title="${pgD(k)}: ${m} min" style="background:${m===0?"#eee":m<8?"#c6ecd0":m<16?"#7fd39a":m<30?"#2fb857":"#1d8a3e"}"></i>`}return `<div class="pgcal">${c}</div>`}
+
+function pgVerdict(E,st){const tot=(S.ok||0)+(S.ko||0),age=(S.age||8)+.5,exp=pgExp(age),eq=pgEqAge(E.est),diff=eq-age,t=lastTest(),fresh=t&&(Date.now()-t.t)<60*864e5;
+ const prov=!t&&tot<400;let tag,col,txt;
+ if(prov){tag="Stima provvisoria";col="#8a5cf6";txt=`Finora ${S.name} ha dato ${tot} risposte: troppo poche per un confronto affidabile con l'età. Fate il <b>Test di livello</b> qui sotto (5-8 minuti) per sapere subito a che punto è.`}
+ else if(diff>=1){tag="Molto avanti per l'età";col="#1d8a3e";txt=`Il livello dimostrato corrisponde a un bambino di <b>${ageTxt(eq)}</b> sul percorso Cambridge: circa ${Math.round(diff*2)/2} ${Math.round(diff*2)/2===1?"anno":"anni"} avanti rispetto all'atteso.`}
+ else if(diff>=.4){tag="Avanti per l'età";col="#1d8a3e";txt=`Il livello dimostrato corrisponde a <b>${ageTxt(eq)}</b>: un po' avanti rispetto all'atteso per la sua età.`}
+ else if(diff>-.4){tag="In linea con l'età";col="#2a7de1";txt=`Il livello dimostrato è quello atteso per la sua età (circa <b>${ageTxt(eq)}</b>).`}
+ else if(diff>-1){tag="Un po' indietro";col="#e09a00";txt=`Il livello dimostrato corrisponde a <b>${ageTxt(eq)}</b>: un po' sotto l'atteso. Con 15 minuti al giorno si recupera in poche settimane.`}
+ else {tag="Indietro rispetto all'età";col="#c42a55";txt=`Il livello dimostrato corrisponde a <b>${ageTxt(eq)}</b>. ${t?"":"Attenzione: il gioco misura solo quello che ha già giocato; il <b>Test di livello</b> dà una stima più giusta."}`}
+ return {tag,col,txt,eq,exp,diff,prov,fresh}}
+
+function progressHTML(){snapDay();const st=stageStats(),E=pgEstimate(st),V=pgVerdict(E,st),t=lastTest(),g=pgG(),nm=esc(S.name||"");
+ const tot=(S.ok||0)+(S.ko||0),acc=tot?S.ok/tot:null;
+ /* tendenza: ultime 2 settimane contro le 2 precedenti */
+ const h14=histSum(0,14),hp=histSum(14,28),s14=snapAt(14),s30=snapAt(30),now=S.snap[today()];
+ const secG=s14?now.s-s14.s:null,scG=s30?E.g-s30.g:null,accD=h14.n>=20&&hp.n>=20?h14.acc-hp.acc:null,pd=playDays(0,14);
+ const tests=S.tests||[],tD=tests.length>=2?tests[tests.length-1].sc-tests[tests.length-2].sc:null;
+ const since=s14&&s14.first?` (dal ${pgD(s14.d)}, inizio del monitoraggio)`:"";
+ let trend,tcol;
+ if(!s14||(s14.first&&Date.now()-Date.parse(s14.d)<5*864e5)&&tD==null){trend=`Il monitoraggio dettagliato è appena iniziato${s14?" il "+pgD(s14.d):""}. Dopo qualche giorno di gioco qui compare se ${nm} sta migliorando, con i numeri.`;tcol="#8a5cf6"}
+ else if(pd<=2&&!(tD>0)){trend=`Nelle ultime 2 settimane ${nm} ha giocato solo ${pd} ${pd===1?"giorno":"giorni"}: troppo poco per migliorare. Le parole si fissano con la ripetizione: meglio 15 minuti quasi ogni giorno che un'ora una volta a settimana.`;tcol="#e09a00"}
+ else if((secG||0)>=8||(scG||0)>.04||(tD||0)>.15){trend=`<b>Sì, ${nm} sta migliorando.</b> ${secG>0?`Nelle ultime 2 settimane${since} ha reso sicure <b>${secG}</b> parole nuove (le scrive da sol${g}). `:""}${accD!=null?`La precisione è passata da ${pct(hp.acc)} a <b>${pct(h14.acc)}</b>${accD<-.05?": scende un po' perché gli esercizi sono diventati più difficili, è normale":""}. `:""}${tD>0?`L'ultimo test di livello è migliorato rispetto al precedente. `:""}`;tcol="#1d8a3e"}
+ else if(accD!=null&&accD<-.08){trend=`<b>Attenzione:</b> la precisione è scesa da ${pct(hp.acc)} a <b>${pct(h14.acc)}</b> nelle ultime 2 settimane. Può succedere passando a un mondo nuovo e più difficile: conviene fare qualche ripasso e rigiocare i livelli con 1 stella.`;tcol="#c42a55"}
+ else {trend=`<b>Stabile.</b> ${secG!=null?`${secG} parole rese sicure nelle ultime 2 settimane${since}. `:""}${accD!=null?`Precisione ${pct(h14.acc)} (prima ${pct(hp.acc)}). `:""}Per accelerare: ripasso quotidiano e passare ai livelli di scrittura.`;tcol="#2a7de1"}
+ /* abilità */
+ const s30h=histSum(0,30),s60h=histSum(30,60);
+ const skRows=SKILLS.map(([k,ic,n,ds])=>{const a=s30h.sk[k],b=s60h.sk[k];const ac=a&&a[1]?a[0]/a[1]:null,pc=b&&b[1]>=10?b[0]/b[1]:null;return {k,ic,n,ds,ac,pc,cnt:a?a[1]:0}});
+ const rated=skRows.filter(r=>r.cnt>=15).sort((a,b)=>b.ac-a.ac),best=rated[0],worst=rated.length>1?rated[rated.length-1]:null;
+ /* parole difficili e parole sicure di recente */
+ const wmE=Object.entries(S.wm||{}).map(([k,r])=>{const [wi,en]=k.split("|");return {r,w:ALLWORDS.find(x=>x.w==wi&&x.en===en)}}).filter(x=>x.w);
+ const hard=wmE.filter(x=>x.r.n>=3&&x.r.m<2.5).sort((a,b)=>(a.r.ok/a.r.n)-(b.r.ok/b.r.n)).slice(0,10);
+ const recent=wmE.filter(x=>x.r.m>=3.5).sort((a,b)=>b.r.t-a.r.t).slice(0,10);
+ const M=masteryStats(),mt=M.strong+M.mid+M.weak||1,dueK=srsDue(),boxes=[1,2,3,4,5].map(b=>Object.values(S.srs).filter(s=>s.b===b).length);
+ /* cosa fare adesso */
+ const tips=[];if(!t||Date.now()-t.t>30*864e5)tips.push(`🧪 <b>Fate il Test di livello</b>${t?" (l'ultimo è del "+pgD(t.d)+")":""}: 5-8 minuti, ${nm} da sol${g} e senza aiuti. Ripetuto ogni mese mostra in modo oggettivo se il livello sale.`);
+ if(dueK.length>=5)tips.push(`🔁 <b>${dueK.length} parole aspettano il ripasso</b> (pulsante «Ripasso»): è il modo più veloce per non dimenticarle.`);
+ if(worst&&worst.ac<.75)tips.push(`${worst.ic} Punto da rinforzare: <b>${worst.n}</b> (${pct(worst.ac)} giuste). ${worst.k==="scrittura"?"Chiedetegli di scrivere a mano 5 parole dell'album al giorno, o mettete la difficoltà su «Più difficile» per avere più dettati.":worst.k==="ascolto"?"Guardate insieme un cartone in inglese con i sottotitoli in inglese, 10 minuti al giorno.":worst.k==="frasi"?"Leggete ad alta voce le frasi dei livelli «Frasi»: la grammatica si impara sentendola.":worst.k==="parlato"?"Fategli ripetere le parole ad alta voce: anche voi potete giocare all'«insegnante».":"Rigiocate i livelli con meno stelle."}`);
+ if(pd<7&&!V.prov)tips.push(`📅 Giorni di gioco nelle ultime 2 settimane: <b>${pd}</b>. L'ideale è <b>5 giorni su 7, 15-20 minuti</b>.`);
+ if(V.diff>=1&&!V.prov)tips.push(`🚀 ${nm} è avanti: potete mettere la difficoltà su «Più difficile» o sbloccare i mondi successivi.`);
+ if(hard.length>=3)tips.push(`🔤 Parole che sbaglia più spesso: <b>${hard.slice(0,4).map(x=>esc(x.w.en)).join(", ")}</b>. Ripetetele insieme in macchina o a tavola.`);
+ if(!tips.length)tips.push(`👏 Va tutto bene: continuate così, ${nm} sta seguendo il percorso con regolarità.`);
+ const posE=Math.min(4,E.est)/4*100,posX=Math.min(4,V.exp)/4*100;
+ return `
+ <div class="panel pgp" data-pt="0"><span class="lbl">A che punto è ${nm}</span>
+  <div class="pghero"><div><b class="pglv">${V.prov&&E.est<.05?"Non ancora valutato":lvlName(E.est)}</b><span class="pgtag" style="background:${V.col}">${V.tag}</span></div><p>${V.txt}</p></div>
+  <div class="pgscale"><div class="pgtrack">${PG_ST.map((s,i)=>`<i style="left:${i*25}%"><b>${s[0]}</b><small>${s[1]}</small></i>`).join("")}<span class="pgfill" style="width:${posE}%"></span>
+   <em class="pgexp" style="left:${posX}%" title="Atteso per ${S.age} anni">▼<small>atteso a ${S.age} anni</small></em><em class="pgme" style="left:${posE}%">●<small>${nm}</small></em></div></div>
+  <div class="stat pgst"><div><span class="lbl">Età linguistica</span><b>${V.prov?"–":ageTxt(V.eq)}</b></div><div><span class="lbl">Età di ${nm}</span><b>${S.age} anni</b></div>
+   <div><span class="lbl">Dal gioco</span><b>${lvlName(E.g).split(" · ")[0]}</b></div><div><span class="lbl">Ultimo test</span><b>${t?`${lvlName(t.sc).split(" · ")[0]}`:"non ancora fatto"}</b>${t?`<small class="muted">${pgD(t.d)}</small>`:""}</div></div>
+  <div class="row"><button class="btn sm" id="pgtest">🧪 ${t?"Rifai il":"Fai il"} Test di livello</button><button class="btn sm w" id="pgcopy">📋 Copia resoconto</button></div>
+  <div class="pgnote">Il <b>Test di livello</b> fa 5 domande per tappa (ascolto, lettura, scrittura, frasi) e si ferma quando diventano troppo difficili. La stima finale è il migliore tra test e risultati del gioco.</div></div>
+
+ <div class="panel pgp" data-pt="0"><span class="lbl">Sta migliorando?</span>
+  <div class="pgtrend" style="border-color:${tcol}">${trend}</div>
+  <div class="stat"><div><span class="lbl">Parole sicure</span><b>${now.s} ${secG!=null&&secG>0?`<small style="color:#1d8a3e">+${secG} in 14 g</small>`:""}</b></div>
+   <div><span class="lbl">Precisione 14 giorni</span><b>${pct(h14.acc)} ${arrow(accD,.03)}</b></div>
+   <div><span class="lbl">Livelli completati</span><b>${doneLevels()}/${WORLDS.length*10}</b></div><div><span class="lbl">Giorni di gioco (14 g)</span><b>${pd}/14</b></div></div>
+  ${pgChart()}${pgWeeks()}</div>
+
+ <div class="panel pgp" data-pt="0"><span class="lbl">Abilità (ultimi 30 giorni)</span>
+  ${skRows.some(r=>r.cnt)?skRows.filter(r=>r.cnt||r.k!=="stem").map(r=>`<div class="pgsk"><span class="pgski">${r.ic}</span><div><b>${r.n}${best&&r.k===best.k&&rated.length>1?` <em class="pgbadge g">punto forte</em>`:""}${worst&&r.k===worst.k?` <em class="pgbadge r">da rinforzare</em>`:""}</b><small>${r.ds}</small>
+   <div class="pgbar"><i style="width:${r.ac==null?0:r.ac*100}%;background:${r.ac==null?"#ccc":r.ac>=.85?"#2fb857":r.ac>=.7?"#ffc933":"#ff7a9a"}"></i></div></div>
+   <span class="pgskv">${r.cnt<5?`<small class="muted">${r.cnt?"pochi dati":"–"}</small>`:pct(r.ac)} ${r.pc!=null&&r.cnt>=10?arrow(r.ac-r.pc,.03):""}<small class="muted">${r.cnt} risp.</small></span></div>`).join(""):`<div class="pgnote">Le abilità si riempiono man mano che ${nm} gioca: ogni risposta viene classificata (ascolto, lettura, scrittura, frasi, pronuncia).</div>`}
+  <div class="pgnote">Percentuale di risposte giuste al primo tentativo. La freccia confronta con i 30 giorni precedenti.</div></div>
+
+ <div class="panel pgp" data-pt="0"><span class="lbl">Programma Cambridge: quanto ne sa per ogni tappa</span>
+  ${st.map((o,i)=>`<div class="pgstg"><div class="pgstgh"><b>${PG_ST[i][0]} <small>${PG_ST[i][1]} · atteso entro i ${PG_M[i+1][0]} anni</small></b><span>${o.comp>=1?"✅ raggiunto":Math.round(o.comp*100)+"%"}</span></div>
+   <div class="mbar"><i style="width:${o.sec/(o.N||1)*100}%;background:#2fb857"></i><i style="width:${o.kn/(o.N||1)*100}%;background:#ffc933"></i></div>
+   <small class="muted">${o.sec} parole sicure, ${o.kn} in consolidamento su ${o.N} · livelli ${o.lv}/${o.lvN}${(()=>{const a=s30h.sg[i];return a&&a[1]>=10?` · precisione 30 g ${pct(a[0]/a[1])}`:""})()}</small></div>`).join("")}
+  <div class="pgnote">🟢 sicure = le scrive da sol${g} · 🟡 in consolidamento = le riconosce. Una tappa è «raggiunta» quando ne conosce bene circa il 70% (parole e livelli).</div></div>
+
+ <div class="panel pgp" data-pt="0"><span class="lbl">Parole</span>
+  <div class="mbar"><i style="width:${M.strong/mt*100}%;background:#2fb857"></i><i style="width:${M.mid/mt*100}%;background:#ffc933"></i><i style="width:${M.weak/mt*100}%;background:#ff5c8a"></i></div>
+  <div class="muted" style="font-size:15px">🟢 <b>${M.strong}</b> sicure · 🟡 <b>${M.mid}</b> in consolidamento · 🔴 <b>${M.weak}</b> da rinforzare · <b>${Object.keys(S.learned).length}</b> viste in tutto su ${ALLWORDS.length}.</div>
+  ${hard.length?`<span class="lbl">Le più difficili per ${nm}</span><div class="pgwords">${hard.map(x=>`<button class="mini" data-say="${esc(x.w.en)}"><b>${esc(x.w.en)}</b> <small class="muted">${esc(x.w.it)} · ${x.r.ok}/${x.r.n}</small></button>`).join("")}</div>`:""}
+  ${recent.length?`<span class="lbl">Rese sicure di recente</span><div class="pgwords">${recent.map(x=>`<button class="mini" data-say="${esc(x.w.en)}"><b>${esc(x.w.en)}</b> <small class="muted">${esc(x.w.it)}</small></button>`).join("")}</div>`:""}
+  <div class="muted" style="font-size:15px">Ripasso a intervalli: <b>${dueK.length}</b> parole da ripassare oggi. Ogni parola torna dopo 1, 3, 7 e 30 giorni; se la sbaglia ricomincia. Scatole: ${boxes.map((n,i)=>`<b>${i+1}</b>: ${n}`).join(" · ")} (5 = memoria a lungo termine).</div></div>
+
+ <div class="panel pgp" data-pt="0"><span class="lbl">Costanza</span>${pgCal()}
+  <div class="stat"><div><span class="lbl">Oggi</span><b>${fmt(S.days[today()]||0)}</b></div><div><span class="lbl">Serie</span><b>${S.streak&&S.streak.last&&S.streak.last>=pgDay(1)?S.streak.n:0} 🔥</b></div>
+   <div><span class="lbl">Ultimi 30 giorni</span><b>${fmt([...Array(30)].reduce((a,_,i)=>a+(S.days[pgDay(i)]||0),0))}</b></div><div><span class="lbl">Totale</span><b>${fmt(S.time)}</b></div></div>
+  <div class="pgnote">Ultime 5 settimane, un quadratino per giorno (più scuro = più minuti). Precisione di sempre: ${pct(acc)} su ${tot} risposte.</div></div>
+
+ <div class="panel pgp" data-pt="0"><span class="lbl">Cosa fare adesso</span><div class="pgtips">${tips.map(x=>`<div>${x}</div>`).join("")}</div>
+  <details class="pgdet"><summary>Come calcoliamo il livello</summary><div>
+   Riferimento: il percorso <b>Cambridge Young Learners</b> (Starters → Movers → Flyers) e il Quadro europeo delle lingue (CEFR), con le età indicate sui mondi del gioco: Starters entro i 9 anni, Movers entro i 10, Flyers entro gli 11, Esperti entro i 12.
+   La scuola italiana chiede l'A1 (≈ Movers) a fine quinta e l'A2 (≈ Flyers) a fine terza media: chi è «in linea» qui è già un po' avanti rispetto alla media della classe.<br>
+   <b>Dal gioco</b>: per ogni tappa contiamo quanto ${nm} conosce le parole (ogni parola ha una forza da 0 a 5 che sale con le risposte giuste, soprattutto quelle scritte) e quanti livelli ha completato.
+   <b>Test di livello</b>: 5 domande per tappa senza aiuti; si ferma quando non ne indovina almeno 3 su 5.
+   <b>Età linguistica</b>: l'età a cui, su questo percorso, si arriva allo stesso livello. È una stima, utile soprattutto per vedere l'andamento nel tempo.</div></details></div>`}
+
+function progressText(){const st=stageStats(),E=pgEstimate(st),V=pgVerdict(E,st),t=lastTest(),h14=histSum(0,14),s14=snapAt(14),now=(S.snap||{})[today()]||{s:0};
+ return [`Ciap-English — resoconto di ${S.name} (${S.age} anni), ${new Date().toLocaleDateString("it-IT")}`,
+  `Livello stimato: ${lvlName(E.est)} — ${V.tag}${V.prov?"":" (età linguistica: "+ageTxt(V.eq)+")"}`,
+  t?`Ultimo test di livello (${pgD(t.d)}): ${lvlName(t.sc)}`:`Test di livello: non ancora fatto`,
+  `Parole sicure: ${now.s}${s14&&now.s-s14.s>0?` (+${now.s-s14.s} nelle ultime 2 settimane)`:""} · livelli completati ${doneLevels()}/${WORLDS.length*10}`,
+  `Precisione ultime 2 settimane: ${pct(h14.acc)} su ${h14.n} risposte · giorni di gioco: ${playDays(0,14)}/14`,
+  ...st.map((o,i)=>`${PG_ST[i][0]} (${PG_ST[i][1]}): ${Math.round(o.comp*100)}% — ${o.sec} parole sicure su ${o.N}, livelli ${o.lv}/${o.lvN}`)].join("\n")}
+
+function bindProgress(){$("#pgtest")&&($("#pgtest").onclick=levelTestIntro);
+ $("#pgcopy")&&($("#pgcopy").onclick=async()=>{const t=progressText();try{await navigator.clipboard.writeText(t);toastTop("📋 Resoconto copiato: incollalo in un messaggio.")}catch(e){modal(`<span class="lbl">Resoconto</span><textarea style="width:100%;height:220px;font-size:14px">${esc(t)}</textarea><button class="btn" data-close>OK</button>`)}});
+ app.querySelectorAll(".pgwords [data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say))}
+
+/* ---- TEST DI LIVELLO: 5 domande per tappa, si ferma quando diventa troppo difficile ---- */
+function levelTestIntro(){modal(`${ciapImg(80,"talk")}<h2 style="font-size:20px;margin:0">Test di livello</h2><p style="margin:0;font-size:16px;text-align:left">Fino a 20 domande, dalle più facili (Starters) alle più difficili (Esperti): ascolto, lettura, scrittura e frasi. Si ferma da solo quando le domande diventano troppo difficili.<br><br><b>Per un risultato giusto:</b> ${esc(S.name)} fa il test da sol${pgG()}, senza aiuti e senza suggerimenti. Se non sa una risposta, va bene sbagliare. Serve l'audio acceso.</p><div class="row" style="justify-content:center"><button class="btn w" data-close>Non ora</button><button class="btn" id="tgo">Inizia ▶</button></div>`,
+ m=>m.querySelector("#tgo").onclick=()=>{closeModal();levelTest()})}
+function levelTest(){SCR="";const Q=[];
+ for(let s=0;s<4;s++){const ws=WORLDS.map((W,i)=>[W,i]).filter(([W,i])=>W.st===s&&i!==CIAPW&&W.s&&W.s.length>=2);if(!ws.length)continue;
+  const words=shuffle(ws.flatMap(([W])=>allWorld(W).filter(w=>!/[ -]/.test(w.en)||w.en.length<14)));const pick3=words.slice(0,3);
+  const qs=[];[["listen",0],["read",1],["type",2]].forEach(([t,i])=>{const w=pick3[i];if(!w)return;qs.push(mkQ(t,w,allWorld(WORLDS[w.w]),1))});
+  const [W1]=shuffle(ws)[0],[W2]=shuffle(ws)[0],s1=shuffle(W1.s)[0],s2=shuffle(W2.s).find(x=>x!==s1)||W2.s[0];qs.push(sQ("fillc",s1,1),sQ("lsent",s2,1));
+  qs.forEach((q,i)=>{q.tst=s;if(i===qs.length-1)q.tlast=1;Q.push(q)})}
+ G={w:S.world,l:-1,W:WORLDS[S.world],st:1,Q,i:0,miss:0,boss:false,t0:Date.now(),newW:[],review:true,test:true,tr:[[0,0],[0,0],[0,0],[0,0]]};renderQ()}
+function testDone(){const tr=G.tr;let sc=0;const a=tr.map(([o,n])=>n?o/n:null);a.forEach(x=>{if(x!=null)sc+=clamp((x-.3)/.55,0,1)});sc=+sc.toFixed(2);
+ const rec={d:today(),t:Date.now(),sc,a:tr.map(x=>x.slice()),age:S.age,mins:Math.round((Date.now()-G.t0)/60000)};S.tests=(S.tests||[]).concat([rec]).slice(-24);snapDay();save();SFX.win();confetti();
+ const prev=S.tests.length>=2?S.tests[S.tests.length-2]:null,eq=pgEqAge(sc);G=null;
+ app.innerHTML=`<div class="screen center res" style="gap:14px"><div class="duo">${avatarImg(S.av,100,"m-happy")}${ciapImg(100,"happy")}</div>
+  <h1 style="font-size:32px;color:var(--sun);text-shadow:0 4px 0 var(--berry-d),0 8px 0 var(--ink)">TEST FINITO!</h1>
+  <div class="panel" style="width:100%;max-width:460px"><span class="lbl">Risultato (per i genitori)</span><b style="font-size:21px">${lvlName(sc)}</b>
+   <div class="muted" style="font-size:15px">Età linguistica stimata: <b>${ageTxt(eq)}</b> · ${S.name} ha ${S.age} anni${prev?` · test precedente (${pgD(prev.d)}): ${lvlName(prev.sc).split(" · ")[0]} ${sc>prev.sc+.1?"→ <b style='color:#1d8a3e'>migliorato ▲</b>":sc<prev.sc-.1?"→ un po' più basso ▼":"→ stabile"}`:""}</div>
+   ${tr.map(([o,n],i)=>`<div class="pgsk"><span class="pgski">${["🌱","🚲","✈️","🏆"][i]}</span><div><b>${PG_ST[i][0]} <small class="muted">${PG_ST[i][1]}</small></b><div class="pgbar"><i style="width:${n?o/n*100:0}%;background:${!n?"#ccc":o/n>=.8?"#2fb857":o/n>=.6?"#ffc933":"#ff7a9a"}"></i></div></div><span class="pgskv">${n?`${o}/${n}`:`<small class="muted">non raggiunta</small>`}</span></div>`).join("")}
+   <div class="pgnote">Il risultato è salvato nell'Area genitori › Progressi. Rifatelo tra un mese per vedere se il livello sale.</div></div>
+  <div class="say" style="max-width:420px"><span class="who">CIAPIN</span>Bravissim${pgG()}! Hai fatto tutto il test. Ogni volta che giochi diventi più forte!</div>
+  <button class="btn" id="cont">OK ▶</button></div>`;
+ $("#cont").onclick=()=>{SCR="";title()}}
 
 /* ================= SCINTILLE PIXEL ================= */
 function burst(){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;const el=document.querySelector(".opt.ok,.slots,.build,.match,#said")||document.querySelector(".stage");if(!el)return;const r=el.getBoundingClientRect();
@@ -3906,7 +4101,7 @@ function requeue(q){if(!G||G.review||G.boss||G.jr||q.retry||q.requeued)return;if
  else if(q.s&&["fillc","fillt","order","lsent"].includes(q.t))nq=sQ(q.t==="fillt"?"fillc":q.t,q.s,m);
  if(!nq)return;nq.retry=1;const at=Math.min(G.Q.length,G.i+3);G.Q.splice(at,0,nq)}
 /* difficoltà dentro il livello */
-function liveAdapt(){const q=G.Q[G.i];if(!q||!q.w||!WQT.includes(q.t)||G.boss||G.jr||q.adapted)return null;const pool=allWorld(WORLDS[q.w.w]??G.W);
+function liveAdapt(){const q=G.Q[G.i];if(!q||!q.w||!WQT.includes(q.t)||G.boss||G.jr||G.test||q.adapted)return null;const pool=allWorld(WORLDS[q.w.w]??G.W);
  if((G.missRun||0)>=2){const t=easier(q.t,G.st);if(t!==q.t){G.Q[G.i]=Object.assign(mkQ(t,q.w,pool,G.st),{adapted:1,rev:q.rev,retry:q.retry});G.missRun=0;return "down"}}
  if((G.okRun||0)>=5&&TLEV[q.t]<2){const t=harder(q.t,G.st);if(t!==q.t){G.Q[G.i]=Object.assign(mkQ(t,q.w,pool,G.st),{adapted:1,rev:q.rev,retry:q.retry});G.okRun=0;return "up"}}
  return null}
@@ -10924,7 +11119,7 @@ initCloud();
   try{const sc=document.querySelector(".screen.par:not(.teach)");if(sc&&!sc.querySelector(".ptabs")){const ps=[...sc.children].filter(x=>x.classList.contains("panel"));
     const bar=document.createElement("div");bar.className="ptabs";bar.innerHTML=TABS.map(([e,t,sm],i)=>`<button data-pt="${i}" class="${i===PTAB?"on":""}">${e} ${t}<small>${sm}</small></button>`).join("");
     const hud=sc.querySelector(".hud");hud?hud.after(bar):sc.prepend(bar);
-    const show=()=>{ps.forEach((p,i)=>p.classList.toggle("phide",groupOf(i,ps.length)!==PTAB));bar.querySelectorAll("button").forEach(b=>b.classList.toggle("on",+b.dataset.pt===PTAB))};
+    const show=()=>{ps.forEach((p,i)=>p.classList.toggle("phide",(p.dataset.pt!=null?+p.dataset.pt:groupOf(i,ps.length))!==PTAB));bar.querySelectorAll("button").forEach(b=>b.classList.toggle("on",+b.dataset.pt===PTAB))};
     bar.querySelectorAll("button").forEach(b=>b.onclick=()=>{PTAB=+b.dataset.pt;show();scrollTo(0,0)});show();
     /* toccare un'opzione non deve riportare la pagina in cima */
     if(again)requestAnimationFrame(()=>scrollTo(0,y))}}catch(e){console.error(e)}return r}}
