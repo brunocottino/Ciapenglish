@@ -2290,7 +2290,7 @@ function pKey(id){id=id||profCur();return id==="p0"?KEY:KEY+"."+id}
 let S=loadLocal();
 function loadLocal(){let d=null;try{d=JSON.parse(localStorage.getItem(pKey())||"null")}catch(e){}migrate(d);const h=profCur()==="p0"?migrate(window.claude?.hot?.data?.S):null;const s=Object.assign(structuredClone(DEF),d||{},h||{});s.av={...AV_DEF[s.gender||"f"],...s.av,gender:s.gender||"f"};if(s.bad&&Object.keys(s.bad).length){for(const k in s.bad)if(!s.srs[k])s.srs[k]={b:1,d:Date.now()};s.bad={}}return s}
 let cloud=null,saveT=null;
-function save(){S.ts=Date.now();try{localStorage.setItem(pKey(),JSON.stringify(S))}catch(e){}clearTimeout(saveT);saveT=setTimeout(pushCloud,2500)}
+function save(){S.ts=Date.now();try{if(typeof keepWorn==="function")keepWorn()}catch(e){}try{localStorage.setItem(pKey(),JSON.stringify(S))}catch(e){}clearTimeout(saveT);saveT=setTimeout(pushCloud,2500)}
 async function pushCloud(){if(!cloud||profCur()!=="p0")return;try{await cloud.set({state:JSON.stringify(S),ts:S.ts})}catch(e){}}
 async function initCloud(){try{if(!window.claude?.use)return;const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);if(!db||!user)return;const id=await user.id();if(!id)return;
   cloud=db.collection("data/users/"+id).doc("progress");const snap=await cloud.get();
@@ -4264,9 +4264,12 @@ function shopItems(tab){
  if(tab==="eye")return EYE_LIST.map(([id,t,p])=>({id,key:"eye:"+id,t,p,slot:"eye",val:id,own:!!(S.owned&&S.owned["eye:"+id])||S.unlockAll}));
  if(tab==="wing")return WING_LIST.map(([id,t,p])=>({id,key:"wing:"+id,t,p,slot:"wing",val:id,own:!!(S.owned&&S.owned["wing:"+id])||S.unlockAll}));
  if(tab==="fx")return FX_LIST.map(([id,t,p])=>({id,key:"fx:"+id,t,p,slot:"fx",val:id,own:!!(S.owned&&S.owned["fx:"+id])||S.unlockAll}));
- return JR.map((j,i)=>({id:"p"+i,key:"pet:"+i,t:j[0],p:petPrice(i),slot:"pet",val:String(i),pet:i,own:!!(S.owned&&S.owned["pet:"+i]),met:petOpen(i)}))}
+ return JR.map((j,i)=>({id:"p"+i,key:"pet:"+i,t:j[0],p:petPrice(i),slot:"pet",val:String(i),pet:i,own:!!(S.owned&&S.owned["pet:"+i])||!!S.unlockAll,met:petOpen(i)}))}
 function shopCount(){let n=0,o=0;SHOP_TABS.forEach(([k])=>shopItems(k).forEach(x=>{n++;if(x.own)o++}));return [o,n]}
-function shop(){SCR="";G=null;S.owned=S.owned||{};const items=shopItems(SHOP_TAB);const [o,n]=shopCount();
+/* tutto ciò che si è indossato almeno una volta resta tuo: togliendolo non va ricomprato
+   (vale anche per gli oggetti avuti gratis con "Sblocca tutto", per un avatar rimasto dopo un azzeramento, ecc.) */
+function keepWorn(){S.owned=S.owned||{};const a=S.av||{};if(a.acc&&a.acc!=="none")S.owned[a.acc]=true;["eye","wing","fx","pet"].forEach(k=>{if(a[k]!=null&&a[k]!=="")S.owned[k+":"+a[k]]=true})}
+function shop(){SCR="";G=null;keepWorn();const items=shopItems(SHOP_TAB);const [o,n]=shopCount();
  const wearing=x=>x.slot==="acc"?S.av.acc===x.val:String(S.av[x.slot]??"")===x.val;
  app.innerHTML=`<div class="screen shop">
   <div class="hud"><button class="iconbtn" id="back" aria-label="Indietro">◀</button><div class="grow"><h2 class="white" style="font-size:20px">Il negozio di Ciapin</h2><div class="lbl" style="color:#cfc6ff">${o}/${n} oggetti collezionati</div></div><div class="hudbox coins">🪙 ${S.coins||0}</div></div>
@@ -4279,11 +4282,11 @@ function shop(){SCR="";G=null;S.owned=S.owned||{};const items=shopItems(SHOP_TAB
     ${w?`<button class="btn sm" data-off="${x.slot}">Togli</button>`:x.own?`<button class="btn sm b" data-wear="${x.key}">Indossa</button>`:lockW?`<span class="tag2">🔒 ${WORLDS[x.lockW].n}</span>`:lockPet?`<span class="tag2">🔒 Batti il boss intermedio ${diW(WORLDS[x.pet].n)}</span>`:`<button class="btn sm y" data-buy="${x.key}" ${(S.coins||0)>=x.p?"":"disabled"}>🪙 ${x.p}</button>`}
     ${!x.own&&x.freeW!=null?`<small class="muted">o gratis finendo ${WORLDS[x.freeW].n}</small>`:""}</div>`}).join("")}</div></div>`;
  $("#back").onclick=overworld;
- $("#undress").onclick=()=>{S.av.acc="none";["eye","wing","fx","pet"].forEach(k=>delete S.av[k]);save();SFX.tap();shop()};
+ $("#undress").onclick=()=>{keepWorn();S.av.acc="none";["eye","wing","fx","pet"].forEach(k=>delete S.av[k]);save();SFX.tap();shop()};
  app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{SHOP_TAB=b.dataset.tab;SFX.tap();shop()});
  const find=key=>items.find(x=>x.key===key);
- app.querySelectorAll("[data-wear]").forEach(b=>b.onclick=()=>{const x=find(b.dataset.wear);S.av[x.slot]=x.val;save();SFX.tap();shop()});
- app.querySelectorAll("[data-off]").forEach(b=>b.onclick=()=>{const k=b.dataset.off;if(k==="acc")S.av.acc="none";else delete S.av[k];save();SFX.tap();shop()});
+ app.querySelectorAll("[data-wear]").forEach(b=>b.onclick=()=>{const x=find(b.dataset.wear);S.av[x.slot]=x.val;keepWorn();save();SFX.tap();shop()});
+ app.querySelectorAll("[data-off]").forEach(b=>b.onclick=()=>{keepWorn();const k=b.dataset.off;if(k==="acc")S.av.acc="none";else delete S.av[k];save();SFX.tap();shop()});
  app.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>{const x=find(b.dataset.buy);if(!x||(S.coins||0)<x.p)return;S.coins-=x.p;S.owned[x.key]=true;S.av[x.slot]=x.val;save();SFX.unlock();haptic([30,40,30]);coinRain();
   say(x.pet!=null?"Welcome, my new friend!":"Wow! It's beautiful!");shop()});
 }
