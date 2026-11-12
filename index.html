@@ -10320,6 +10320,39 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
  const side=(i,d)=>{const a=P[Math.min(P.length-1,i*20)],b=P[Math.max(0,i*20-2)];const dx=a[0]-b[0],dz=a[1]-b[1],L=Math.hypot(dx,dz)||1;return [a[0]-dz/L*d,a[1]+dx/L*d]};
  const BP=side(9,4.6),JP=side(5,-3.6);const BY=nodeY(9),JY=nodeY(5);
  BM.p=[BP[0],BY,BP[1]];if(JM)JM.p=[JP[0],JY,JP[1]];
+ /* PAROLE NASCOSTE: 8 figure delle parole del mondo volano lungo il sentiero, tra una tappa e l'altra. Toccandole si sente la parola inglese
+    e si legge la traduzione; ogni parola trovata vale una moneta (una volta al giorno), tutte e 8 un premio. Si scelgono le parole che il bambino sa meno. */
+ const WF=[];let wfChip=null;
+ try{const d=today();if(!S.wf||S.wf.d!==d)S.wf={d,f:{},p:{}};const all=W.topics.flatMap(t=>t.words).filter(x=>x.e&&x.en.length<=14);
+  let pk=(S.wf.p[wi]||[]).map(en=>all.find(x=>x.en===en)).filter(Boolean);
+  if(pk.length<Math.min(8,all.length)){const seen=new Set(),m=x=>Math.round((typeof wmPeek==="function"?wmPeek(x).m:0)*2);pk=shuffle(all).sort((a,b)=>m(a)-m(b)).filter(x=>!seen.has(x.e)&&!seen.has(x.en)&&seen.add(x.e)&&seen.add(x.en)).slice(0,8);S.wf.p[wi]=pk.map(x=>x.en)}
+  const found=new Set(S.wf.f[wi]||[]);
+  const paint=(g,img)=>{const c=document.createElement("canvas");c.width=c.height=128;const x=c.getContext("2d");const gr=x.createRadialGradient(54,48,8,64,64,62);gr.addColorStop(0,"#ffffff");gr.addColorStop(1,g.has?"#c9f2d2":"#bfe6ff");x.fillStyle=gr;x.beginPath();x.arc(64,64,59,0,TAU);x.fill();x.lineWidth=6;x.strokeStyle=g.has?"#1f8a44":"#2a1535";x.stroke();
+   x.drawImage(img,24,24,80,80);if(g.has){x.fillStyle="#2fb857";x.beginPath();x.arc(104,24,18,0,TAU);x.fill();x.strokeStyle="#fff";x.lineWidth=6;x.beginPath();x.moveTo(95,24);x.lineTo(102,31);x.lineTo(113,17);x.stroke()}g.t=R.tex(c)};
+  pk.forEach((w,i)=>{const s0=(NS[i]+NS[i+1])/2,q=posAt(s0),L=Math.hypot(q.dx,q.dz)||1,sd=i%2?1:-1,dd=th.spaceSuit?3.6:2.9;
+   const g={t:null,c:[q.x-q.dz/L*dd*sd,q.y+2.3,q.z+q.dx/L*dd*sd],w:1.6,h:1.6,a:1,solid:1,word:w,has:found.has(w.en),y0:q.y+2.3,ph:i*1.7,pop:0};
+   const img=new Image();img.onload=()=>{if(run!==RUN)return;g.img=img;paint(g,img)};img.src=pixURL(w.e,96);sprites.push(g);WF.push(g)});
+  WF.paint=paint;
+  upd.push((t,dt)=>{for(const g of WF){g.pop=Math.max(0,g.pop-dt*2.2);const k=(g.has?1.3:1.9)*(1+Math.sin(t*2.4+g.ph)*.05+g.pop*.5);g.w=g.h=k;g.c[1]=g.y0+Math.sin(t*1.6+g.ph)*.22;g.a=g.has?.8:1}});
+  const hs=document.querySelector(".w3hud .w3st");if(hs&&WF.length){wfChip=document.createElement("button");wfChip.className="w3st w3wf";wfChip.setAttribute("aria-label","Parole nascoste");hs.parentNode.appendChild(wfChip);
+   wfChip.onclick=()=>tell(`<b>Parole nascoste!</b> In questo mondo volano ${WF.length} figure lungo il sentiero. Toccale: senti la parola in inglese e vinci una moneta. Trovale tutte per un premio!`,"happy")}
+ }catch(err){console.error("wf",err)}
+ const wfShow=()=>{if(wfChip)wfChip.innerHTML=`🔎 ${WF.filter(g=>g.has).length}/${WF.length}`};wfShow();
+ function wordTap(x,y,lim){let hit=null,bd=Math.min(lim,44);for(const g of WF){if(!g.t)continue;const sp=R.project(g.c);if(!sp)continue;const d=Math.hypot(sp[0]-x,sp[1]-y);if(d<bd){bd=d;hit=g}}if(!hit)return false;
+  const w=hit.word;say(w.en);hit.pop=1;bubble(`<b style="font-size:17px">${esc(w.en)}</b><br><small style="font-weight:800;color:#5a4a70">${esc(w.it)}</small>`,[hit.c[0],hit.y0+1.5,hit.c[2]],2600);sparkle([hit.c[0],hit.y0-1.2,hit.c[2]],hit.has?6:16);
+  if(!hit.has){hit.has=true;if(hit.img)WF.paint(hit,hit.img);S.wf.f[wi]=(S.wf.f[wi]||[]).concat([w.en]);const n=WF.filter(g=>g.has).length,all=n===WF.length;S.coins=(S.coins||0)+1+(all?10:0);save();haptic(25);SFX.ok&&SFX.ok();wfShow();
+   if(all){setTimeout(()=>{if(run!==RUN)return;SFX.win&&SFX.win();toastTop(`🔎 Hai trovato tutte le ${WF.length} parole nascoste! +10 🪙`)},700)}}
+  else SFX.tap&&SFX.tap();return true}
+ /* Ciapin compare solo all'ingresso del mondo, incita e se ne va */
+ function ciapCheer(first){if(run!==RUN||$(".modal")||$(".w3ciap"))return;const scr=document.querySelector(".w3d");if(!scr)return;const left=WF.filter(g=>!g.has).length;
+  const nm0=esc(S.name||""),lv=cur==null?null:cur+1;
+  const L=bossBeaten?[`Welcome back, ${nm0}!`,`Hai già battuto il boss: caccia alle 3 stelle!`]
+   :first?[`Let's go, ${nm0}!`,`Tocca le figure che volano: ogni parola è una moneta!`]
+   :cur===9?[`You can do it, ${nm0}!`,`Il boss ti aspetta: fagli vedere chi sei!`]
+   :pick([[`You can do it, ${nm0}!`,`Il livello ${lv} ti aspetta. Forza!`],[`Come on, ${nm0}!`,left?`Ci sono ancora ${left} parole nascoste da trovare.`:`Livello ${lv}: sei pront{a|o}?`],[`Let's play, ${nm0}!`,`Un livello alla volta fino al boss!`]]);
+  const d=document.createElement("button");d.className="w3ciap";d.setAttribute("aria-label","Chiudi");d.innerHTML=gtx(`${ciapImg(74,"happy","talk")}<span><b>${L[0]}</b>${L[1]}</span>`);scr.appendChild(d);
+  const bye=()=>{if(!d.isConnected||d.classList.contains("off"))return;d.classList.add("off");setTimeout(()=>d.remove(),450)};d.onclick=bye;setTimeout(bye,5200);
+  try{say(L[0].replace(/&[a-z#0-9]+;/g,""))}catch(e){}}
  /* prima visita: il guardiano appare accanto alla prima tappa, parla e poi cammina lungo il sentiero fino al suo posto */
  const firstVisit=!S.seen[wi];let bIntro=null;
  if(firstVisit&&!bossBeaten){const off=s0=>{const q=posAt(s0),L=Math.hypot(q.dx,q.dz)||1;return [q.x-q.dz/L*4.6,q.y,q.z+q.dx/L*4.6]};const s0=Math.min(NS[1]-1,NS[0]+4);const p0=off(s0);BM.p=p0;
@@ -10366,6 +10399,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
  cv.onpointerup=up;cv.onpointercancel=up;cv.onwheel=e=>{e.preventDefault();goal.dist=cl(goal.dist*(1+Math.sign(e.deltaY)*.09),7,52)};
  const rect=()=>cv.getBoundingClientRect();
  function tap(cx,cy){const r=rect(),x=cx-r.left,y=cy-r.top;let best=-1,bd=56;markers.forEach((m,i)=>{const s=R.project(V3.add(m.p,[0,.6,0]));if(!s)return;const d=Math.hypot(s[0]-x,s[1]-y);if(d<bd){bd=d;best=i}});
+  if(wordTap(x,y,best<0?1e9:bd))return;
   const ap=R.project(V3.add(A.root.p,[0,1.8,0]));if(ap&&Math.hypot(ap[0]-x,ap[1]-y)<46&&best<0){st.wave=1.6;say("Hello! I'm "+S.name+"!");return}
   const bp=R.project([BP[0],BY+4,BP[1]]);if(bp&&Math.hypot(bp[0]-x,bp[1]-y)<70&&best<0){bubble(gtx(bossBeaten?BOSS_LINES[wi][1]:BOSS_LINES[wi][0]),[BP[0],BY+7.4,BP[1]],3400);bossTease=1.6;SFX.tap();return}
   for(const g of gadgets){const sp=R.project(g.c.map((v,k)=>k===1?v+.7:v));if(sp&&Math.hypot(sp[0]-x,sp[1]-y)<40){SFX.tap();if(g.has){say(g.it.en);tell(`${g.it.e.startsWith("@")?"":g.it.e} <b>${esc(g.it.en)}</b> (${esc(g.it.it)}) è nel tuo zaino!`,"happy")}else tell(`Gadget misterioso! Si vince completando il <b>livello ${g.lv+1}</b>.`,"n");return}}
@@ -10395,10 +10429,10 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
  $("#w3prev").onclick=()=>{if(swallow){swallow=0;return}step(-1)};$("#w3next").onclick=()=>{if(swallow){swallow=0;return}if(st.node<9&&!levelOpen(wi,st.node+1)){SFX.no();tell("Prima completa il livello "+(st.node+1)+"!","sad");return}step(1)};
  const key=e=>{if(run!==RUN||!document.body.contains(CV)){removeEventListener("keydown",key);return}if($(".modal"))return;if(cine){cineEnd();return}if(e.key==="ArrowRight")$("#w3next").click();else if(e.key==="ArrowLeft")$("#w3prev").click();else if(e.key==="Enter"&&!st.walk)askLevel(wi,st.node)};addEventListener("keydown",key);
  /* prima visita: presentazione di Ciapin */
- if(!S.seen[wi]){S.seen[wi]=1;save();const intro=()=>{};
+ if(!S.seen[wi]){S.seen[wi]=1;save();const intro=()=>ciapCheer(true);
   if(bIntro){let fired=0;const f=()=>{if(fired)return;fired=1;setTimeout(intro,1400)};bIntro.done=f;afterCine(f,window.__lockQ?90000:16000,1)}else afterCine(intro,2300)}
  else if(false){setTimeout(()=>{if(run===RUN)modal(`${ciapImg(96,"wave")}<h2 style="font-size:22px">${W.n}</h2><div class="say" style="text-align:left">${W.intro}</div><button class="btn" data-close>ANDIAMO! ▶</button>`)},2300)}
- else afterCine(()=>run===RUN&&!st.walk&&panel(st.node),2200);
+ else{afterCine(()=>run===RUN&&!st.walk&&panel(st.node),2200);if(from==null)afterCine(()=>ciapCheer(false),900)}
  /* ---------- effetti particellari ---------- */
  const FX=[];const dustT=mixc(th.dust||"#e8dcc0","#ffffff",.2);
  const spawn=(k,p,v,life,size,o)=>{const s=Object.assign({t:tx(k),c:p.slice(),w:size,h:size,a:1,v,life,age:0,s0:size,tint:null},o||{});FX.push(s);sprites.push(s);return s};
@@ -11401,7 +11435,15 @@ initCloud();
  @media (prefers-reduced-motion:reduce){.revcta .rvi,.cfx{animation:none}}
  .w3cine::after{content:"Tocca per saltare ▸";position:absolute;right:14px;bottom:calc(3.2% + env(safe-area-inset-bottom,0px));font-weight:900;font-size:13px;letter-spacing:.04em;color:#fff;opacity:0;animation:w3skipIn .6s 1.6s both}
  .w3cine.off::after{display:none}
- @keyframes w3skipIn{to{opacity:.6}}`;document.head.appendChild(st);
+ @keyframes w3skipIn{to{opacity:.6}}
+ .w3st.w3wf{position:absolute;left:0;top:54px;font:inherit;font-weight:900;font-size:15px;padding:4px 10px;cursor:pointer;white-space:nowrap;pointer-events:auto;color:var(--ink,#2a1535)}
+ .w3d.cine .w3wf{display:none}
+ .w3ciap{position:absolute;left:10px;top:calc(108px + env(safe-area-inset-top,0px));z-index:4;display:flex;align-items:center;gap:6px;max-width:min(calc(100vw - 84px),380px);padding:0;border:0;background:none;font:inherit;text-align:left;cursor:pointer;animation:w3ciapIn .5s cubic-bezier(.2,1.4,.4,1) both}
+ .w3ciap span{background:#fff;border:3px solid var(--ink,#2a1535);border-radius:18px;box-shadow:0 4px 0 var(--ink,#2a1535);padding:8px 12px;font-weight:800;font-size:15px;line-height:1.25;color:var(--ink,#2a1535)}
+ .w3ciap b{display:block;font-size:17px;color:#1f8a44}
+ .w3ciap.off{transition:transform .4s,opacity .4s;transform:translateX(-120%);opacity:0}
+ .w3d.cine .w3ciap{display:none}
+ @keyframes w3ciapIn{from{transform:translateX(-120%)}to{transform:none}}`;document.head.appendChild(st);
 
  const SENT=["fillc","fillt","order","lsent"],CHOICE=["listen","read","pic"];
  const play=()=>G&&!G.test&&!G.cls;
