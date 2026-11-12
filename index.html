@@ -971,7 +971,9 @@ body:has(.w3cine:not(.off)) .w3hint{opacity:0!important}
  <filter id="fDrop" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="1.5" flood-color="#231d4f" flood-opacity=".35"/></filter>
 <pattern id="pStripe" width="14" height="10" patternUnits="userSpaceOnUse"><rect width="14" height="10" fill="#fff"/><rect width="14" height="5" fill="#e5484d"/></pattern>
 </defs></svg>
-<div class="app" id="app"></div>
+<div class="app" id="app"><div id="boot" role="status" aria-label="Caricamento" style="position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(#4f86e6 0%,#9fb8f0 45%,#ffd2a6 100%);font:900 20px system-ui,sans-serif;color:#fff;text-align:center">
+<style>#boot b{font-size:clamp(40px,13vw,72px);line-height:.95;letter-spacing:.03em;color:#ffd23f;text-shadow:0 4px 0 #b3541e,0 8px 0 #231d4f}#boot em{font-style:normal;display:inline-block;margin-top:8px;padding:4px 16px;border-radius:12px;background:#2a7de1;font-size:clamp(18px,6vw,30px);letter-spacing:.2em;box-shadow:0 5px 0 #231d4f}#boot p{margin:0;text-shadow:0 2px 0 #231d4f}#boot i{display:inline-block;width:12px;height:12px;margin:0 4px;border-radius:50%;background:#fff;animation:bootd 1s infinite ease-in-out}#boot i:nth-child(2){animation-delay:.15s}#boot i:nth-child(3){animation-delay:.3s}@keyframes bootd{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-10px);opacity:1}}</style>
+<div><b>CIAP</b><br><em>ENGLISH</em></div><p>Ciapin sta preparando i mondi…</p><div><i></i><i></i><i></i></div></div></div>
 <canvas class="confetti" id="confetti" hidden></canvas>
 
 <script>
@@ -3713,7 +3715,8 @@ function title(){G=null;try{closeModal()}catch(e){}const st=S.started;const nW=W
    <p class="tfoot3">Fatto con ❤️ a Vigevano · Ciap-English</p>
   </section></div>`;
  const root=app.querySelector(".tpage3"),host=$("#t3d");tparBind();tparLoop(root);
- let ok3=false;try{ok3=typeof W3D!=="undefined"&&W3D.titleScene&&W3D.titleScene(host,TPAR)}catch(e){ok3=false}if(!ok3)host.classList.add("off");
+ /* l'isola 3D si costruisce DOPO il primo disegno: la pagina compare subito, il diorama arriva in dissolvenza */
+ {const boot3=()=>{if(!host.isConnected)return;let ok3=false;try{ok3=typeof W3D!=="undefined"&&W3D.titleScene&&W3D.titleScene(host,TPAR)}catch(e){ok3=false}if(!ok3)host.classList.add("off")};if(window.__t3sync)boot3();else requestAnimationFrame(()=>setTimeout(boot3,60))}
  const go=()=>{SFX.unlock();if(!st){say("Hello! Let's play!");chooseGender();return}say("Welcome back, "+S.name+"!");if(nx){S.world=nx.world;save();worldMap(nx.world)}else overworld()};
  $("#go").onclick=go;$("#go2").onclick=go;
  const scrollW=()=>{const t=$("#tw");t&&t.scrollIntoView({behavior:"smooth",block:"start"})};$("#cue").onclick=scrollW;
@@ -11206,7 +11209,7 @@ function dsaOn(){return !!(S&&S.dsa)}
    if(q.t==="fillc"&&q.opts&&q.opts.length>2){const wrong=q.opts.filter(o=>o!==s.a);q.opts=shuffle([s.a,wrong[0]])}
    if(q.t==="lsent"&&q.vs&&q.vs.length>2){const ok=q.vs.find(v=>v.a===s.a);q.vs=shuffle([ok,q.vs.find(v=>v.a!==s.a)])}return q}
   return SQ0.apply(this,arguments)};
- const MQ0=mkQ;mkQ=function(t,w,pool,st){if(dsaOn()){if(t==="type"||t==="dict")t=t==="type"?"tiles":"listen";if(t==="spell"){const q=MQ0.call(this,t,w,pool,st);q.opts=shuffle([w.en,...q.opts.filter(o=>o!==w.en).slice(0,2)]);return q}return MQ0.call(this,t,w,pool,Math.min(st,0))}
+ const MQ0=mkQ;mkQ=function(t,w,pool,st){if(dsaOn()){if(t==="type"||t==="dict")t=t==="type"?"tiles":"listen";if(t==="spell"){const q=MQ0.call(this,t,w,pool,st);/* le parole corte (IT, PE) diventano una domanda di lettura con le figure: lì le alternative restano com'erano */if(q.t==="spell")q.opts=shuffle([w.en,...q.opts.filter(o=>o!==w.en).slice(0,2)]);return q}return MQ0.call(this,t,w,pool,Math.min(st,0))}
   return MQ0.apply(this,arguments)};
 })();
 
@@ -11378,6 +11381,92 @@ initCloud();
     const bar=document.createElement("div");bar.className="tgobar";bar.innerHTML=`<div class="tsum"><b>${esc(what)}</b>${c.n||10} domande · ${pl} ${c.mode==="team"?"squadre":"partecipanti"}</div><button class="btn" id="tgo2">▶ AVVIA</button>`;
     sc.appendChild(bar);bar.querySelector("#tgo2").onclick=()=>go.click()}
    if(again)requestAnimationFrame(()=>scrollTo(0,y))}catch(e){console.error(e)}return r}}
+})();
+
+/* ================= APPRENDIMENTO 2.0 — la memoria lunga =================
+   1) Anche le FRASI entrano nel ripasso a intervalli (prima solo le parole): la frase sbagliata torna dopo 1, 3, 7, 30 giorni.
+   2) Errore che insegna: scegliendo la figura o la parola sbagliata, Ciapin dice che cos'era quella scelta («ruler» = righello).
+   3) Memoria delle confusioni: la parola scambiata torna come alternativa finché le due non si distinguono al primo colpo.
+   4) Ripasso proporzionato all'arretrato: più parole scadute = una domanda di ripasso in più nei livelli, ripasso del giorno in evidenza.
+   5) Le parole sapute bene si rivedono sempre più di rado: 30 → 60 → 120 giorni (restano nella scatola 5). */
+(function(){
+ const st=document.createElement("style");st.textContent=`
+ .cfx{display:flex;align-items:center;gap:8px;margin-top:6px;padding:5px 10px;border-radius:14px;background:#fff3d6;border:2px solid #f0c060;font-size:16px;font-weight:800;color:#4a3a20;line-height:1.25;animation:pop .25s}
+ .cfx img{width:34px;height:34px;flex:none}.cfx b{color:#b3261e}
+ .revcta{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:var(--ink);background:linear-gradient(90deg,#d8f5ff,#e6dcff);border:3px solid var(--line);border-radius:18px;box-shadow:0 4px 0 var(--line);padding:8px 12px;margin-bottom:8px;cursor:pointer}
+ .revcta:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+ .revcta .rvi{font-size:30px;flex:none;animation:rvtick 2.4s ease-in-out infinite}.revcta span.rvt{flex:1;min-width:0;display:flex;flex-direction:column}
+ .revcta b{font-family:var(--title);font-size:16px}.revcta small{font-size:14px;font-weight:800;color:#4a4470}.revcta i{font-style:normal;font-weight:900;font-size:15px;background:var(--sun);border:2px solid var(--line);border-radius:999px;padding:4px 10px;white-space:nowrap}
+ @keyframes rvtick{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+ @media (prefers-reduced-motion:reduce){.revcta .rvi,.cfx{animation:none}}
+ .w3cine::after{content:"Tocca per saltare ▸";position:absolute;right:14px;bottom:calc(3.2% + env(safe-area-inset-bottom,0px));font-weight:900;font-size:13px;letter-spacing:.04em;color:#fff;opacity:0;animation:w3skipIn .6s 1.6s both}
+ .w3cine.off::after{display:none}
+ @keyframes w3skipIn{to{opacity:.6}}`;document.head.appendChild(st);
+
+ const SENT=["fillc","fillt","order","lsent"],CHOICE=["listen","read","pic"];
+ const play=()=>G&&!G.test&&!G.cls;
+ /* ---- parole sapute bene: 30 → 60 → 120 giorni ---- */
+ {const r0=srsRight;srsRight=function(k){const s=S.srs[k];if(s&&s.b>=5){s.r=Math.min(2,(s.r||0)+1);s.d=Date.now()+30*Math.pow(2,s.r)*864e5;return}return r0.apply(this,arguments)}}
+ /* ---- ripasso a intervalli delle frasi (salvato in S.ssrs: "mondo:indice" → {b,d}) ---- */
+ const SS=()=>S.ssrs||(S.ssrs={});
+ const sIdx=s=>s&&s.w!=null&&WORLDS[s.w]&&WORLDS[s.w].s?WORLDS[s.w].s.indexOf(s):-1;
+ const sGet=k=>{const p=String(k).split(":"),W=WORLDS[+p[0]];return W&&W.s?W.s[+p[1]]:null};
+ const sDue=()=>{const o=SS(),now=Date.now();return Object.keys(o).filter(k=>o[k].d<=now&&sGet(k)).sort((a,b)=>o[a].b-o[b].b||o[a].d-o[b].d)};
+ const sWrong=s=>{const i=sIdx(s);if(i>=0)SS()[s.w+":"+i]={b:1,d:Date.now()+6e5}};/* non subito: nel livello la frase torna già da sola */
+ const sRight=s=>{const i=sIdx(s),x=i>=0&&SS()[s.w+":"+i];if(!x)return;x.b=Math.min(5,x.b+1);x.d=Date.now()+[0,0,1,3,7,30][x.b]*864e5};
+ const sentQ=(k,m)=>{const s=sGet(k),b=SS()[k].b;const q=sQ(b<=2||m<=0?"fillc":Math.random()<.5?"order":"fillt",s,m);q.rev=1;q.srev=1;return q};
+ const dueAll=()=>srsDue().length+sDue().length;
+ window.__learn={sDue,dueAll,SS};
+ /* ---- memoria delle confusioni ---- */
+ const CF=()=>S.cf||(S.cf={});
+ const cfAdd=(w,en)=>{const k=wkey(w),a=(CF()[k]||[]).filter(x=>x!==en);a.unshift(en);CF()[k]=a.slice(0,2)};
+ const cfDrop=(w,en)=>{const k=wkey(w),a=(CF()[k]||[]).filter(x=>x!==en);if(a.length)CF()[k]=a;else delete CF()[k]};
+ {const m0=mkQ;mkQ=function(t,w,pool){const q=m0.apply(this,arguments);
+   try{if(q&&q.w&&q.opts&&CHOICE.includes(q.t)&&S.cf){const c=S.cf[wkey(q.w)];if(c)for(const en of c){if(q.opts.some(o=>o.en===en)){q.cf=en;break}
+      const x=(pool||[]).find(p=>p.en===en)||ALLWORDS.find(p=>p.en===en);if(!x||!x.e||x.e===q.w.e||x.it===q.w.it||q.opts.some(o=>o.e===x.e))continue;
+      const idx=q.opts.map((o,i)=>o===q.w?-1:i).filter(i=>i>=0);if(!idx.length)break;q.opts[idx[Math.random()*idx.length|0]]=x;q.cf=en;break}}}catch(e){}
+   return q}}
+ /* ---- errori e risposte giuste: frasi nel ripasso, confusioni risolte ---- */
+ {const m0=markMiss;markMiss=function(q){const was=q.missed;const r=m0.apply(this,arguments);
+   try{if(!was&&q.missed&&play()&&q.s&&SENT.includes(q.t))sWrong(q.s)}catch(e){}return r}}
+ {const g0=good;good=function(q){const was=q.done,miss=q.missed;const r=g0.apply(this,arguments);
+   try{if(!was&&q.done&&!miss&&play()){if(q.srev&&q.s)sRight(q.s);if(q.cf&&q.w)cfDrop(q.w,q.cf);save()}}catch(e){}return r}}
+ /* ---- errore che insegna: che cos'era la scelta sbagliata ---- */
+ {const R0=renderQ;renderQ=function(){const r=R0.apply(this,arguments);
+   try{const q=G&&G.Q[G.i];if(q&&q.w&&q.opts&&CHOICE.includes(q.t))app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+      if(q.done||b.dataset.a===q.w.en||!b.classList.contains("no")||b.dataset.cfx)return;b.dataset.cfx=1;const o=q.opts.find(x=>x.en===b.dataset.a);if(!o)return;
+      if(play())cfAdd(q.w,o.en);const gb=$("#gb");if(!gb)return;gb.querySelectorAll(".cfx").forEach(x=>x.remove());
+      gb.insertAdjacentHTML("beforeend",`<div class="cfx"><img src="${pixURL(o.e)}" alt=""><span>${q.t==="pic"?"":"Quella è "}<b>${esc(o.en)}</b> = ${esc(o.it)}</span></div>`)}))}catch(e){console.error(e)}
+   return r}}
+ /* ---- nei livelli: una frase scaduta e, se l'arretrato è grande, una parola in più (mai nelle sfide con i boss) ---- */
+ {const b0=buildLevel;buildLevel=function(w,l){const L=b0.apply(this,arguments);
+   try{const P=LEVEL_PLAN[l];if(L&&L.Q&&P&&P.k!=="boss"&&l!==5){const m=mech(w);let room=typeof dsaOn==="function"&&dsaOn()?1:2;
+     const sd=sDue();if(sd.length&&room>0){L.Q.splice(Math.min(L.Q.length,6),0,sentQ(sd[0],m));room--}
+     const here=new Set(allWorld(WORLDS[w]).map(wkey)),used=new Set(L.Q.filter(q=>q.rev&&q.w).map(q=>wkey(q.w)));
+     const due=srsDue().filter(k=>!here.has(k)&&!used.has(k));const n=Math.min(room,due.length>=12?2:due.length>=5?1:0);
+     shuffle(due).sort((a,b)=>S.srs[a].b-S.srs[b].b).slice(0,n).forEach((k,i)=>{const p=k.split("|"),x=ALLWORDS.find(y=>y.w==p[0]&&y.en===p[1]);if(!x)return;const s=S.srs[k].b;
+      const q=mkQ(s<=1?(m<0?"listen":"pic"):s<=2?(m<0?"tiles":"spell"):m<0?"tiles":"type",x,allWorld(WORLDS[x.w]),m);q.rev=1;L.Q.splice(Math.min(L.Q.length,8+i*2),0,q)})}}catch(e){console.error(e)}
+   return L}}
+ /* ---- il ripasso: parole e frasi insieme, più lungo se c'è arretrato ---- */
+ {const r0=review;review=function(){const sk=sDue();if(!sk.length)return r0.apply(this,arguments);if(blockedByTime())return;SCR="";
+   const keys=srsDue();const ws=shuffle(keys).sort((a,b)=>S.srs[a].b-S.srs[b].b).slice(0,keys.length>=12?7:5).map(k=>{const p=k.split("|");return ALLWORDS.find(x=>x.w==p[0]&&x.en===p[1])}).filter(Boolean);
+   const Q=ws.map(x=>{const pool=allWorld(WORLDS[x.w]),m=mech(x.w),r=Math.random();return mkQ(m<0?(r<.5?"tiles":"listen"):r<.6?"type":r<.8?"spell":"dict",x,pool,m)});
+   sk.slice(0,ws.length>=5?2:3).forEach((k,i)=>{const s=sGet(k);Q.splice(Math.min(Q.length,2+i*3),0,sentQ(k,mech(s.w)))});
+   G={w:S.world,l:-1,W:WORLDS[S.world],st:1,Q,i:0,miss:0,boss:false,t0:Date.now(),newW:[],review:true};renderQ()}}
+ /* ---- ripasso del giorno in evidenza sulla mappa dei mondi ---- */
+ {const o0=overworld;overworld=function(){const r=o0.apply(this,arguments);
+   try{const nw=srsDue().length,ns=sDue().length,n=nw+ns;const hb=$("#hrev");
+    if(hb&&ns){let bd=hb.querySelector(".badge");if(!bd){bd=document.createElement("span");bd.className="badge";hb.appendChild(bd)}bd.textContent=n}
+    const qp=app.querySelector(".panel.quests");
+    if(qp&&n>=3&&!qp.querySelector(".revcta")){const what=[nw?`${nw} parol${nw===1?"a":"e"}`:"",ns?`${ns} fras${ns===1?"e":"i"}`:""].filter(Boolean).join(" e ");
+     qp.insertAdjacentHTML("afterbegin",`<button class="revcta" id="revcta"><span class="rvi">⏰</span><span class="rvt"><b>Ripasso del giorno</b><small>${what} da rinfrescare: 2 minuti e restano in memoria!</small></span><i>+5 🪙</i></button>`);
+     qp.querySelector("#revcta").onclick=()=>{SFX.tap&&SFX.tap();review()}}}catch(e){console.error(e)}
+   return r}}
+ /* ---- pagina iniziale: il ripasso conta anche le frasi ---- */
+ {const t0=title;title=function(){const r=t0.apply(this,arguments);
+   try{const ns=S.started?sDue().length:0;const dk=$("#dk_rip");if(dk&&ns){const n=ns+srsDue().length;dk.onclick=()=>{SFX.unlock();SFX.tap&&SFX.tap();review()};
+     const ic=dk.querySelector(".dki");if(ic){let bd=ic.querySelector("i");if(!bd){bd=document.createElement("i");ic.appendChild(bd)}bd.textContent=n>99?"99+":n}}}catch(e){}
+   return r}}
 })();
 
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
