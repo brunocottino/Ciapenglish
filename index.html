@@ -4489,16 +4489,40 @@ const PR={
  disc(r,seg=20){const t=[];for(let i=0;i<seg;i++){const a0=i/seg*TAU,a1=(i+1)/seg*TAU;t.push([[0,0,0],[Math.cos(a1)*r,0,Math.sin(a1)*r],[Math.cos(a0)*r,0,Math.sin(a0)*r]])}return t}};
 
 /* ---------- geometrie ---------- */
+const GID=M4.id();let GSB=null;
+/* memoria di lavoro riusata da Geo.add (cresce solo quando serve) */
+function geoScratch(nv){if(!GSB||GSB.n<nv){const n=Math.max(nv,(GSB?GSB.n:0)*2,1024);let hs=1;while(hs<n*2)hs<<=1;
+ GSB={n,X:new Float64Array(n*3),FN:new Float64Array(n),VI:new Int32Array(n),KX:new Int32Array(n),KY:new Int32Array(n),KZ:new Int32Array(n),AX:new Float64Array(n),AY:new Float64Array(n),AZ:new Float64Array(n),H:new Int32Array(hs),mask:hs-1}}return GSB}
 class Geo{constructor(){this.p=[];this.n=[];this.c=[];this.s=[]}
  /* divide la geometria in tasselli (per il culling): ogni triangolo va nel tassello del suo baricentro */
  split(tile){const out=new Map(),P=this.p;for(let i=0;i<P.length;i+=9){const cx=(P[i]+P[i+3]+P[i+6])/3,cz=(P[i+2]+P[i+5]+P[i+8])/3;const k=Math.floor(cx/tile)+","+Math.floor(cz/tile);let g=out.get(k);if(!g){g=new Geo();out.set(k,g)}
    for(const a of ["p","n","c","s"]){const A=this[a],B=g[a];for(let j=0;j<9;j++)B.push(A[i+j])}}return [...out.values()]}
- add(tris,m,col,o){o=o||{};m=m||M4.id();const smooth=o.smooth,cf=typeof col==="function"?col:null,cc=cf?null:hex(col);
-  const W=tris.map(t=>t.map(q=>M4.pt(m,q)));const key=q=>((q[0]*500)|0)+","+((q[1]*500)|0)+","+((q[2]*500)|0);const acc=new Map();
-  let cen=[0,0,0];W.forEach(t=>t.forEach(q=>{cen[0]+=q[0];cen[1]+=q[1];cen[2]+=q[2]}));cen=V3.sc(cen,1/(W.length*3||1));
-  W.forEach(t=>{let fn=V3.norm(V3.cross(V3.sub(t[1],t[0]),V3.sub(t[2],t[0])));if(o.fix!==false){const tc=V3.sc(V3.add(V3.add(t[0],t[1]),t[2]),1/3),dd=V3.dot(fn,V3.sub(tc,cen));if(o.up?fn[1]<0:(dd<-1e-6||(Math.abs(dd)<1e-6&&fn[1]<0))){const x=t[1];t[1]=t[2];t[2]=x;fn=V3.sc(fn,-1)}}
-   t.fn=fn;t.forEach(q=>{const k=key(q),a=acc.get(k);if(a){a[0]+=fn[0];a[1]+=fn[1];a[2]+=fn[2]}else acc.set(k,fn.slice())})});
-  W.forEach(t=>{let cm=cc;if(cf){cm=hex(cf(t))}t.forEach(q=>{const sn=V3.norm(acc.get(key(q)));this.p.push(q[0],q[1],q[2]);const nn=smooth?sn:t.fn;this.n.push(nn[0],nn[1],nn[2]);this.s.push(sn[0],sn[1],sn[2]);this.c.push(cm[0],cm[1],cm[2])})});return this}
+ /* stessa geometria di prima, ma senza chiavi di testo né array temporanei per ogni vertice: i mondi si costruiscono molto più in fretta.
+    I vertici uguali (arrotondati a 1/500) si riconoscono con una tabella hash di numeri interi, per le normali morbide. */
+ add(tris,m,col,o){o=o||{};m=m||GID;const smooth=o.smooth,cf=typeof col==="function"?col:null,cc=cf?null:hex(col);const nt=tris.length,nv=nt*3;if(!nt)return this;
+  const B=geoScratch(nv),X=B.X,FN=B.FN,VI=B.VI,KX=B.KX,KY=B.KY,KZ=B.KZ,AX=B.AX,AY=B.AY,AZ=B.AZ,H=B.H;let mask=15;while(mask<nv*2)mask=mask*2+1;
+  const m0=m[0],m1=m[1],m2=m[2],m4=m[4],m5=m[5],m6=m[6],m8=m[8],m9=m[9],m10=m[10],m12=m[12],m13=m[13],m14=m[14];
+  let cx=0,cy=0,cz=0;
+  for(let i=0;i<nt;i++){const t=tris[i];for(let j=0;j<3;j++){const q=t[j],x=q[0],y=q[1],z=q[2],k=(i*3+j)*3;
+    const wx=m0*x+m4*y+m8*z+m12,wy=m1*x+m5*y+m9*z+m13,wz=m2*x+m6*y+m10*z+m14;X[k]=wx;X[k+1]=wy;X[k+2]=wz;cx+=wx;cy+=wy;cz+=wz}}
+  cx/=nv;cy/=nv;cz/=nv;
+  const fix=o.fix!==false,up=o.up;H.fill(-1,0,mask+1);let nu=0;
+  for(let i=0;i<nt;i++){const a=i*9;
+   const e1x=X[a+3]-X[a],e1y=X[a+4]-X[a+1],e1z=X[a+5]-X[a+2],e2x=X[a+6]-X[a],e2y=X[a+7]-X[a+1],e2z=X[a+8]-X[a+2];
+   let nx=e1y*e2z-e1z*e2y,ny=e1z*e2x-e1x*e2z,nz=e1x*e2y-e1y*e2x;const l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;
+   if(fix){const tx=(X[a]+X[a+3]+X[a+6])/3,ty=(X[a+1]+X[a+4]+X[a+7])/3,tz=(X[a+2]+X[a+5]+X[a+8])/3,dd=nx*(tx-cx)+ny*(ty-cy)+nz*(tz-cz);
+    if(up?ny<0:(dd<-1e-6||(Math.abs(dd)<1e-6&&ny<0))){for(let k=3;k<6;k++){const v=X[a+k];X[a+k]=X[a+k+3];X[a+k+3]=v}nx=-nx;ny=-ny;nz=-nz}}
+   FN[i*3]=nx;FN[i*3+1]=ny;FN[i*3+2]=nz;
+   for(let j=0;j<3;j++){const k=a+j*3,xi=(X[k]*500)|0,yi=(X[k+1]*500)|0,zi=(X[k+2]*500)|0;
+    let h=(Math.imul(xi,73856093)^Math.imul(yi,19349663)^Math.imul(zi,83492791))&mask,u;
+    for(;;){u=H[h];if(u<0){u=nu++;H[h]=u;KX[u]=xi;KY[u]=yi;KZ[u]=zi;AX[u]=nx;AY[u]=ny;AZ[u]=nz;break}if(KX[u]===xi&&KY[u]===yi&&KZ[u]===zi){AX[u]+=nx;AY[u]+=ny;AZ[u]+=nz;break}h=(h+1)&mask}
+    VI[i*3+j]=u}}
+  const P=this.p,N=this.n,C=this.c,S2=this.s;
+  for(let i=0;i<nt;i++){const a=i*9,fx=FN[i*3],fy=FN[i*3+1],fz=FN[i*3+2];let cm=cc;
+   if(cf){const t=[[X[a],X[a+1],X[a+2]],[X[a+3],X[a+4],X[a+5]],[X[a+6],X[a+7],X[a+8]]];t.fn=[fx,fy,fz];cm=hex(cf(t))}
+   for(let j=0;j<3;j++){const k=a+j*3,u=VI[i*3+j];let sx=AX[u],sy=AY[u],sz=AZ[u];const l=Math.hypot(sx,sy,sz)||1;sx/=l;sy/=l;sz/=l;
+    P.push(X[k],X[k+1],X[k+2]);if(smooth)N.push(sx,sy,sz);else N.push(fx,fy,fz);S2.push(sx,sy,sz);C.push(cm[0],cm[1],cm[2])}}
+  return this}
  raw(p,n,c){for(let i=0;i<p.length;i++){this.p.push(p[i]);this.n.push(n[i]);this.s.push(n[i]);this.c.push(c[i])}return this}
  get size(){return this.p.length/3}}
 
@@ -9471,7 +9495,16 @@ function decalNode(node,t,lp,lu,ln,w,h,uv,off){const s=decalQ(t,[0,-999,0],[0,1,
   const U=[pu[0]-b[0],pu[1]-b[1],pu[2]-b[2]],N=[pn[0]-b[0],pn[1]-b[1],pn[2]-b[2]];const sc=Math.hypot(...U)/Math.hypot(...lu);const u=V3n(U),nn=V3n(N);s.c=b;s.U=u;s.N=nn;s.R=V3x(u,nn);s.w=w*sc;s.h=h*sc});return s}
 /* rumore e utilità di pittura */
 function hdRnd(seed){let s=seed>>>0||1;return ()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
-function hdNoise(c,W,H,amt,seed,step){const r=hdRnd(seed||7);step=step||2;for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step){const v=(r()-.5)*amt;c.fillStyle=v>0?`rgba(255,255,255,${v})`:`rgba(0,0,0,${-v})`;c.fillRect(x,y,step,step)}}
+function hdNoiseSlow(c,W,H,amt,seed,step){const r=hdRnd(seed||7);step=step||2;for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step){const v=(r()-.5)*amt;c.fillStyle=v>0?`rgba(255,255,255,${v})`:`rgba(0,0,0,${-v})`;c.fillRect(x,y,step,step)}}
+/* grana della pittura: stesso disegno di prima, ma scritto direttamente nei pixel invece di decine di migliaia di rettangoli (le texture HD si preparano molto più in fretta) */
+function hdNoise(c,W,H,amt,seed,step){let fast=false;try{fast=!window.__hdSlow&&c.getTransform().isIdentity&&c.globalAlpha===1&&c.globalCompositeOperation==="source-over"}catch(e){}
+ if(!fast)return hdNoiseSlow(c,W,H,amt,seed,step);
+ const r=hdRnd(seed||7);step=step||2;const w=Math.min(W,c.canvas.width),h=Math.min(H,c.canvas.height);if(w<=0||h<=0)return;const img=c.getImageData(0,0,w,h),d=img.data;
+ for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step){const v=(r()-.5)*amt;const a=Math.round(Math.min(1,Math.abs(v))*255)/255;if(!a||y>=h||x>=w)continue;const s=v>0?255:0,y1=Math.min(h,y+step),x1=Math.min(w,x+step);
+  for(let py=y;py<y1;py++)for(let px=x;px<x1;px++){const i=(py*w+px)*4,A=d[i+3]/255;
+   if(A===1){d[i]=Math.round(d[i]+(s-d[i])*a);d[i+1]=Math.round(d[i+1]+(s-d[i+1])*a);d[i+2]=Math.round(d[i+2]+(s-d[i+2])*a)}
+   else{const oA=a+A*(1-a);for(let k=0;k<3;k++)d[i+k]=Math.round((s*a+d[i+k]*A*(1-a))/oA);d[i+3]=Math.round(oA*255)}}}
+ c.putImageData(img,0,0)}
 function hdArchPath(c,x0,y0,x1,y1){/* rettangolo con arco a tutto sesto in alto: y0 = imposta dell'arco */const r=(x1-x0)/2;c.beginPath();c.moveTo(x0,y1);c.lineTo(x0,y0);c.arc(x0+r,y0,r,Math.PI,0);c.lineTo(x1,y1);c.closePath()}
 
 
@@ -10329,8 +10362,15 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
   const found=new Set(S.wf.f[wi]||[]);
   const paint=(g,img)=>{const c=document.createElement("canvas");c.width=c.height=128;const x=c.getContext("2d");const gr=x.createRadialGradient(54,48,8,64,64,62);gr.addColorStop(0,"#ffffff");gr.addColorStop(1,g.has?"#c9f2d2":"#bfe6ff");x.fillStyle=gr;x.beginPath();x.arc(64,64,59,0,TAU);x.fill();x.lineWidth=6;x.strokeStyle=g.has?"#1f8a44":"#2a1535";x.stroke();
    x.drawImage(img,24,24,80,80);if(g.has){x.fillStyle="#2fb857";x.beginPath();x.arc(104,24,18,0,TAU);x.fill();x.strokeStyle="#fff";x.lineWidth=6;x.beginPath();x.moveTo(95,24);x.lineTo(102,31);x.lineTo(113,17);x.stroke()}g.t=R.tex(c)};
-  pk.forEach((w,i)=>{const s0=(NS[i]+NS[i+1])/2,q=posAt(s0),L=Math.hypot(q.dx,q.dz)||1,sd=i%2?1:-1,dd=th.spaceSuit?3.6:2.9;
-   const g={t:null,c:[q.x-q.dz/L*dd*sd,q.y+2.3,q.z+q.dx/L*dd*sd],w:1.6,h:1.6,a:1,solid:1,word:w,has:found.has(w.en),y0:q.y+2.3,ph:i*1.7,pop:0};
+  /* posto della figura: di lato al sentiero, mai dentro un monumento; sempre sopra il terreno lì sotto (pendii dell'Everest, colline) */
+  const mon=(ctx.occ||[]).slice(ctx.nodes.length+2),inMon=(x,z)=>mon.some(o=>Math.hypot(x-o[0],z-o[1])<o[2]*.9);
+  const gy=(x,z)=>{let y=ctx.H(x,z);if(th.floorAt){const f=th.floorAt(x,z);if(f!=null&&f>y)y=f}return y};
+  pk.forEach((w,i)=>{const sm=(NS[i]+NS[i+1])/2,span=Math.max(0,(NS[i+1]-NS[i])/2-3),sd=i%2?1:-1,dd=th.spaceSuit?3.6:2.9;let q=posAt(sm),pos=null;
+   for(const ds of [0,3,-3,6,-6,9,-9]){if(Math.abs(ds)>span&&ds)continue;const qq=posAt(sm+ds),L=Math.hypot(qq.dx,qq.dz)||1;
+    for(const [k,d] of [[sd,dd],[-sd,dd],[sd,dd*.55],[-sd,dd*.55]]){const x=qq.x-qq.dz/L*d*k,z=qq.z+qq.dx/L*d*k;if(!inMon(x,z)){pos=[x,z];q=qq;break}}if(pos)break}
+   if(!pos){const L=Math.hypot(q.dx,q.dz)||1;pos=[q.x-q.dz/L*dd*sd,q.z+q.dx/L*dd*sd]}
+   const yb=th.spaceSuit?q.y:Math.max(q.y,gy(pos[0],pos[1]),gy((pos[0]+q.x)/2,(pos[1]+q.z)/2)),y0=yb+2.3;
+   const g={t:null,c:[pos[0],y0,pos[1]],w:1.6,h:1.6,a:1,solid:1,word:w,has:found.has(w.en),y0,ph:i*1.7,pop:0};
    const img=new Image();img.onload=()=>{if(run!==RUN)return;g.img=img;paint(g,img)};img.src=pixURL(w.e,96);sprites.push(g);WF.push(g)});
   WF.paint=paint;
   upd.push((t,dt)=>{for(const g of WF){g.pop=Math.max(0,g.pop-dt*2.2);const k=(g.has?1.3:1.9)*(1+Math.sin(t*2.4+g.ph)*.05+g.pop*.5);g.w=g.h=k;g.c[1]=g.y0+Math.sin(t*1.6+g.ph)*.22;g.a=g.has?.8:1}});
@@ -10338,7 +10378,9 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
    wfChip.onclick=()=>tell(`<b>Parole nascoste!</b> In questo mondo volano ${WF.length} figure lungo il sentiero. Toccale: senti la parola in inglese e vinci una moneta. Trovale tutte per un premio!`,"happy")}
  }catch(err){console.error("wf",err)}
  const wfShow=()=>{if(wfChip)wfChip.innerHTML=`🔎 ${WF.filter(g=>g.has).length}/${WF.length}`};wfShow();
- function wordTap(x,y,lim){let hit=null,bd=Math.min(lim,44);for(const g of WF){if(!g.t)continue;const sp=R.project(g.c);if(!sp)continue;const d=Math.hypot(sp[0]-x,sp[1]-y);if(d<bd){bd=d;hit=g}}if(!hit)return false;
+ /* tocco: vince ciò che si vede davanti. Una figura vicina batte una tappa lontana che sullo schermo le sta dietro */
+ function wordTap(x,y,lim,mDepth){let hit=null,bd=44;for(const g of WF){if(!g.t)continue;const sp=R.project(g.c);if(!sp)continue;const d=Math.hypot(sp[0]-x,sp[1]-y);if(d>=bd)continue;
+   if(d<lim||(d<=36&&V3.len(V3.sub(g.c,cam.eye))<mDepth)){bd=d;hit=g}}if(!hit)return false;
   const w=hit.word;say(w.en);hit.pop=1;bubble(`<b style="font-size:17px">${esc(w.en)}</b><br><small style="font-weight:800;color:#5a4a70">${esc(w.it)}</small>`,[hit.c[0],hit.y0+1.5,hit.c[2]],2600);sparkle([hit.c[0],hit.y0-1.2,hit.c[2]],hit.has?6:16);
   if(!hit.has){hit.has=true;if(hit.img)WF.paint(hit,hit.img);S.wf.f[wi]=(S.wf.f[wi]||[]).concat([w.en]);const n=WF.filter(g=>g.has).length,all=n===WF.length;S.coins=(S.coins||0)+1+(all?10:0);save();haptic(25);SFX.ok&&SFX.ok();wfShow();
    if(all){setTimeout(()=>{if(run!==RUN)return;SFX.win&&SFX.win();toastTop(`🔎 Hai trovato tutte le ${WF.length} parole nascoste! +10 🪙`)},700)}}
@@ -10399,7 +10441,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
  cv.onpointerup=up;cv.onpointercancel=up;cv.onwheel=e=>{e.preventDefault();goal.dist=cl(goal.dist*(1+Math.sign(e.deltaY)*.09),7,52)};
  const rect=()=>cv.getBoundingClientRect();
  function tap(cx,cy){const r=rect(),x=cx-r.left,y=cy-r.top;let best=-1,bd=56;markers.forEach((m,i)=>{const s=R.project(V3.add(m.p,[0,.6,0]));if(!s)return;const d=Math.hypot(s[0]-x,s[1]-y);if(d<bd){bd=d;best=i}});
-  if(wordTap(x,y,best<0?1e9:bd))return;
+  if(wordTap(x,y,best<0?1e9:bd,best<0?1e9:V3.len(V3.sub(markers[best].p,cam.eye))))return;
   const ap=R.project(V3.add(A.root.p,[0,1.8,0]));if(ap&&Math.hypot(ap[0]-x,ap[1]-y)<46&&best<0){st.wave=1.6;say("Hello! I'm "+S.name+"!");return}
   const bp=R.project([BP[0],BY+4,BP[1]]);if(bp&&Math.hypot(bp[0]-x,bp[1]-y)<70&&best<0){bubble(gtx(bossBeaten?BOSS_LINES[wi][1]:BOSS_LINES[wi][0]),[BP[0],BY+7.4,BP[1]],3400);bossTease=1.6;SFX.tap();return}
   for(const g of gadgets){const sp=R.project(g.c.map((v,k)=>k===1?v+.7:v));if(sp&&Math.hypot(sp[0]-x,sp[1]-y)<40){SFX.tap();if(g.has){say(g.it.en);tell(`${g.it.e.startsWith("@")?"":g.it.e} <b>${esc(g.it.en)}</b> (${esc(g.it.it)}) è nel tuo zaino!`,"happy")}else tell(`Gadget misterioso! Si vince completando il <b>livello ${g.lv+1}</b>.`,"n");return}}
@@ -11443,6 +11485,7 @@ initCloud();
  .w3ciap b{display:block;font-size:17px;color:#1f8a44}
  .w3ciap.off{transition:transform .4s,opacity .4s;transform:translateX(-120%);opacity:0}
  .w3d.cine .w3ciap{display:none}
+ .w3d:has(.w3ciap:not(.off)) .w3hint{opacity:0;transition:opacity .3s}
  @keyframes w3ciapIn{from{transform:translateX(-120%)}to{transform:none}}`;document.head.appendChild(st);
 
  const SENT=["fillc","fillt","order","lsent"],CHOICE=["listen","read","pic"];
