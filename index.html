@@ -4852,10 +4852,106 @@ const ANIM={cow:()=>quad({body:"#ffffff",spots:"#2a2430",horn:1,ears:"side"}),sh
  penguin:()=>bird({body:"#22242e",belly:"#ffffff",beak:"#ffb030",tall:.25,s:1.5}),parrot:()=>bird({body:"#e8303a",head:"#ffd040",beak:"#3a3a4a",tall:.1,s:1.2}),toucan:()=>bird({body:"#1c1d2a",belly:"#fff3c0",beak:"#ffb030",beakL:2.2,s:1.3}),
  pigeon:()=>bird({body:"#9aa2bb",head:"#7d86a2",beak:"#e0a040",s:1}),frog:()=>{const n=new N3(null);n.add(new N3(part(PR.sphere(.35,12,8),"#6ac44a",T([0,.3,0],0,[1.1,.8,1])),OL),new N3(part(PR.sphere(.12,8,6),"#6ac44a",T([.1,.58,.18])),OL),new N3(part(PR.sphere(.12,8,6),"#6ac44a",T([.1,.58,-.18])),OL),new N3(part(PR.sphere(.05,6,4),"#1a1020",T([.18,.62,.2])),{}),new N3(part(PR.sphere(.05,6,4),"#1a1020",T([.18,.62,-.2])),{}));n.s=[1.3,1.3,1.3];return n},
  monkey:()=>{const n=new N3(null);n.add(new N3(part(PR.sphere(.35,12,8),"#8a5a33",T([0,.6,0],0,[.9,1.1,.9])),OL),new N3(part(PR.sphere(.3,12,8),"#8a5a33",T([0,1.15,0])),OL),new N3(part(PR.sphere(.2,10,8),"#f0c8a0",T([.18,1.1,0],0,[.8,.9,1])),OL),new N3(part(PR.sphere(.12,8,6),"#f0c8a0",T([0,1.2,.3])),OL),new N3(part(PR.sphere(.12,8,6),"#f0c8a0",T([0,1.2,-.3])),OL),new N3(part(PR.sphere(.045,6,4),"#1a1020",T([.26,1.2,.08])),{}),new N3(part(PR.sphere(.045,6,4),"#1a1020",T([.26,1.2,-.08])),{}));n.s=[1.3,1.3,1.3];return n}};
+/* ================= ANIMALI 2.0 — cavallo, zebra, cammello, giraffa, elefante, scimmia =================
+   Zampe con coscia, ginocchio e zoccolo che si muovono al passo; occhi grandi con il riflesso; manto dipinto sul modello
+   (strisce della zebra, macchie a rete della giraffa); coda, criniera, orecchie vere. Avanti = +x, piedi a y = 0. */
+const bx=(p,r,col,sc,seg)=>part(PR.sphere(r,seg||12,seg?Math.max(6,seg-2):10),col,T(p,0,sc||1));
+/* segmento conico da a a b nel piano x-y (z fisso), diviso in n pezzi per i disegni del manto */
+function sg(a,b,r0,r1,col,z,n,sides){const out=[];n=n||1;for(let i=0;i<n;i++){const u0=i/n,u1=(i+1)/n,A=[a[0]+(b[0]-a[0])*u0,a[1]+(b[1]-a[1])*u0],B=[a[0]+(b[0]-a[0])*u1,a[1]+(b[1]-a[1])*u1];
+  const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||.001;out.push(part(PR.cyl(r0+(r1-r0)*u1,r0+(r1-r0)*u0,L,sides||10,false),col,T([A[0],A[1],z],[0,0,Math.atan2(-dx,dy)])))}return out}
+const addAll=(node,meshes,o)=>{meshes.forEach(m=>node.add(new N3(m,o)));return node};
+const cen=t=>[(t[0][0]+t[1][0]+t[2][0])/3,(t[0][1]+t[1][1]+t[2][1])/3,(t[0][2]+t[1][2]+t[2][2])/3];
+/* occhi da cartone: bianco, pupilla, riflesso (guardano avanti e un po' di lato) */
+function eyes(node,x,y,z,s,lid){[-1,1].forEach(d=>{node.add(new N3(bx([x,y,d*z],.075*s,"#ffffff",[.75,1,.8],10),{toon:1}),new N3(bx([x+.04*s,y-.004*s,d*(z+.03*s)],.046*s,"#1a1020",1,8),{}),new N3(bx([x+.065*s,y+.022*s,d*(z+.045*s)],.017*s,"#ffffff",1,6),{}));
+  if(lid)node.add(new N3(bx([x+.005*s,y+.03*s,d*z],.082*s,lid,[.8,.62,.86],10),{toon:1}))})}
+/* zampa con zoccolo: nodo che ruota all'anca (si muove al passo) */
+function hoofLeg(x,z,hip,kx,ky,r1,r2,col,hoof,fat){const L=new N3(null,{p:[x,hip,0]});const C=typeof col==="function"?col:()=>col;
+ L.add(new N3(bx([0,-.04,z],r1*1.45,C("thigh"),[1,1.5,.9]),OL));addAll(L,sg([0,0],[kx,ky-hip],r1,r2*1.15,C("up"),z,fat?1:3),OL);L.add(new N3(bx([kx,ky-hip,z],r2*1.22,C("knee")),OL));
+ addAll(L,sg([kx,ky-hip],[0,.16-hip],r2,r2*.92,C("low"),z,fat?1:3),OL);L.add(new N3(part(PR.cyl(r2*1.2,r2*1.42,.17,10),hoof,T([0,-hip,z])),OL));merge(L);return L}
+/* passo: le zampe in diagonale si muovono insieme; la coda ondeggia */
+function gaitOf(n,legs,tail){let amp=0;n.gait=(t,on,dt)=>{amp+=((on?1:0)-amp)*Math.min(1,dt*6);const s=Math.sin(t*9);legs.forEach((L,i)=>{L.r=[0,0,(i===0||i===3?s:-s)*.38*amp]});if(tail)tail.r=[Math.sin(t*2.3)*.25,0,-.15+Math.sin(t*1.7)*.12]};n.gait(0,0,1)}
+/* disegni del manto */
+const h3=(i,j,k)=>{const v=Math.sin(i*127.1+j*311.7+k*74.7)*43758.5453;return v-Math.floor(v)};
+function patches(cell,base,alt,line){return t=>{const c=cen(t),x=c[0]/cell,y=c[1]/cell,z=c[2]/cell,ix=Math.floor(x),iy=Math.floor(y),iz=Math.floor(z);let d1=9,d2=9,id=0;
+ for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(let e=-1;e<=1;e++){const I=ix+a,J=iy+b,K=iz+e,fx=I+h3(I,J,K),fy=J+h3(J,K,I),fz=K+h3(K,I,J),d=Math.hypot(fx-x,fy-y,fz-z);if(d<d1){d2=d1;d1=d;id=h3(I*3,J*5,K*7)}else if(d<d2)d2=d}
+ return d2-d1<.17?line:id>.5?base:alt}}
+const zebraS=(k,ax)=>t=>{const c=cen(t),v=ax==="y"?Math.sin(c[1]*k):ax==="n"?Math.sin((c[0]*.45+c[1])*k):Math.sin(c[0]*k+Math.sin(c[1]*4+c[0]*2)*.9);return v>.12?"#22202a":"#fbfaf4"};
+
+/* ---------- CAVALLO (e ZEBRA) ---------- */
+function horse2(o){o=Object.assign({coat:"#a8683a",mane:"#3a2010",muzzle:"#7a4a2a",hoof:"#3a2a22",blaze:"#ffffff",sock:null,zebra:false},o);const Z=o.zebra;
+ const n=new N3(null),b=new N3(null);n.add(b);const coat=Z?zebraS(11):o.coat;
+ b.add(new N3(bx([0,1.18,0],.56,coat,[1.78,1,.86],Z?20:16),OL),new N3(bx([.6,1.22,0],.42,coat,[1.05,1.06,.9],Z?16:12),OL),new N3(bx([-.56,1.23,0],.43,coat,[1.08,1.02,.94],Z?16:12),OL));
+ const legC=Z?()=>zebraS(16,"y"):k=>o.sock&&(k==="low"||k==="knee")?o.sock:o.coat;
+ const legs=[[.62,.24,0,.62],[.62,-.24,0,.62],[-.64,.24,-.1,.66],[-.64,-.24,-.1,.66]].map(([x,z,kx,ky])=>hoofLeg(x,z,1.05,kx,ky,.13,.08,legC,o.hoof));legs.forEach(L=>b.add(L));
+ /* coda a ciuffo che scende morbida */const tail=new N3(null,{p:[-1.0,1.42,0]});{const TP=[[0,0],[-.13,-.16],[-.22,-.42],[-.25,-.72],[-.22,-.92]],TR=[.07,.1,.095,.075,.03];
+  for(let i=0;i<TP.length-1;i++){addAll(tail,sg(TP[i],TP[i+1],TR[i],TR[i+1],o.mane,0,1,9),OL);tail.add(new N3(bx([TP[i+1][0],TP[i+1][1],0],TR[i+1],o.mane,[1,1,.8],8),OL))}}merge(tail);b.add(tail);
+ const nk=new N3(null,{p:[.85,1.42,0]});b.add(nk);addAll(nk,sg([0,0],[.36,.66],.27,.17,Z?zebraS(13,"n"):o.coat,0,Z?4:1,12),OL);
+ if(Z)for(let i=0;i<7;i++)nk.add(new N3(part(PR.box(.07,.2,.06,true),i%2?"#22202a":"#fbfaf4",T([-.06+i*.06,.18+i*.085,0],[0,0,-.55])),OL));
+ else for(let i=0;i<6;i++)nk.add(new N3(bx([-.08+i*.075,.2+i*.095,0],.11,o.mane,[.9,1.5,.55],8),OL));
+ const hd=new N3(null,{p:[.42,.72,0]});nk.add(hd);
+ hd.add(new N3(bx([0,0,0],.21,Z?zebraS(15,"x"):o.coat,[1.1,1,.82]),OL));addAll(hd,sg([.06,-.04],[.4,-.24],.16,.12,Z?zebraS(15,"x"):o.coat,0,Z?3:1,12),OL);
+ hd.add(new N3(bx([.42,-.25,0],.135,Z?"#2a2430":o.muzzle,[1,.9,1]),OL));[-1,1].forEach(d=>{hd.add(new N3(bx([.52,-.22,d*.065],.03,"#1a1020",1,6),{}));
+  hd.add(new N3(part(PR.cyl(0,.065,.22,8),Z?"#fbfaf4":o.coat,T([-.06,.17,d*.09],[d*.25,0,-.15])),OL))});
+ if(!Z&&o.blaze)hd.add(new N3(bx([.22,-.02,0],.06,o.blaze,[2.6,.7,1.15],8),{toon:1}));
+ hd.add(new N3(bx([.02,.2,0],.08,o.mane,[1.4,.7,.9],8),{toon:1}));eyes(hd,.06,.05,.155,1);
+ merge(nk);merge(b,[nk,tail,...legs]);n.head=nk;gaitOf(n,legs,tail);return n}
+
+/* ---------- CAMMELLO (dromedario con la coperta) ---------- */
+function camel2(){const n=new N3(null),b=new N3(null);n.add(b);const C0="#d9a868",C1="#c08848",LIP="#e8c890";
+ b.add(new N3(bx([0,1.6,0],.55,C0,[1.6,.92,.84]),OL),new N3(bx([.55,1.55,0],.42,C0,[1,1.05,.9]),OL),new N3(bx([-.55,1.6,0],.42,C0,[1,1,.92]),OL));
+ b.add(new N3(bx([-.05,1.86,0],.53,t=>{const c=cen(t);return c[1]<1.74?"#ffcc33":Math.sin(c[0]*16)>.55?"#2a6ad0":"#d8303a"},[1.22,.48,1.02],18),OL));
+ for(let i=0;i<12;i++){const a=i/12*TAU;b.add(new N3(bx([-.05+Math.cos(a)*.63,1.66,Math.sin(a)*.52],.045,i%2?"#2a6ad0":"#ffcc33",1,6),{toon:1}))}
+ b.add(new N3(bx([-.08,1.97,0],.5,C0,[1.3,.82,.9],14),OL));
+ const legs=[[.55,.22,.04,.82],[.55,-.22,.04,.82],[-.6,.22,-.06,.85],[-.6,-.22,-.06,.85]].map(([x,z,kx,ky])=>hoofLeg(x,z,1.32,kx,ky,.12,.07,k=>k==="knee"?C1:C0,"#8a6a4a"));legs.forEach(L=>b.add(L));
+ const tail=new N3(null,{p:[-.92,1.75,0]});addAll(tail,sg([0,0],[-.1,-.45],.05,.035,C1,0),OL);tail.add(new N3(bx([-.12,-.55,0],.07,"#5a3a20",[.8,1.6,.8],8),OL));merge(tail);b.add(tail);
+ const nk=new N3(null,{p:[.78,1.62,0]});b.add(nk);addAll(nk,sg([0,0],[.46,-.08],.23,.16,C0,0),OL);nk.add(new N3(bx([.46,-.08,0],.16,C0),OL));addAll(nk,sg([.46,-.08],[.66,.46],.16,.13,C0,0),OL);
+ const hd=new N3(null,{p:[.68,.52,0]});nk.add(hd);hd.add(new N3(bx([0,0,0],.18,C0,[1.15,.95,.85]),OL));addAll(hd,sg([.05,-.02],[.34,-.08],.14,.11,C0,0),OL);
+ hd.add(new N3(bx([.37,-.07,0],.12,LIP,[1,.85,1]),OL),new N3(bx([.36,-.17,0],.08,LIP,[1.1,.7,1]),OL));[-1,1].forEach(d=>{hd.add(new N3(bx([.47,-.03,d*.05],.022,"#3a2410",1,6),{}),new N3(bx([-.1,.14,d*.11],.05,C1,[.8,1.2,.6],8),OL))});
+ eyes(hd,.06,.06,.13,.9,C1);merge(nk);merge(b,[nk,tail,...legs]);n.head=nk;gaitOf(n,legs,tail);return n}
+
+/* ---------- GIRAFFA ---------- */
+function giraffe2(){const n=new N3(null),b=new N3(null);n.add(b);const P=patches(.2,"#c8742a","#b0601e","#f8e2b0"),PL=patches(.14,"#c8742a","#b0601e","#f8e2b0");
+ b.add(new N3(bx([0,2.1,0],.5,P,[1.45,.95,.86],22),OL),new N3(bx([.45,2.2,0],.42,P,[1,1.1,.9],18),OL),new N3(bx([-.45,2.02,0],.4,P,[1,1,.9],18),OL));
+ const legs=[[.48,.2,.03,1.15,1.95],[.48,-.2,.03,1.15,1.95],[-.48,.2,-.05,1.12,1.85],[-.48,-.2,-.05,1.12,1.85]].map(([x,z,kx,ky,hip])=>hoofLeg(x,z,hip,kx,ky,.11,.065,k=>k==="low"||k==="knee"?"#f6e2b4":PL,"#3a2a22"));legs.forEach(L=>b.add(L));
+ const tail=new N3(null,{p:[-.82,2.15,0]});addAll(tail,sg([0,0],[-.12,-.7],.04,.03,"#d8a050",0),OL);tail.add(new N3(bx([-.14,-.8,0],.08,"#2a1a12",[.8,1.8,.8],8),OL));merge(tail);b.add(tail);
+ const nk=new N3(null,{p:[.62,2.35,0]});b.add(nk);addAll(nk,sg([0,0],[.55,1.85],.24,.13,patches(.16,"#c8742a","#b0601e","#f8e2b0"),0,8,14),OL);
+ for(let i=0;i<9;i++)nk.add(new N3(bx([-.1+i*.07,.15+i*.21,0],.06,"#8a4a1a",[1,1.4,.5],6),{toon:1}));
+ const hd=new N3(null,{p:[.6,1.9,0]});nk.add(hd);hd.add(new N3(bx([0,0,0],.18,"#e8a050",[1.15,1,.85]),OL));addAll(hd,sg([.05,-.03],[.36,-.12],.14,.1,"#e8a050",0),OL);hd.add(new N3(bx([.38,-.13,0],.1,"#f6dcb0"),OL));
+ [-1,1].forEach(d=>{hd.add(new N3(part(PR.cyl(.03,.035,.2,6),"#c8742a",T([-.04,.14,d*.07],[d*.15,0,.1])),OL),new N3(bx([-.06,.34,d*.1],.045,"#3a2010",1,6),OL),new N3(bx([-.1,.08,d*.17],.05,"#e8a050",[.6,1,1.5],8),OL),new N3(bx([.47,-.1,d*.04],.018,"#3a2410",1,6),{}))});
+ eyes(hd,.07,.05,.13,.9);merge(nk);merge(b,[nk,tail,...legs]);n.head=nk;gaitOf(n,legs,tail);return n}
+
+/* ---------- ELEFANTE ---------- */
+function elephant2(){const n=new N3(null),b=new N3(null);n.add(b);const G0="#9a9cb4",G1="#8a8ca4",NAIL="#f4ecd8";
+ b.add(new N3(bx([0,1.6,0],.82,G0,[1.38,1,1]),OL),new N3(bx([-.6,1.65,0],.7,G0,[1,1,.98]),OL));
+ const legs=[[.7,.42],[.7,-.42],[-.75,.42],[-.75,-.42]].map(([x,z])=>{const L=new N3(null,{p:[x,1.2,0]});addAll(L,sg([0,0],[0,-1.2],.28,.26,G0,z,1,12),OL);L.add(new N3(part(PR.cyl(.29,.3,.12,12),G1,T([0,-1.2,z])),OL));
+  [-1,0,1].forEach(k=>L.add(new N3(bx([.24,-1.14,z+k*.11],.065,NAIL,[.7,.8,.8],6),{toon:1})));merge(L);return L});legs.forEach(L=>b.add(L));
+ const tail=new N3(null,{p:[-1.32,1.75,0]});addAll(tail,sg([0,0],[-.12,-.55],.05,.035,G1,0),OL);tail.add(new N3(bx([-.13,-.62,0],.06,"#3a3440",[.8,1.6,.8],6),OL));merge(tail);b.add(tail);
+ const nk=new N3(null,{p:[1.02,1.85,0]});b.add(nk);nk.add(new N3(bx([.22,.08,0],.5,G0,[1,1,.92]),OL),new N3(bx([.36,.36,0],.3,G0,[1,.8,1]),OL));
+ [-1,1].forEach(d=>{nk.add(new N3(bx([0,0,0],.6,G0,[.13,1,.86]),Object.assign({p:[0,.1,d*.5],r:[0,d*.35,0]},OL)));
+  nk.add(new N3(bx([.07,-.02,0],.47,"#e8a4b4",[.07,.9,.78]),{toon:1,p:[0,.1,d*.5],r:[0,d*.35,0]}));
+  addAll(nk,sg([.5,-.22],[.68,-.48],.06,.045,NAIL,d*.2),{toon:1});addAll(nk,sg([.68,-.48],[.84,-.44],.045,.02,NAIL,d*.2),{toon:1})});
+ const TP=[[.6,-.05],[.78,-.35],[.86,-.7],[.84,-1.0],[.92,-1.2],[1.05,-1.17]],TR=[.2,.17,.14,.12,.1,.085];
+ for(let i=0;i<TP.length-1;i++){addAll(nk,sg(TP[i],TP[i+1],TR[i],TR[i+1],G0,0,1,12),OL);nk.add(new N3(bx([TP[i+1][0],TP[i+1][1],0],TR[i+1],G0,1,10),OL))}
+ eyes(nk,.55,.22,.3,1.15);merge(nk);merge(b,[nk,tail,...legs]);n.head=nk;gaitOf(n,legs,tail);return n}
+
+/* ---------- SCIMMIA ---------- */
+function monkey2(){const n=new N3(null),b=new N3(null);n.add(b);const F="#8a5a33",S="#f2cfa4",D="#6a4224";
+ b.add(new N3(bx([0,.78,0],.3,F,[.9,1.15,.85]),OL),new N3(bx([.13,.74,0],.2,S,[.6,1,.8]),{toon:1}));
+ const limb=(px,py,z,pts,col,end,endS)=>{const L=new N3(null,{p:[px,py,0]});let a=[0,0];pts.forEach(q=>{addAll(L,sg(a,q,.075,.065,col,z),OL);L.add(new N3(bx([q[0],q[1],z],.07,col,1,8),OL));a=q});L.add(new N3(bx([a[0]+.02,a[1]-.04,z],.085,end,endS,8),OL));merge(L);return L};
+ const arms=[1,-1].map(d=>limb(0,1.02,d*.3,[[.08,-.22],[.12,-.44]],F,S,[1,1,1])),legs=[1,-1].map(d=>limb(0,.52,d*.15,[[.08,-.22],[.02,-.42]],F,S,[1.6,.6,1]));
+ [...arms,...legs].forEach(L=>b.add(L));
+ const tail=new N3(null,{p:[-.24,.55,0]});{let a=[0,0];for(let i=1;i<=9;i++){const u=i/9,q=[-.15-Math.sin(u*Math.PI)*.18-u*.05,u*.75+Math.sin(u*TAU*1.1)*.05];addAll(tail,sg(a,q,.045,.04,F,0),OL);a=q}tail.add(new N3(bx([a[0]+.05,a[1]+.02,0],.06,F,1,8),OL))}merge(tail);b.add(tail);
+ const hd=new N3(null,{p:[0,1.3,0]});b.add(hd);hd.add(new N3(bx([0,0,0],.3,F),OL),new N3(bx([.17,.02,0],.2,S,[.75,.95,1.05]),{toon:1}),new N3(bx([.25,-.1,0],.13,S,[.9,.75,1.05]),OL));
+ [-1,1].forEach(d=>hd.add(new N3(bx([0,.04,d*.3],.1,S,[.5,1,1]),OL),new N3(bx([.36,-.07,d*.03],.016,D,1,6),{})));
+ hd.add(new N3(part(PR.torus(.05,.012,10,4),D,T([.35,-.15,0],[0,0,TAU/4],[1,1,.6])),{}));eyes(hd,.22,.05,.09,.95);
+ merge(hd);merge(b,[hd,tail,...arms,...legs]);n.head=hd;n.s=[1.15,1.15,1.15];
+ let amp=0;n.gait=(t,on,dt)=>{amp+=((on?1:0)-amp)*Math.min(1,dt*6);const s=Math.sin(t*10)*amp;arms[0].r=[0,0,s*.6];arms[1].r=[0,0,-s*.6];legs[0].r=[0,0,-s*.5];legs[1].r=[0,0,s*.5];tail.r=[Math.sin(t*2)*.2,0,Math.sin(t*1.4)*.15];b.p=[0,Math.abs(s)*.05,0]};n.gait(0,0,1);return n}
+Object.assign(ANIM,{horse:()=>horse2({}),zebra:()=>horse2({zebra:true,mane:"#22202a",hoof:"#22202a"}),camel:camel2,giraffe:giraffe2,elephant:elephant2,monkey:monkey2});
 /* animali che passeggiano in una zona */
 function herd(kind,n,cx,cz,area,sp){for(let i=0;i<n;i++){let x=cx,z=cz;for(let t=0;t<30;t++){x=cx+rr(-area,area);z=cz+rr(-area,area);if(free(x,z,2.4))break}const a=ANIM[kind]();a.p=[x,Y(x,z),z];a.r=[0,rnd()*TAU,0];C.dyn.push(a);
   const h={home:[cx,cz],area,sp:sp||1,tgt:null,wait:rnd()*3,peck:rnd()*5};C.upd.push((t,dt)=>{if(!h.tgt&&(h.wait-=dt)<0){for(let k=0;k<6;k++){const q=[h.home[0]+rr(-area,area),h.home[1]+rr(-area,area)];if(free(q[0],q[1],2.2)){h.tgt=q;break}}if(!h.tgt)h.wait=1}
    if(h.tgt){const dx=h.tgt[0]-a.p[0],dz=h.tgt[1]-a.p[2],d=Math.hypot(dx,dz);if(d<.15){h.tgt=null;h.wait=2+rnd()*4}else{const v=h.sp*dt;a.p[0]+=dx/d*v;a.p[2]+=dz/d*v;const want=Math.atan2(-dz,dx);let e=((want-a.r[1]+Math.PI)%TAU+TAU)%TAU-Math.PI;a.r[1]+=e*Math.min(1,dt*5);a.p[1]=Y(a.p[0],a.p[2])+Math.abs(Math.sin(t*9+cx))*.06}}else a.p[1]=Y(a.p[0],a.p[2]);
+   if(a.gait)a.gait(t+cx,!!h.tgt,dt);
    if(a.head){h.peck-=dt;a.head.r[2]=h.peck<0&&h.peck>-.7?-.6*Math.sin((h.peck+.7)/.7*Math.PI):Math.sin(t*1.4+cx)*.06;if(h.peck<-.7)h.peck=2+rnd()*5}})}}
 /* uccelli in volo */
 function flock(n,cx,cz,r,h,col){for(let i=0;i<n;i++){const b=new N3(null),wl=new N3(part([[[0,0,0],[-.25,0,1.2],[.4,0,.15]]],col||"#ffffff",null,{fix:false}),{noCull:1,toon:1,noShadow:1}),wr=new N3(part([[[0,0,0],[.4,0,-.15],[-.25,0,-1.2]]],col||"#ffffff",null,{fix:false}),{noCull:1,toon:1,noShadow:1});
@@ -10246,7 +10342,7 @@ function modelView(fn,cam,t){ensure();RUN++;R.free();for(const kk in TX)delete T
  C={wi:-1,k:"mv",th:{},items:[],dyn:[],sprites:[],upd:[],g:new Geo(),gs:new Geo(),gn:new Geo(),nodes:[],pts:[],occ:[]};C.H=()=>0;C.rawH=()=>0;
  const E=R.env;Object.assign(E,{haze:0,sunF:null,L:V3.norm([.6,.7,.45]),sun:hex("#fff4dc"),top:hex("#4a9ef0"),hor:hex("#dceeff"),bot:hex("#cfe0c0"),fog:hex("#dceeff"),fogN:120,fogF:400,sky:hex("#bfe0ff"),ground:hex("#8a9a6a"),stars:0,aur:0,sunC:hex("#fff2c0"),noShadow:false,shSpan:30});
  C.items.push({m:R.mesh(new Geo().add(PR.disc(80,40),null,"#e8d4a0",{up:true})),M:M4.id()});
- fn({pirateShip,sphinx,C});
+ fn({pirateShip,sphinx,C,ANIM});
  if(C.g.size)C.items.push({m:R.mesh(C.g),M:M4.id(),out:.045});if(C.gs.size)C.items.push({m:R.mesh(C.gs),M:M4.id(),out:.04,sway:1});if(C.gn.size)C.items.push({m:R.mesh(C.gn),M:M4.id()});
  for(const u of C.upd)u(t||1,.016,cam);const out=[...C.items];C.dyn.forEach(d=>d.collect(M4.id(),out));CV.style.width="100%";R.draw(Object.assign({fov:.8},cam),out,C.sprites,t||1);return CV}
 
@@ -10383,7 +10479,7 @@ function start(wi,run,ctx,from,cur){const W=WORLDS[wi],th=ctx.th,items=ctx.items
    if(d<lim||(d<=36&&V3.len(V3.sub(g.c,cam.eye))<mDepth)){bd=d;hit=g}}if(!hit)return false;
   const w=hit.word;say(w.en);hit.pop=1;bubble(`<b style="font-size:17px">${esc(w.en)}</b><br><small style="font-weight:800;color:#5a4a70">${esc(w.it)}</small>`,[hit.c[0],hit.y0+1.5,hit.c[2]],2600);sparkle([hit.c[0],hit.y0-1.2,hit.c[2]],hit.has?6:16);
   if(!hit.has){hit.has=true;if(hit.img)WF.paint(hit,hit.img);S.wf.f[wi]=(S.wf.f[wi]||[]).concat([w.en]);const n=WF.filter(g=>g.has).length,all=n===WF.length;S.coins=(S.coins||0)+1+(all?10:0);save();haptic(25);SFX.ok&&SFX.ok();wfShow();
-   if(all){setTimeout(()=>{if(run!==RUN)return;SFX.win&&SFX.win();toastTop(`🔎 Hai trovato tutte le ${WF.length} parole nascoste! +10 🪙`)},700)}}
+   if(all){setTimeout(()=>{if(run!==RUN)return;SFX.win&&SFX.win();toastTop(`🔎 Hai trovato tutte le ${WF.length} parole nascoste! +10 🪙`)},700);setTimeout(()=>{if(run===RUN&&!$(".modal")&&window.wordQuiz)wordQuiz(WF.map(g=>g.word))},2600)}}
   else SFX.tap&&SFX.tap();return true}
  /* Ciapin compare solo all'ingresso del mondo, incita e se ne va */
  function ciapCheer(first){if(run!==RUN||$(".modal")||$(".w3ciap"))return;const scr=document.querySelector(".w3d");if(!scr)return;const left=WF.filter(g=>!g.has).length;
@@ -11478,6 +11574,9 @@ initCloud();
  .w3cine::after{content:"Tocca per saltare ▸";position:absolute;right:14px;bottom:calc(3.2% + env(safe-area-inset-bottom,0px));font-weight:900;font-size:13px;letter-spacing:.04em;color:#fff;opacity:0;animation:w3skipIn .6s 1.6s both}
  .w3cine.off::after{display:none}
  @keyframes w3skipIn{to{opacity:.6}}
+ .rvres{width:100%;max-width:440px;gap:6px}.rvrow{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:12px;background:#eefbf1;font-size:15px;font-weight:800;text-align:left}
+ .rvrow.m{background:#fff3e0}.rvrow img{width:30px;height:30px;flex:none}.rvrow b{min-width:80px;cursor:pointer}.rvrow span{flex:1;color:#4a4470;font-size:14px}
+ .wquiz{display:flex;flex-direction:column;gap:10px}.wquiz .bfopts small{font-size:14px;color:#b3261e}
  .w3st.w3wf{position:absolute;left:0;top:54px;font:inherit;font-weight:900;font-size:15px;padding:4px 10px;cursor:pointer;white-space:nowrap;pointer-events:auto;color:var(--ink,#2a1535)}
  .w3d.cine .w3wf{display:none}
  .w3ciap{position:absolute;left:10px;top:calc(108px + env(safe-area-inset-top,0px));z-index:4;display:flex;align-items:center;gap:6px;max-width:min(calc(100vw - 84px),380px);padding:0;border:0;background:none;font:inherit;text-align:left;cursor:pointer;animation:w3ciapIn .5s cubic-bezier(.2,1.4,.4,1) both}
@@ -11515,7 +11614,7 @@ initCloud();
  {const m0=markMiss;markMiss=function(q){const was=q.missed;const r=m0.apply(this,arguments);
    try{if(!was&&q.missed&&play()&&q.s&&SENT.includes(q.t))sWrong(q.s)}catch(e){}return r}}
  {const g0=good;good=function(q){const was=q.done,miss=q.missed;const r=g0.apply(this,arguments);
-   try{if(!was&&q.done&&!miss&&play()){if(q.srev&&q.s)sRight(q.s);if(q.cf&&q.w)cfDrop(q.w,q.cf);save()}}catch(e){}return r}}
+   try{if(!was&&q.done&&!miss&&play()){if(q.srev&&q.s)sRight(q.s);if(G.revX&&q.w)srsLearn(wkey(q.w));if(q.cf&&q.w)cfDrop(q.w,q.cf);save()}}catch(e){}return r}}
  /* ---- errore che insegna: che cos'era la scelta sbagliata ---- */
  {const R0=renderQ;renderQ=function(){const r=R0.apply(this,arguments);
    try{const q=G&&G.Q[G.i];if(q&&q.w&&q.opts&&CHOICE.includes(q.t))app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
@@ -11532,12 +11631,52 @@ initCloud();
      shuffle(due).sort((a,b)=>S.srs[a].b-S.srs[b].b).slice(0,n).forEach((k,i)=>{const p=k.split("|"),x=ALLWORDS.find(y=>y.w==p[0]&&y.en===p[1]);if(!x)return;const s=S.srs[k].b;
       const q=mkQ(s<=1?(m<0?"listen":"pic"):s<=2?(m<0?"tiles":"spell"):m<0?"tiles":"type",x,allWorld(WORLDS[x.w]),m);q.rev=1;L.Q.splice(Math.min(L.Q.length,8+i*2),0,q)})}}catch(e){console.error(e)}
    return L}}
- /* ---- il ripasso: parole e frasi insieme, più lungo se c'è arretrato ---- */
- {const r0=review;review=function(){const sk=sDue();if(!sk.length)return r0.apply(this,arguments);if(blockedByTime())return;SCR="";
-   const keys=srsDue();const ws=shuffle(keys).sort((a,b)=>S.srs[a].b-S.srs[b].b).slice(0,keys.length>=12?7:5).map(k=>{const p=k.split("|");return ALLWORDS.find(x=>x.w==p[0]&&x.en===p[1])}).filter(Boolean);
-   const Q=ws.map(x=>{const pool=allWorld(WORLDS[x.w]),m=mech(x.w),r=Math.random();return mkQ(m<0?(r<.5?"tiles":"listen"):r<.6?"type":r<.8?"spell":"dict",x,pool,m)});
-   sk.slice(0,ws.length>=5?2:3).forEach((k,i)=>{const s=sGet(k);Q.splice(Math.min(Q.length,2+i*3),0,sentQ(k,mech(s.w)))});
-   G={w:S.world,l:-1,W:WORLDS[S.world],st:1,Q,i:0,miss:0,boss:false,t0:Date.now(),newW:[],review:true};renderQ()}}
+ /* ================= RIPASSO 2.0 =================
+    · l'esercizio dipende da quanto la parola è già solida: scatola 1 = la riconosci (ascolto, figura), 2 = la ricostruisci (lettere, trappole), 3 = la scrivi, 4-5 = dettato;
+    · si parte dal più facile e si sale (riscaldamento), parole di mondi diversi mescolate;
+    · la parola sbagliata torna in fondo al ripasso, un gradino più facile, finché non è giusta;
+    · alla fine: quali parole si sono rafforzate e quando torneranno;
+    · niente da ripassare? «Allenamento lampo» sulle parole più deboli invece del messaggio «torna più tardi». */
+ const byKey=k=>{const p=String(k).split("|");return ALLWORDS.find(x=>x.w==p[0]&&x.en===p[1])};
+ const revType=(x,extra)=>{const m=mech(x.w),s=S.srs[wkey(x)],lvl=extra?((wmPeek(x).m||0)<1.5?1:(wmPeek(x).m<2.5?2:3)):(s?s.b:2);
+  if(m<0)return lvl<=1?pick(["listen","pic"]):"tiles";return lvl<=1?pick(["listen","pic"]):lvl===2?pick(["spell","tiles"]):lvl===3?"type":(m>=1?"dict":"type")};
+ const r0=review;
+ review=function(){const wk=srsDue(),sk=sDue();let words=[],extra=false;
+  if(!wk.length&&!sk.length){words=Object.entries(S.wm||{}).filter(([k,r])=>r.n>0&&r.m<3.5).sort((a,b)=>a[1].m-b[1].m).slice(0,6).map(([k])=>byKey(k)).filter(Boolean);
+   if(words.length<3)return r0.apply(this,arguments);extra=true}
+  if(blockedByTime())return;SCR="";
+  if(!extra)words=shuffle(wk).sort((a,b)=>S.srs[a].b-S.srs[b].b).slice(0,wk.length>=12?7:5).map(byKey).filter(Boolean);
+  let Q=words.map(x=>mkQ(revType(x,extra),x,allWorld(WORLDS[x.w]),mech(x.w)));Q.sort((a,b)=>(TLEV[a.t]??1)-(TLEV[b.t]??1));
+  sk.slice(0,Q.length>=5?2:3).forEach((k,i)=>{const s=sGet(k);Q.splice(Math.min(Q.length,2+i*3),0,sentQ(k,mech(s.w)))});
+  if(!Q.length)return r0.apply(this,arguments);
+  G={w:S.world,l:-1,W:WORLDS[S.world],st:1,Q,i:0,miss:0,boss:false,t0:Date.now(),newW:[],review:true,revX:extra,revW:words.slice()};renderQ();
+  if(extra)setTimeout(()=>{const gb=$("#gb");if(gb&&G&&G.revX)gb.insertAdjacentHTML("afterbegin",`<span class="qtag u">⚡ Allenamento lampo</span> `)},30)};
+ /* nel ripasso l'errore torna in fondo, più facile (una volta per domanda) */
+ {const q0=requeue;requeue=function(q){if(G&&G.review&&!G.test&&!q.retry&&!q.requeued){q.requeued=1;let nq=null;
+   if(q.w&&WQT.includes(q.t))nq=mkQ(easier(q.t,mech(q.w.w)),q.w,allWorld(WORLDS[q.w.w]),mech(q.w.w));else if(q.s)nq=sQ("fillc",q.s,0);
+   if(nq){nq.retry=1;if(q.srev){nq.srev=1;nq.rev=1}G.Q.push(nq)}return}return q0.apply(this,arguments)}}
+ /* fine del ripasso: com'è andata, parola per parola */
+ {const f0=finish;finish=function(){const g=G,rv=g&&g.review&&!g.test&&!g.cls;const r=f0.apply(this,arguments);
+   try{if(rv){const seen=new Map();g.Q.forEach(q=>{if(!q.w)return;const k=wkey(q.w),o=seen.get(k)||{w:q.w,miss:false};if(q.missed)o.miss=true;seen.set(k,o)});
+    const now=Date.now(),days=k=>{const s=S.srs[k];if(!s)return null;return Math.max(0,Math.round((s.d-now)/864e5))};
+    const when=d=>d==null?"":d<=0?"oggi stesso":d===1?"domani":d<30?`tra ${d} giorni`:`tra ${Math.round(d/30)} ${d<60?"mese":"mesi"}`;
+    const rows=[...seen.entries()].map(([k,o])=>`<div class="rvrow ${o.miss?"m":"ok"}"><img src="${pixURL(o.w.e)}" alt=""><b data-say="${esc(o.w.en)}">${esc(o.w.en)}</b><span>${o.miss?"🔁 la rivediamo "+(when(days(k))||"presto"):"💪 più forte! "+(days(k)!=null?"Torna "+when(days(k)):"")}</span></div>`).join("");
+    const box=app.querySelector(".resB");if(box&&rows){box.insertAdjacentHTML("afterbegin",`<div class="panel rvres"><span class="lbl">${g.revX?"⚡ Allenamento lampo":"🧠 Il tuo ripasso"}</span>${rows}</div>`);
+     box.querySelectorAll(".rvres [data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say))}}}catch(e){console.error(e)}return r}}
+
+ /* ================= MINI-RIPASSO DELLE PAROLE NASCOSTE: trovate tutte e 8, Ciapin fa 3 domande veloci ================= */
+ window.wordQuiz=function(ws){ws=(ws||[]).filter(x=>x&&x.e);if(ws.length<3)return;const qs=shuffle(ws).slice(0,3);let i=0,ok=0;
+  const show=()=>{if(i>=qs.length){S.coins=(S.coins||0)+ok;ws.forEach(x=>{try{const k=wkey(x);if(!S.srs[k])srsLearn(k)}catch(e){}});save();SFX.win&&SFX.win();
+    modal(`${ciapImg(90,"happy")}<h2 style="font-size:22px;margin:0">${ok===3?"Perfetto!":ok?"Bravissim{a|o}!":"Ci siamo quasi!"}</h2><div class="say">${ok}/3 al primo colpo${ok?` · <b>+${ok} 🪙</b>`:""}. Le parole che hai trovato ora sono nel tuo ripasso.</div><button class="btn" data-close>EVVIVA! ▶</button>`);return}
+   const a=qs[i];let miss=false;const opts=shuffle([a,...shuffle(ws.filter(x=>x!==a&&x.e!==a.e&&x.en!==a.en)).slice(0,2)]);
+   modal(`<div class="wquiz"><span class="lbl">🔎 Mini-ripasso ${i+1}/3</span><div class="guide" style="margin:0">${ciapImg(56,"happy","talk")}<div class="say">Ascolta e tocca la figura giusta!</div></div><button class="spk bfspk" data-s aria-label="Ascolta">🔊</button>
+    <div class="bfopts">${opts.map((o,k)=>`<button data-o="${k}"><img src="${pixURL(o.e)}" alt=""></button>`).join("")}</div><button class="link" data-close style="align-self:center">Salta</button></div>`,m=>{
+    m.querySelector("[data-s]").onclick=()=>say(a.en);
+    m.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{const o=opts[+b.dataset.o];if(b.classList.contains("ok"))return;
+     if(o===a){b.classList.add("ok");SFX.ok&&SFX.ok();haptic(25);if(!miss){ok++;try{wmUpdate({t:"listen",w:a},true);const k=wkey(a);S.srs[k]?srsRight(k):srsLearn(k)}catch(e){}}say(a.en);setTimeout(()=>{i++;show()},900)}
+     else{miss=true;b.classList.add("no");SFX.no&&SFX.no();if(!b.querySelector("small"))b.insertAdjacentHTML("beforeend",`<small style="display:block;font-weight:900">${esc(o.en)}</small>`);try{const k=wkey(a);if(!S.srs[k])srsLearn(k)}catch(e){}}})});
+   setTimeout(()=>say(a.en),350)};
+  show()};
  /* ---- ripasso del giorno in evidenza sulla mappa dei mondi ---- */
  {const o0=overworld;overworld=function(){const r=o0.apply(this,arguments);
    try{const nw=srsDue().length,ns=sDue().length,n=nw+ns;const hb=$("#hrev");
